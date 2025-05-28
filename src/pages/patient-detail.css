@@ -1,0 +1,426 @@
+/* patient-detail.css */
+
+/* Import Google Font - Inter */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* Modernized Color Palette (consistent with Dashboard) */
+  --primary-color: #3F51B5; /* Indigo - Professional and calming */
+  --secondary-color: #5C6BC0; /* Lighter Indigo */
+  --accent-color: #4CAF50; /* Green for success/positive actions */
+  --danger-color: #F44336; /* Red for destructive actions */
+  --warning-color: #FFC107; /* Yellow for edit/warning */
+  --text-dark: #263238; /* Dark Blue Grey for main text */
+  --text-medium: #455A64; /* Lighter Blue Grey for secondary text */
+  --text-light: #ffffff; /* White for light backgrounds */
+  --bg-light: #ECEFF1; /* Light Blue Grey for subtle backgrounds */
+  --bg-medium: #CFD8DC; /* Medium Blue Grey for deeper backgrounds */
+  --card-bg: #ffffff; /* Pure white for cards */
+  --border-color: #E0E0E0; /* Light grey border */
+  --table-header-bg: #E8EAF6; /* Very light indigo for table headers */
+  --table-row-even: #F5F5F5; /* Light grey for even rows */
+  --table-row-hover: #E3F2FD; /* Very light blue on hover */
+
+  /* Enhanced Shadows */
+  --shadow-sm: rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
+  --shadow-md: rgba(0, 0, 0, 0.08) 0px 4px 12px;
+  --shadow-lg: rgba(0, 0, 0, 0.15) 0px 8px 24px;
+  --shadow-xl: rgba(0, 0, 0, 0.25) 0px 16px 48px;
+
+  /* Spacing */
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 20px;
+  --spacing-lg: 30px;
+  --spacing-xl: 40px;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-medium) 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  color: var(--text-dark);
+  line-height: 1.6;
+}
+
+.app-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: var(--spacing-xl);
+  box-sizing: border-box;
+}
+
+.patient-detail-container {
+  background-color: var(--card-bg);
+  padding: var(--spacing-xl);
+  border-radius: 15px;
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 1000px; /* Adjusted max-width for detail view */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header Section */
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 2px solid var(--border-color);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.detail-header h1 {
+  color: var(--primary-color);
+  font-weight: 800;
+  font-size: 2.5em; /* Slightly smaller than main dashboard h1 */
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.detail-header .actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.back-button,
+.edit-button,
+.add-record-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 20px;
+  border: none; /* Remove default border */
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  box-shadow: var(--shadow-sm);
+  text-transform: uppercase; /* Make text uppercase */
+  letter-spacing: 0.5px;
+}
+
+.back-button {
+  background-color: var(--secondary-color);
+  color: var(--text-light);
+}
+
+.back-button:hover {
+  background-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.edit-button {
+  background-color: var(--warning-color); /* Yellow for edit */
+  color: var(--text-dark); /* Dark text for contrast on yellow */
+}
+
+.edit-button:hover {
+  background-color: #E6B300; /* Darker yellow */
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.add-record-button {
+  background-color: var(--accent-color);
+  color: var(--text-light);
+}
+
+.add-record-button:hover {
+  background-color: #388E3C; /* Darker green */
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.back-button i,
+.edit-button i,
+.add-record-button i {
+  margin-right: 8px;
+  font-size: 1.1rem;
+}
+
+/* Sections within the detail page */
+.detail-section {
+  background-color: var(--bg-light);
+  border-radius: 10px;
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--spacing-lg); /* Space between sections */
+  border-left: 5px solid var(--primary-color); /* Accent border */
+}
+
+.detail-section h2 {
+  color: var(--primary-color);
+  font-size: 1.8em;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.detail-item {
+  display: flex;
+  margin-bottom: var(--spacing-sm);
+  font-size: 1em;
+  padding: 5px 0; /* Add slight padding for spacing */
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.05); /* Subtle separator */
+}
+
+.detail-item:last-child {
+    border-bottom: none; /* No border on last item */
+}
+
+.detail-item strong {
+  color: var(--text-dark);
+  min-width: 150px; /* Increased min-width for better label alignment */
+  font-weight: 600;
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+.detail-item span {
+  color: var(--text-medium);
+  flex-grow: 1;
+  word-break: break-word; /* Allow long text to break */
+}
+
+/* Medical Records Table */
+.records-table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: var(--shadow-md); /* Slightly stronger shadow for table */
+    border-radius: 8px;
+    border: 1px solid var(--border-color); /* Overall table border */
+}
+
+.medical-records-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0; /* No margin-top if inside detail-section */
+  font-size: 0.95rem;
+  min-width: 700px; /* Ensure horizontal scroll on small screens */
+}
+
+.medical-records-table thead {
+  background-color: var(--table-header-bg); /* Light indigo header */
+  color: var(--primary-color); /* Dark text for header */
+}
+
+.medical-records-table th {
+  padding: 15px 20px;
+  text-align: left;
+  font-weight: 700; /* Bolder header text */
+  border-bottom: 2px solid var(--border-color);
+  white-space: nowrap;
+  font-size: 1em;
+}
+
+.medical-records-table tbody tr {
+  border-bottom: 1px solid #E3F2FD; /* Lighter border between rows */
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.medical-records-table tbody tr:nth-child(even) {
+  background-color: var(--table-row-even); /* Alternate row color */
+}
+
+.medical-records-table tbody tr:hover {
+  background-color: var(--table-row-hover); /* Light blue hover effect */
+  transform: scale(1.005); /* Subtle zoom on hover */
+  box-shadow: var(--shadow-sm); /* Slight shadow on hover */
+}
+
+.medical-records-table td {
+  padding: 12px 20px;
+  text-align: left;
+  vertical-align: middle;
+  color: var(--text-medium);
+  white-space: nowrap;
+  max-width: 250px; /* Limit width */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.medical-records-table .view-record-button {
+  display: inline-block;
+  padding: 6px 12px;
+  background-color: var(--primary-color); /* Primary blue for view button */
+  color: var(--text-light);
+  border: none;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.8rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.medical-records-table .view-record-button:hover {
+  background-color: var(--secondary-color);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Spinner (Loading Indicator) Styles */
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--primary-color); /* Blue spinner */
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Info/Error Messages */
+.info-message {
+    text-align: center;
+    padding: 20px;
+    background-color: var(--bg-light);
+    border-radius: 8px;
+    color: var(--text-medium);
+    margin-top: 20px;
+    font-size: 1.1rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.info-message.error {
+    background-color: #f8d7da; /* Light red for errors */
+    color: #721c24; /* Dark red text */
+    border: 1px solid #f5c6cb;
+}
+
+
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+  .app-container {
+    padding: var(--spacing-md);
+  }
+  .patient-detail-container {
+    padding: var(--spacing-lg);
+    gap: var(--spacing-md);
+  }
+  .detail-header h1 {
+    font-size: 2.2em;
+  }
+  .detail-header .actions {
+    gap: var(--spacing-sm);
+  }
+  .detail-section {
+    padding: var(--spacing-md);
+  }
+  .detail-section h2 {
+    font-size: 1.6em;
+  }
+  .detail-item {
+    font-size: 0.95em;
+  }
+}
+
+@media (max-width: 768px) {
+  .patient-detail-container {
+    padding: var(--spacing-md);
+    margin: var(--spacing-sm);
+    gap: var(--spacing-md);
+  }
+  .detail-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+  .detail-header h1 {
+    font-size: 2em;
+    width: 100%;
+  }
+  .detail-header .actions {
+    width: 100%;
+    justify-content: flex-end; /* Align buttons to the right */
+  }
+  .back-button,
+  .edit-button,
+  .add-record-button {
+    width: 100%;
+    justify-content: center;
+  }
+  .detail-item {
+    flex-direction: column; /* Stack label and value */
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .detail-item strong {
+    min-width: unset; /* Remove fixed width */
+  }
+  .medical-records-table {
+    min-width: 500px; /* Ensure scrollability */
+  }
+  .medical-records-table th,
+  .medical-records-table td {
+    padding: 8px 12px;
+    font-size: 0.9em;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-container {
+    padding: var(--spacing-sm);
+  }
+  .patient-detail-container {
+    padding: var(--spacing-sm);
+    margin: var(--spacing-xs);
+    gap: var(--spacing-sm);
+  }
+  .detail-header h1 {
+    font-size: 1.8em;
+  }
+  .back-button,
+  .edit-button,
+  .add-record-button {
+    padding: 8px 15px;
+    font-size: 0.9em;
+  }
+  .detail-section {
+    padding: var(--spacing-sm);
+  }
+  .detail-section h2 {
+    font-size: 1.4em;
+  }
+  .medical-records-table {
+    min-width: 400px; /* Adjust as needed */
+  }
+  .medical-records-table th,
+  .medical-records-table td {
+    padding: 6px 8px;
+    font-size: 0.8em;
+  }
+  .medical-records-table .view-record-button {
+    padding: 5px 10px;
+    font-size: 0.7rem;
+  }
+}

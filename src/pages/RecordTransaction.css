@@ -1,0 +1,97 @@
+/* src/pages/RecordTransaction.css */
+
+.record-transaction-container {
+  padding: 20px;
+  max-width: 700px;
+  margin: 20px auto;
+  background-color: #f8f9fa; /* Light background */
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.record-transaction-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.record-transaction-header h1 {
+  font-size: 1.8rem;
+  color: #343a40;
+  margin: 0;
+}
+
+.record-transaction-form .form-label {
+  font-weight: bold;
+  color: #495057;
+  margin-bottom: 5px;
+}
+
+.record-transaction-form .form-control,
+.record-transaction-form .form-select {
+  border-radius: 5px;
+  border: 1px solid #ced4da;
+  padding: 10px 12px;
+  font-size: 1rem;
+}
+
+.record-transaction-form .form-control:focus,
+.record-transaction-form .form-select:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.record-transaction-form .btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+  padding: 10px 15px;
+  font-size: 1.1rem;
+  border-radius: 5px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.record-transaction-form .btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+.record-transaction-form .btn-primary:disabled {
+  background-color: #a0c2ed;
+  border-color: #a0c2ed;
+  cursor: not-allowed;
+}
+
+.record-transaction-container .back-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.record-transaction-container .back-button:hover {
+  background-color: #5a6268;
+}
+
+/* Loader and error state styles */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+.alert-danger {
+  padding: 15px;
+  border-radius: 5px;
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  margin-bottom: 20px;
+}

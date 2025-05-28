@@ -1,0 +1,234 @@
+/* Navbar Section */
+.navbar {
+  background-color: white;
+  transition: all 0.3s ease-out 0s;
+  box-shadow: 0px 10px 10px 0px rgba(9, 5, 29, 0.171);
+  font-size: 1.2rem;
+}
+
+.navbar.fixed {
+  position: fixed;
+  width: 100vw;
+  left: 0;
+  top: 0;
+  background-color: white; /* Ensure solid background when fixed */
+  z-index: 1030; /* Higher z-index to ensure it stays on top */
+}
+
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* Vertically centers items in the main row */
+  padding: 8px 15px; /* Added consistent padding to the container */
+}
+
+.navbar-toggler {
+  position: relative;
+  background-color: transparent;
+  border-color: transparent;
+  padding: 0.25rem 0.75rem; /* Standard Bootstrap toggle padding */
+}
+
+.navbar-toggler span {
+  display: block;
+  background-color: black;
+  height: 4px;
+  width: 27px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  transform: rotate(0deg);
+  left: 0;
+  opacity: 1;
+}
+
+.navbar-toggler:focus,
+.navbar-toggler:active {
+  border: none;
+  outline: 0;
+  box-shadow: 0 0 0 transparent;
+}
+
+.navbar-toggler span:nth-child(1),
+.navbar-toggler span:nth-child(3) {
+  transition: transform 0.35s ease-in-out;
+}
+
+.navbar-toggler:not(.collapsed) span:nth-child(1) {
+  position: absolute;
+  left: 12px;
+  top: 10px;
+  transform: rotate(135deg);
+  opacity: 0.9;
+}
+
+.navbar-toggler:not(.collapsed) span:nth-child(2) {
+  height: 12px;
+  visibility: hidden;
+  background-color: transparent;
+}
+
+.navbar-toggler:not(.collapsed) span:nth-child(3) {
+  position: absolute;
+  left: 12px;
+  top: 10px;
+  transform: rotate(-135deg);
+  opacity: 0.9;
+}
+
+@media (max-width: 767px) {
+  .navbar {
+    font-size: 1.4rem;
+  }
+
+  .navbar-nav .nav-item::after {
+    display: none;
+  }
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0; /* Remove default padding for tighter fit */
+  line-height: 1; /* Helps with vertical alignment of logo/icon */
+}
+
+.navbar-brand ion-icon {
+  font-size: 18px; /* Adjusted size for desktop */
+}
+
+.logo {
+  font-size: 1.6em; /* Adjusted desktop logo size */
+  font-weight: 500;
+  color: black;
+  margin: 0; /* Remove specific margins, let flex handle */
+}
+
+.navbar-link {
+  display: flex;
+  text-decoration: none;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  padding: 0.8rem 0.5rem 0.2rem;
+}
+
+.nav-link-label {
+  color: black;
+  font-size: 18px; /* Desktop link font size */
+  font-weight: 600;
+}
+
+.nav-icon {
+  width: 25px; /* Slightly smaller default icon size */
+  height: 25px;
+  padding-bottom: 5px;
+}
+
+.cart {
+  position: relative;
+  z-index: 3;
+}
+
+.cart::before {
+  content: attr(data-num);
+  position: absolute;
+  right: 0;
+  top: -5px;
+  background-color: #0f3460;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 16px;
+  height: 16px;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  z-index: 5;
+}
+
+.navbar-nav .nav-item {
+  position: relative;
+  padding-bottom: 3px;
+  margin: 0 1rem;
+  font-weight: 400;
+  transition: all 0.3s ease-out 0s;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 10px;
+  z-index: 1;
+}
+
+.offcanvas.offcanvas-end {
+  width: 300px;
+}
+
+.media-cart {
+  display: none; /* Hidden on desktop */
+}
+
+@media (max-width: 767px) {
+  .navbar-toggler span {
+    width: 25px;
+    height: 3px;
+  }
+  .navbar-brand ion-icon {
+    font-size: 16px; /* Smaller icon for mobile */
+  }
+
+  .logo {
+    font-size: 1em; /* Significantly smaller logo for mobile */
+    margin: 0; /* Ensure no extra margin on mobile */
+  }
+
+  .nav-link-label {
+    font-size: 15px; /* Slightly smaller link text for mobile */
+  }
+
+  .nav-icon {
+    width: 22px; /* Even smaller nav icons on mobile */
+    height: 22px;
+  }
+
+  .expanded-cart {
+    display: none; /* Hide desktop cart when expanded on mobile */
+  }
+
+  .media-cart {
+    display: flex; /* Show mobile cart */
+    align-items: flex-end;
+    gap: 5px;
+  }
+
+  /* Adjust padding for brand and toggler on mobile for consistent spacing */
+  .navbar-brand, .navbar-toggler {
+    padding: 0.5rem;
+  }
+}
+
+/* Original logo styling for aesthetics and hover */
+.logo {
+  font-family: 'Arial', sans-serif;
+  font-weight: bold;
+  font-style: normal;
+  line-height: 1.2;
+  color: #0056b3;
+  letter-spacing: 0.1em;
+  padding: 0;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  display: inline-block;
+  border-bottom: 3px solid #007bff;
+  padding-bottom: 5px;
+  transition: color 0.3s ease-in-out, text-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out;
+}
+
+.logo:hover {
+  color: #007bff;
+  text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
+  border-bottom-color: #0056b3;
+  cursor: pointer;
+}

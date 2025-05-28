@@ -1,0 +1,619 @@
+/* add-dental-record.css */
+
+/* Import Google Font - Inter */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* Consistent Color Palette */
+  --primary-color: #3F51B5; /* Indigo */
+  --secondary-color: #5C6BC0; /* Lighter Indigo */
+  --accent-color: #4CAF50; /* Green */
+  --danger-color: #F44336; /* Red */
+  --warning-color: #FFC107; /* Yellow */
+  --text-dark: #263238; /* Dark Blue Grey */
+  --text-medium: #455A64; /* Lighter Blue Grey */
+  --text-light: #ffffff; /* White */
+  --bg-light: #ECEFF1; /* Light Blue Grey */
+  --bg-medium: #CFD8DC; /* Medium Blue Grey */
+  --card-bg: #ffffff; /* Pure white */
+  --border-color: #E0E0E0; /* Light grey border */
+  --input-bg: #F5F7F8; /* Slightly off-white for inputs */
+  --checkbox-border: #9E9E9E; /* Grey for checkboxes */
+
+  /* Shadows */
+  --shadow-sm: rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
+  --shadow-md: rgba(0, 0, 0, 0.08) 0px 4px 12px;
+  --shadow-lg: rgba(0, 0, 0, 0.15) 0px 8px 24px;
+
+  /* Spacing */
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 20px;
+  --spacing-lg: 30px;
+  --spacing-xl: 40px;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-medium) 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Align to top for long forms */
+  color: var(--text-dark);
+  line-height: 1.6;
+}
+
+.app-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: var(--spacing-xl);
+  box-sizing: border-box;
+}
+
+.add-record-container {
+  background-color: var(--card-bg);
+  padding: var(--spacing-xl);
+  border-radius: 15px;
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 900px; /* Wider for detailed form */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header Section */
+.record-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 2px solid var(--border-color);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.record-form-header h1 {
+  color: var(--primary-color);
+  font-weight: 800;
+  font-size: 2.5em;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.record-form-header .actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  box-shadow: var(--shadow-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background-color: var(--secondary-color);
+  color: var(--text-light);
+}
+
+.back-button:hover {
+  background-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.back-button i {
+  margin-right: 8px;
+  font-size: 1.1rem;
+}
+
+/* Form Sections */
+.form-section {
+  background-color: var(--bg-light);
+  border-radius: 10px;
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--spacing-lg);
+  border-left: 5px solid var(--primary-color); /* Accent border */
+}
+
+.form-section h2 {
+  color: var(--primary-color);
+  font-size: 1.8em;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Flexible columns */
+  gap: var(--spacing-md);
+}
+
+/* New class for form-group to span full width in grid */
+.form-group.full-width-grid-item {
+  grid-column: 1 / -1; /* Spans all columns */
+}
+
+
+.form-group {
+  margin-bottom: var(--spacing-sm); /* Adjusted for grid gap */
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--text-dark);
+  font-size: 1em;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="date"],
+textarea,
+select {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1em;
+  color: var(--text-dark);
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  background-color: var(--input-bg);
+}
+
+textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="date"]:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--secondary-color);
+  outline: none;
+  background-color: var(--card-bg);
+}
+
+/* Specific styling for select dropdown arrow */
+select {
+  -webkit-appearance: none; /* Remove default styling for selects on some browsers */
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%23455A64" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px; /* Make space for the arrow */
+}
+
+/* Enhanced styling for multi-select dropdown */
+select[multiple] {
+  min-height: 180px; /* Increased height for better visibility of options */
+  background-image: none; /* Remove arrow for multi-select */
+  padding-right: 15px; /* Adjust padding for multi-select */
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm); /* Subtle shadow */
+  background-color: var(--input-bg);
+  color: var(--text-dark);
+  font-size: 1em;
+  line-height: 1.5;
+  overflow-y: auto; /* Enable scrolling for many options */
+}
+
+select[multiple] option {
+  padding: 8px 12px;
+  background-color: var(--input-bg);
+  color: var(--text-dark);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+select[multiple] option:checked {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  font-weight: 600;
+}
+
+select[multiple] option:hover {
+  background-color: var(--secondary-color);
+  color: var(--text-light);
+}
+
+
+/* Checkbox group styling */
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-sm);
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-medium);
+  font-size: 0.95em;
+}
+
+.checkbox-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--checkbox-border);
+  border-radius: 4px;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.checkbox-item input[type="checkbox"]:checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.checkbox-item input[type="checkbox"]:checked::after {
+  content: '✔';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--text-light);
+  font-size: 12px;
+}
+
+.checkbox-item label {
+  margin-bottom: 0;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* --- Quadrant Input Group Styles --- */
+.quadrant-input-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Two columns for quadrants */
+  grid-template-rows: 1fr 1fr; /* Two rows for quadrants */
+  gap: 10px; /* Space between quadrant inputs */
+  position: relative;
+  border: 1px solid var(--border-color); /* Outer border for the group */
+  border-radius: 8px;
+  padding: 10px;
+  background-color: var(--input-bg);
+}
+
+.quadrant-input-group::before,
+.quadrant-input-group::after {
+  content: '';
+  position: absolute;
+  background-color: var(--border-color); /* Color for the cross lines */
+  z-index: 0; /* Behind the inputs */
+}
+
+/* Vertical line of the cross */
+.quadrant-input-group::before {
+  width: 1px;
+  height: calc(100% - 20px); /* Full height minus padding */
+  left: 50%;
+  top: 10px; /* Align with padding */
+  transform: translateX(-50%);
+}
+
+/* Horizontal line of the cross */
+.quadrant-input-group::after {
+  height: 1px;
+  width: calc(100% - 20px); /* Full width minus padding */
+  top: 50%;
+  left: 10px; /* Align with padding */
+  transform: translateY(-50%);
+}
+
+.quadrant-input-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.quadrant-input-item input {
+  width: calc(100% - 10px); /* Adjust width to fit within item padding */
+  padding: 8px 10px;
+  font-size: 0.9em;
+  text-align: center; /* Center text in quadrant inputs */
+  background-color: var(--card-bg); /* White background for individual inputs */
+  border: 1px solid var(--border-color); /* Individual input border */
+  border-radius: 6px;
+  z-index: 1; /* Ensure inputs are above cross lines */
+}
+
+.quadrant-input-item input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--secondary-color);
+}
+
+.quadrant-label {
+  font-size: 0.75em;
+  color: var(--text-medium);
+  font-weight: 500;
+  position: absolute;
+  top: -5px; /* Position above input */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--input-bg); /* Match group background */
+  padding: 0 4px;
+  border-radius: 4px;
+  z-index: 2; /* Above input and cross lines */
+}
+
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: flex-end; /* Align button to the right */
+  margin-top: var(--spacing-lg);
+}
+
+button[type="submit"] {
+  padding: 14px 30px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: linear-gradient(45deg, var(--accent-color), #388E3C);
+  color: var(--text-light);
+  box-shadow: var(--shadow-md);
+}
+
+button[type="submit"]:hover {
+  background: linear-gradient(45deg, #388E3C, var(--accent-color));
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+button[type="submit"]:disabled {
+  background: #A5D6A7; /* Lighter green for disabled */
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Messages (Success/Error) */
+.message {
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: var(--spacing-md);
+  font-weight: 500;
+  text-align: center;
+  animation: slideIn 0.5s ease-out;
+}
+
+.message.success {
+  background-color: #e8f5e9; /* Light green */
+  color: var(--accent-color);
+  border: 1px solid var(--accent-color);
+}
+
+.message.error {
+  background-color: #ffebee; /* Light red */
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Spinner (re-used from other components) */
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Info Message (re-used) */
+.info-message {
+    text-align: center;
+    padding: 20px;
+    background-color: var(--bg-light);
+    border-radius: 8px;
+    color: var(--text-medium);
+    margin-top: 20px;
+    font-size: 1.1rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.info-message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+  .app-container {
+    padding: var(--spacing-md);
+  }
+  .add-record-container {
+    padding: var(--spacing-lg);
+    gap: var(--spacing-md);
+  }
+  .record-form-header h1 {
+    font-size: 2.2em;
+  }
+  .form-section {
+    padding: var(--spacing-md);
+  }
+  .form-section h2 {
+    font-size: 1.6em;
+  }
+  .form-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-md);
+  }
+  .checkbox-group {
+    gap: var(--spacing-md);
+  }
+}
+
+@media (max-width: 768px) {
+  .add-record-container {
+    padding: var(--spacing-md);
+    margin: var(--spacing-sm);
+    gap: var(--spacing-md);
+  }
+  .record-form-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+  .record-form-header h1 {
+    font-size: 2em;
+    width: 100%;
+  }
+  .record-form-header .actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .back-button {
+    width: 100%;
+    justify-content: center;
+  }
+  .form-grid {
+    grid-template-columns: 1fr; /* Stack columns on small screens */
+    gap: var(--spacing-sm);
+  }
+  .form-section h2 {
+    font-size: 1.5em;
+  }
+  .checkbox-group {
+    flex-direction: column; /* Stack checkboxes vertically */
+    gap: var(--spacing-xs);
+  }
+  button[type="submit"] {
+    width: 100%; /* Full width button */
+    padding: 12px 20px;
+    font-size: 1em;
+  }
+  /* Adjust quadrant inputs on small screens */
+  .quadrant-input-group {
+    padding: 8px;
+    gap: 8px;
+  }
+  .quadrant-input-group::before {
+    height: calc(100% - 16px);
+    top: 8px;
+  }
+  .quadrant-input-group::after {
+    width: calc(100% - 16px);
+    left: 8px;
+  }
+  .quadrant-input-item input {
+    padding: 6px 8px;
+    font-size: 0.8em;
+  }
+  .quadrant-label {
+    font-size: 0.7em;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-container {
+    padding: var(--spacing-sm);
+  }
+  .add-record-container {
+    padding: var(--spacing-sm);
+    margin: var(--spacing-xs);
+    gap: var(--spacing-sm);
+  }
+  .record-form-header h1 {
+    font-size: 1.8em;
+  }
+  .back-button {
+    padding: 8px 15px;
+    font-size: 0.9em;
+  }
+  .form-section {
+    padding: var(--spacing-sm);
+  }
+  .form-section h2 {
+    font-size: 1.3em;
+  }
+  input, textarea, select {
+    padding: 10px 12px;
+    font-size: 0.9em;
+  }
+  button[type="submit"] {
+    font-size: 0.9em;
+    padding: 10px 15px;
+  }
+  .quadrant-input-group {
+    padding: 6px;
+    gap: 6px;
+  }
+  .quadrant-input-group::before {
+    height: calc(100% - 12px);
+    top: 6px;
+  }
+  .quadrant-input-group::after {
+    width: calc(100% - 12px);
+    left: 6px;
+  }
+  .quadrant-input-item input {
+    padding: 5px 6px;
+    font-size: 0.75em;
+  }
+  .quadrant-label {
+    font-size: 0.65em;
+  }
+}

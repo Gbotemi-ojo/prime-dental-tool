@@ -1,0 +1,404 @@
+/* src/pages/add-item.css */
+
+/* Import Google Font - Inter for consistent typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* Define a consistent color palette for your application */
+  --primary-color: #3F51B5; /* Indigo - Main brand color */
+  --secondary-color: #5C6BC0; /* Lighter Indigo - For secondary elements */
+  --accent-color: #4CAF50; /* Green - For success, primary actions */
+  --danger-color: #F44336; /* Red - For errors, destructive actions */
+  --text-dark: #263238; /* Dark Blue Grey - Main text color */
+  --text-medium: #455A64; /* Lighter Blue Grey - Secondary text */
+  --text-light: #ffffff; /* White - For text on dark backgrounds */
+  --bg-light: #ECEFF1; /* Light Blue Grey - Subtle background for sections */
+  --bg-medium: #CFD8DC; /* Medium Blue Grey - Deeper background for body */
+  --card-bg: #ffffff; /* Pure white - Background for main containers/cards */
+  --border-color: #E0E0E0; /* Light grey - For borders and separators */
+  --input-bg: #F5F7F8; /* Slightly off-white - Background for input fields */
+
+  /* Define consistent shadow effects for depth */
+  --shadow-sm: rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
+  --shadow-md: rgba(0, 0, 0, 0.08) 0px 4px 12px;
+  --shadow-lg: rgba(0, 0, 0, 0.15) 0px 8px 24px;
+  --shadow-xl: rgba(0, 0, 0, 0.25) 0px 16px 48px;
+}
+
+/* Global body styling for consistent font, background, and centering */
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-medium) 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Align to top for longer forms */
+  color: var(--text-dark);
+  line-height: 1.6;
+}
+
+/* Main application container for overall layout and padding */
+.app-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: 40px; /* Large padding for spacious feel */
+  box-sizing: border-box;
+}
+
+/* Container for the add item form */
+.add-item-container {
+  background-color: var(--card-bg);
+  padding: 40px; /* Generous padding inside the container */
+  border-radius: 15px; /* Rounded corners for a modern look */
+  box-shadow: var(--shadow-lg); /* Prominent shadow for depth */
+  width: 100%;
+  max-width: 800px; /* Max width to prevent it from becoming too wide on large screens */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 30px; /* Space between sections */
+  animation: fadeIn 0.8s ease-out forwards; /* Fade-in animation on load */
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header section for the form, including title and action buttons */
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--border-color); /* Separator line */
+  flex-wrap: wrap; /* Allow elements to wrap on smaller screens */
+  gap: 20px; /* Space between header elements */
+}
+
+.form-header h1 {
+  color: var(--primary-color);
+  font-weight: 800;
+  font-size: 2.5em;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.form-header .actions {
+  display: flex;
+  gap: 12px; /* Space between action buttons */
+  flex-wrap: wrap;
+}
+
+/* Styling for the "Back" button */
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  box-shadow: var(--shadow-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background-color: var(--secondary-color);
+  color: var(--text-light);
+}
+
+.back-button:hover {
+  background-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.back-button i {
+  margin-right: 8px;
+  font-size: 1.1rem;
+}
+
+/* Styling for individual form sections */
+.form-section {
+  background-color: var(--bg-light);
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: var(--shadow-sm);
+  border-left: 5px solid var(--primary-color); /* Accent border on the left */
+}
+
+.form-section h2 {
+  color: var(--primary-color);
+  font-size: 1.8em;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Grid layout for form groups within sections */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive columns */
+  gap: 20px; /* Space between form groups */
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Make certain form groups span the full width of the grid */
+.form-group.full-width-grid-item {
+  grid-column: 1 / -1;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--text-dark);
+  font-size: 1em;
+}
+
+/* Styling for all text inputs, number inputs, textareas, and selects */
+input[type="text"],
+input[type="number"],
+textarea,
+select {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1em;
+  color: var(--text-dark);
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  background-color: var(--input-bg);
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--secondary-color); /* Focus ring effect */
+  outline: none;
+  background-color: var(--card-bg); /* White background on focus */
+}
+
+textarea {
+  min-height: 80px;
+  resize: vertical; /* Allow vertical resizing */
+}
+
+/* Styling for select dropdown arrow */
+select {
+  -webkit-appearance: none; /* Remove default styling for selects on some browsers */
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%23455A64" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px; /* Make space for the arrow */
+}
+
+/* Form action buttons container */
+.form-actions {
+  display: flex;
+  justify-content: flex-end; /* Align button to the right */
+  margin-top: 30px;
+}
+
+/* Styling for the submit button */
+button[type="submit"] {
+  padding: 14px 30px;
+  background: linear-gradient(45deg, var(--accent-color), #388E3C); /* Green gradient */
+  color: var(--text-light);
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-md);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+button[type="submit"]:hover {
+  background: linear-gradient(45deg, #388E3C, var(--accent-color));
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+button[type="submit"]:disabled {
+  background: #A5D6A7; /* Lighter green when disabled */
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Styling for messages (success/error) */
+.message {
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 20px;
+  font-weight: 500;
+  text-align: center;
+  animation: slideIn 0.5s ease-out;
+}
+
+.message.success {
+  background-color: #e8f5e9; /* Light green background */
+  color: var(--accent-color);
+  border: 1px solid var(--accent-color);
+}
+
+.message.error {
+  background-color: #ffebee; /* Light red background */
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Loading spinner animation */
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--primary-color);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 20px auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Info Message (re-used for loading/empty states) */
+.info-message {
+  text-align: center;
+  padding: 20px;
+  background-color: var(--bg-light);
+  border-radius: 8px;
+  color: var(--text-medium);
+  margin-top: 20px;
+  font-size: 1.1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.info-message.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+
+/* Responsive Adjustments for various screen sizes */
+@media (max-width: 1024px) {
+  .app-container {
+    padding: 20px;
+  }
+  .add-item-container {
+    padding: 30px;
+    gap: 20px;
+  }
+  .form-header h1 {
+    font-size: 2.2em;
+  }
+  .form-section {
+    padding: 20px;
+  }
+  .form-section h2 {
+    font-size: 1.6em;
+  }
+  .form-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .add-item-container {
+    padding: 20px;
+    margin: 12px;
+    gap: 20px;
+  }
+  .form-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .form-header h1 {
+    font-size: 2em;
+    width: 100%;
+  }
+  .form-header .actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .back-button {
+    width: 100%;
+    justify-content: center;
+  }
+  .form-grid {
+    grid-template-columns: 1fr; /* Stack columns on small screens */
+    gap: 15px;
+  }
+  .form-section h2 {
+    font-size: 1.5em;
+  }
+  button[type="submit"] {
+    width: 100%; /* Full width button */
+    padding: 12px 20px;
+    font-size: 1em;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-container {
+    padding: 12px;
+  }
+  .add-item-container {
+    padding: 12px;
+    margin: 8px;
+    gap: 12px;
+  }
+  .form-header h1 {
+    font-size: 1.8em;
+  }
+  .back-button {
+    padding: 8px 15px;
+    font-size: 0.9em;
+  }
+  .form-section {
+    padding: 12px;
+  }
+  .form-section h2 {
+    font-size: 1.3em;
+  }
+  input, textarea, select {
+    padding: 10px 12px;
+    font-size: 0.9em;
+  }
+  button[type="submit"] {
+    font-size: 0.9em;
+    padding: 10px 15px;
+  }
+}

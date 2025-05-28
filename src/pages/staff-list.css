@@ -1,0 +1,421 @@
+/* src/pages/staff-list.css */
+
+/* Import Google Font - Inter */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* Consistent Color Palette */
+  --primary-color: #3F51B5; /* Indigo */
+  --secondary-color: #5C6BC0; /* Lighter Indigo */
+  --accent-color: #4CAF50; /* Green (for Add button, Active status) */
+  --danger-color: #F44336; /* Red (for Inactive status) */
+  --warning-color: #FFC107; /* Yellow (for Edit button) */
+  --info-color: #2196F3; /* Blue (for View Details button) */
+  --text-dark: #263238; /* Dark Blue Grey */
+  --text-medium: #455A64; /* Lighter Blue Grey */
+  --text-light: #ffffff; /* White */
+  --bg-light: #ECEFF1; /* Light Blue Grey */
+  --bg-medium: #CFD8DC; /* Medium Blue Grey */
+  --card-bg: #ffffff; /* Pure white */
+  --border-color: #E0E0E0; /* Light grey border */
+  --table-header-bg: #E8EAF6; /* Very light indigo for table headers */
+  --table-row-even: #F5F5F5; /* Light grey for even rows */
+  --table-row-hover: #E3F2FD; /* Very light blue on hover */
+
+  /* Shadows */
+  --shadow-sm: rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
+  --shadow-md: rgba(0, 0, 0, 0.08) 0px 4px 12px;
+  --shadow-lg: rgba(0, 0, 0, 0.15) 0px 8px 24px;
+  --shadow-xl: rgba(0, 0, 0, 0.25) 0px 16px 48px;
+
+  /* Spacing */
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 20px;
+  --spacing-lg: 30px;
+  --spacing-xl: 40px;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-medium) 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  color: var(--text-dark);
+  line-height: 1.6;
+}
+
+.app-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: var(--spacing-xl);
+  box-sizing: border-box;
+}
+
+.staff-list-container {
+  background-color: var(--card-bg);
+  padding: var(--spacing-xl);
+  border-radius: 15px;
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 1300px; /* Consistent with other list pages */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header Section */
+.staff-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 2px solid var(--border-color);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.staff-list-header h1 {
+  color: var(--primary-color);
+  font-weight: 800;
+  font-size: 3em;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.staff-list-header .actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.back-to-dashboard-button,
+.add-staff-button {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+  border-radius: 8px;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-decoration: none; /* For anchor tags styled as buttons */
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.back-to-dashboard-button {
+  background-color: var(--secondary-color);
+  color: var(--text-light);
+}
+
+.back-to-dashboard-button:hover {
+  background-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.add-staff-button {
+  background-color: var(--accent-color);
+  color: var(--text-light);
+}
+
+.add-staff-button:hover {
+  background-color: #388E3C; /* Darker green */
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Search and Filter */
+.search-filter-section {
+  margin-bottom: var(--spacing-lg);
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.search-input {
+  width: 100%;
+  max-width: 500px;
+  padding: 12px 20px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 1.1em;
+  color: var(--text-dark);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--secondary-color);
+  outline: none;
+}
+
+/* Staff Table */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: var(--shadow-md);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.staff-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0;
+  font-size: 0.95rem;
+  min-width: 800px; /* Ensure horizontal scroll on small screens for more columns */
+}
+
+.staff-table thead {
+  background-color: var(--table-header-bg);
+  color: var(--primary-color);
+}
+
+.staff-table th {
+  padding: 15px 20px;
+  text-align: left;
+  font-weight: 700;
+  border-bottom: 2px solid var(--border-color);
+  white-space: nowrap;
+  font-size: 1em;
+}
+
+.staff-table tbody tr {
+  border-bottom: 1px solid #E3F2FD;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.staff-table tbody tr:nth-child(even) {
+  background-color: var(--table-row-even);
+}
+
+.staff-table tbody tr:hover {
+  background-color: var(--table-row-hover);
+  transform: scale(1.005);
+  box-shadow: var(--shadow-sm);
+}
+
+.staff-table td {
+  padding: 12px 20px;
+  text-align: left;
+  vertical-align: middle;
+  color: var(--text-medium);
+  white-space: nowrap;
+  max-width: 250px; /* Limit width of cells to prevent overly wide columns */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Action buttons within the table */
+.staff-table td .view-details-button,
+.staff-table td .edit-button {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.85rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: var(--shadow-sm);
+  margin-right: 8px; /* Space between buttons */
+}
+
+.staff-table td .view-details-button {
+  background-color: var(--info-color); /* Blue for view details */
+  color: var(--text-light);
+}
+
+.staff-table td .view-details-button:hover {
+  background-color: #1976D2; /* Darker blue */
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.staff-table td .edit-button {
+  background-color: var(--warning-color); /* Yellow for edit */
+  color: var(--text-dark);
+}
+
+.staff-table td .edit-button:hover {
+  background-color: #E6B300; /* Darker yellow */
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Role specific styling */
+.role-owner {
+  font-weight: 700;
+  color: var(--primary-color); /* Primary color for owner */
+}
+
+.role-staff {
+  font-weight: 600;
+  color: var(--info-color); /* Info color for staff */
+}
+
+/* Status specific styling */
+.status-active {
+  color: var(--accent-color); /* Green for active */
+  font-weight: 600;
+}
+
+.status-inactive {
+  color: var(--danger-color); /* Red for inactive */
+  font-weight: 600;
+}
+
+
+/* Empty State / Loading / Error */
+.info-message {
+  text-align: center;
+  padding: var(--spacing-xl);
+  font-size: 1.2em;
+  color: var(--text-medium);
+}
+
+.info-message.error {
+  color: var(--danger-color);
+  font-weight: 600;
+  background-color: #ffebee; /* Light red background */
+  border: 1px solid var(--danger-color);
+  border-radius: 8px;
+}
+
+/* Loading spinner (re-used from other components) */
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--primary-color);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 20px auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+  .app-container {
+    padding: var(--spacing-md);
+  }
+  .staff-list-container {
+    padding: var(--spacing-lg);
+    gap: var(--spacing-md);
+  }
+  .staff-list-header h1 {
+    font-size: 2.5em;
+  }
+  .staff-list-header .actions {
+    gap: var(--spacing-sm);
+  }
+  .staff-table {
+    min-width: 700px; /* Adjust as needed */
+  }
+  .staff-table th,
+  .staff-table td {
+    padding: 12px 15px;
+    font-size: 0.9em;
+  }
+}
+
+@media (max-width: 768px) {
+  .staff-list-container {
+    padding: var(--spacing-md);
+    margin: var(--spacing-sm);
+    gap: var(--spacing-md);
+  }
+  .staff-list-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+  .staff-list-header h1 {
+    font-size: 2.2em;
+    width: 100%;
+  }
+  .staff-list-header .actions {
+    width: 100%;
+    justify-content: flex-end; /* Align buttons to the right */
+  }
+  .search-input {
+    font-size: 1em;
+    padding: 10px 15px;
+  }
+  .staff-table {
+    min-width: 600px; /* Ensure horizontal scroll on smaller screens */
+  }
+  .staff-table th,
+  .staff-table td {
+    padding: 10px 12px;
+    font-size: 0.85em;
+  }
+  .staff-table td .view-details-button,
+  .staff-table td .edit-button {
+    padding: 5px 10px;
+    font-size: 0.8em;
+    margin-right: 5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-container {
+    padding: var(--spacing-sm);
+  }
+  .staff-list-container {
+    padding: var(--spacing-sm);
+    margin: var(--spacing-xs);
+    gap: var(--spacing-sm);
+  }
+  .staff-list-header h1 {
+    font-size: 1.8em;
+  }
+  .back-to-dashboard-button,
+  .add-staff-button {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.9em;
+  }
+  .search-input {
+    padding: 8px 12px;
+    font-size: 0.9em;
+  }
+  .staff-table {
+    min-width: 450px; /* Further reduce min-width for very small screens */
+  }
+  .staff-table th,
+  .staff-table td {
+    padding: 8px 10px;
+    font-size: 0.75em;
+  }
+  .staff-table td .view-details-button,
+  .staff-table td .edit-button {
+    padding: 4px 8px;
+    font-size: 0.7em;
+    margin-right: 4px;
+  }
+}

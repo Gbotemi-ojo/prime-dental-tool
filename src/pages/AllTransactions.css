@@ -1,0 +1,141 @@
+/* src/pages/AllTransactions.css */
+
+.all-transactions-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 20px auto;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.all-transactions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.all-transactions-header h1 {
+  font-size: 2rem;
+  color: #343a40;
+  margin: 0;
+}
+
+.all-transactions-header .header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.all-transactions-container .btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 15px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.all-transactions-container .btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+  color: white;
+}
+
+.all-transactions-container .btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+.all-transactions-container .btn-secondary {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: white;
+}
+
+.all-transactions-container .btn-secondary:hover {
+  background-color: #5a6268;
+  border-color: #5a6268;
+}
+
+.no-transactions-message {
+  text-align: center;
+  color: #6c757d;
+  font-size: 1.1rem;
+  padding: 30px 0;
+  border: 1px dashed #ced4da;
+  border-radius: 5px;
+  margin-top: 20px;
+}
+
+.all-transactions-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background-color: #ffffff; /* White background for the table */
+}
+
+.all-transactions-table th,
+.all-transactions-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.all-transactions-table th {
+  background-color: #e9ecef;
+  color: #495057;
+  font-weight: 600;
+  white-space: nowrap; /* Prevent headers from wrapping too much */
+}
+
+.all-transactions-table tbody tr:hover {
+  background-color: #f2f2f2;
+}
+
+/* Specific styling for transaction types */
+.transaction-type {
+  text-transform: capitalize; /* Make "stock_in" display as "Stock In" */
+  font-weight: bold;
+}
+.transaction-type.stock-in {
+  color: #28a745; /* Green */
+}
+.transaction-type.stock-out {
+  color: #dc3545; /* Red */
+}
+.transaction-type.adjustment {
+  color: #ffc107; /* Orange */
+}
+
+/* Quantity color coding */
+.text-success {
+  color: #28a745 !important;
+}
+.text-danger {
+  color: #dc3545 !important;
+}
+
+/* Responsive Table */
+.table-responsive {
+  overflow-x: auto;
+}
+
+/* Loader and error state styles */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+.alert-danger {
+  padding: 15px;
+  border-radius: 5px;
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  margin-bottom: 20px;
+}
