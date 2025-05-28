@@ -49,7 +49,7 @@ export default function EditStaff() {
     const fetchStaffDetails = async () => {
       try {
         // Use the existing GET /api/admin/users/:id endpoint
-        const response = await fetch(`http://localhost:5000/api/admin/users/${parsedUserId}`, {
+        const response = await fetch(`https://prime-dental-tool-backend.vercel.app/api/admin/users/${parsedUserId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -148,7 +148,7 @@ export default function EditStaff() {
 
       // You'll need a PUT /api/admin/users/:id endpoint on your backend
       // This endpoint should handle updating user details (username, email, role, isActive)
-      const response = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
+      const response = await fetch(`https://prime-dental-tool-backend.vercel.app/api/admin/users/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

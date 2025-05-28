@@ -25,7 +25,7 @@ export default function Dashboard() {
 
         try {
           // Verify token and fetch fresh user data from backend
-          const response = await fetch('http://localhost:5000/api/auth/me', {
+          const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/auth/me', {
             headers: { 'Authorization': `Bearer ${token}` }
           });
 

@@ -114,7 +114,7 @@ export default function AddDentalRecord() {
       }
 
       try {
-        const response = await fetch(`http://localhost:5000/api/patients/${parsedPatientId}`, {
+        const response = await fetch(`https://prime-dental-tool-backend.vercel.app/api/patients/${parsedPatientId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -208,7 +208,7 @@ export default function AddDentalRecord() {
         userId: parseInt(userId), // Ensure userId is an integer
       };
 
-      const response = await fetch(`http://localhost:5000/api/patients/${patientId}/dental-records`, {
+      const response = await fetch(`https://prime-dental-tool-backend.vercel.app/api/patients/${patientId}/dental-records`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -139,7 +139,7 @@ export default function PatientReceiptsPage() {
       }
 
       try {
-        const response = await fetch(`http://localhost:5000/api/patients/${parsedPatientId}`, {
+        const response = await fetch(`https://prime-dental-tool-backend.vercel.app/api/patients/${parsedPatientId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 

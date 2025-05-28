@@ -114,7 +114,7 @@ export default function EditDentalRecord() {
 
       try {
         // Fetch Patient Name
-        const patientResponse = await fetch(`http://localhost:5000/api/patients/${parsedPatientId}`, {
+        const patientResponse = await fetch(`https://prime-dental-tool-backend.vercel.app/api/patients/${parsedPatientId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (patientResponse.ok) {
@@ -125,7 +125,7 @@ export default function EditDentalRecord() {
         }
 
         // Fetch Dental Record Details
-        const recordResponse = await fetch(`http://localhost:5000/api/patients/${parsedPatientId}/dental-records/${parsedRecordId}`, {
+        const recordResponse = await fetch(`https://prime-dental-tool-backend.vercel.app/api/patients/${parsedPatientId}/dental-records/${parsedRecordId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -258,7 +258,7 @@ export default function EditDentalRecord() {
       };
 
       // Use the PUT endpoint for updating dental records
-      const response = await fetch(`http://localhost:5000/api/dental-records/${recordId}`, {
+      const response = await fetch(`https://prime-dental-tool-backend.vercel.app/api/dental-records/${recordId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

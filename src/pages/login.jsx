@@ -49,7 +49,7 @@ function LoginPage() {
 
     try {
       // Replace 'http://localhost:5000' with your actual backend URL
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

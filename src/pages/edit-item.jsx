@@ -52,7 +52,7 @@ export default function EditItem() {
 
     const fetchItemDetails = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/inventory/items/${parsedItemId}`, {
+        const response = await fetch(`https://prime-dental-tool-backend.vercel.app/api/inventory/items/${parsedItemId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -153,7 +153,7 @@ export default function EditItem() {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/inventory/items/${itemId}`, {
+      const response = await fetch(`https://prime-dental-tool-backend.vercel.app/inventory/items/${itemId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

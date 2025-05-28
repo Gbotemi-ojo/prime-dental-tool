@@ -48,7 +48,7 @@ export default function InventoryDetail() {
 
     const fetchDetails = async () => {
       try {
-        const itemResponse = await fetch(`http://localhost:5000/api/inventory/items/${parsedItemId}`, {
+        const itemResponse = await fetch(`https://prime-dental-tool-backend.vercel.app/api/inventory/items/${parsedItemId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -79,7 +79,7 @@ export default function InventoryDetail() {
 
     const fetchTransactions = async () => {
       try {
-        const transactionsResponse = await fetch(`http://localhost:5000/api/inventory/items/${parsedItemId}/transactions`, {
+        const transactionsResponse = await fetch(`https://prime-dental-tool-backend.vercel.app/api/inventory/items/${parsedItemId}/transactions`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -158,7 +158,7 @@ export default function InventoryDetail() {
         notes: transactionFormData.notes,
       };
 
-      const response = await fetch('http://localhost:5000/api/inventory/transactions', {
+      const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/inventory/transactions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -187,7 +187,7 @@ export default function InventoryDetail() {
             return; // Exit if ID is invalid
           }
 
-          const itemResponse = await fetch(`http://localhost:5000/api/inventory/items/${currentParsedItemId}`, {
+          const itemResponse = await fetch(`https://prime-dental-tool-backend.vercel.app/api/inventory/items/${currentParsedItemId}`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           if (itemResponse.ok) {
@@ -197,7 +197,7 @@ export default function InventoryDetail() {
           }
           setLoadingItem(false);
 
-          const transactionsResponse = await fetch(`http://localhost:5000/api/inventory/items/${currentParsedItemId}/transactions`, {
+          const transactionsResponse = await fetch(`https://prime-dental-tool-backend.vercel.app/api/inventory/items/${currentParsedItemId}/transactions`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           if (transactionsResponse.ok) {

@@ -39,7 +39,7 @@ export default function PatientDetail() {
 
       try {
         // Fetch Patient Details
-        const patientResponse = await fetch(`http://localhost:5000/api/patients/${parsedPatientId}`, {
+        const patientResponse = await fetch(`https://prime-dental-tool-backend.vercel.app/api/patients/${parsedPatientId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -64,7 +64,7 @@ export default function PatientDetail() {
         }
 
         // Fetch Dental Records for this patient
-        const recordsResponse = await fetch(`http://localhost:5000/api/patients/${parsedPatientId}/dental-records`, {
+        const recordsResponse = await fetch(`https://prime-dental-tool-backend.vercel.app/api/patients/${parsedPatientId}/dental-records`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 

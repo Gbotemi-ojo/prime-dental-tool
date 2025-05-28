@@ -27,7 +27,7 @@ export default function RecordTransaction() {
 
     const fetchItems = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/inventory/items', {
+        const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/inventory/items', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {
@@ -107,7 +107,7 @@ export default function RecordTransaction() {
         notes: formData.notes,
       };
 
-      const response = await fetch('http://localhost:5000/api/inventory/transactions', {
+      const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/inventory/transactions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

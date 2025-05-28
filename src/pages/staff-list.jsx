@@ -35,7 +35,7 @@ export default function StaffList() {
 
       try {
         // --- IMPORTANT: Updated API endpoint to match your backend ---
-        const response = await fetch('http://localhost:5000/api/admin/users/staff', {
+        const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/admin/users/staff', {
           headers: {
             'Authorization': `Bearer ${token}`
           }

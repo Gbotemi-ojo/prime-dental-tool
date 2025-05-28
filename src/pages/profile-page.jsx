@@ -41,7 +41,7 @@ export default function ProfilePage() {
     const fetchProfile = async () => {
       try {
         // UPDATED: Using your existing /api/auth/me endpoint
-        const response = await fetch('http://localhost:5000/api/auth/me', {
+        const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/auth/me', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -132,7 +132,7 @@ export default function ProfilePage() {
       // IMPORTANT: This PUT endpoint needs to be implemented on your backend
       // It should be specific for a user updating THEIR OWN profile (e.g., /api/user/profile)
       // NOT the /api/admin/users/:id endpoint which is for admin management.
-      const response = await fetch('http://localhost:5000/api/user/profile', {
+      const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/user/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -205,7 +205,7 @@ export default function ProfilePage() {
     try {
       // IMPORTANT: This PUT endpoint needs to be implemented on your backend
       // It should be specific for a user changing THEIR OWN password (e.g., /api/user/profile/password)
-      const response = await fetch('http://localhost:5000/api/user/profile/password', {
+      const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/user/profile/password', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

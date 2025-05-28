@@ -83,7 +83,7 @@ export default function AddItem() {
         unitPrice: parseFloat(formData.unitPrice),
       };
 
-      const response = await fetch('http://localhost:5000/api/inventory/items', {
+      const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/inventory/items', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

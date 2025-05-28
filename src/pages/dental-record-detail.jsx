@@ -40,7 +40,7 @@ export default function DentalRecordDetail() {
       try {
         // Fetch Patient Name (to display in header)
         // This is a separate API call to get the patient's name
-        const patientResponse = await fetch(`http://localhost:5000/api/patients/${parsedPatientId}`, {
+        const patientResponse = await fetch(`https://prime-dental-tool-backend.vercel.app/api/patients/${parsedPatientId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (patientResponse.ok) {
@@ -52,7 +52,7 @@ export default function DentalRecordDetail() {
         }
 
         // Fetch Dental Record Details for the specific patient and record
-        const recordResponse = await fetch(`http://localhost:5000/api/patients/${parsedPatientId}/dental-records/${parsedRecordId}`, {
+        const recordResponse = await fetch(`https://prime-dental-tool-backend.vercel.app/api/patients/${parsedPatientId}/dental-records/${parsedRecordId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 

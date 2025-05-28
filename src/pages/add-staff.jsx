@@ -94,7 +94,7 @@ export default function AddStaff() {
         role: formData.role, // Send the selected role
       };
 
-      const response = await fetch('http://localhost:5000/api/admin/users/staff', {
+      const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/admin/users/staff', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
