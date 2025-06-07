@@ -1,6 +1,8 @@
+// src/pages/dashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate for redirection
 import './dashboard.css'; // Import the CSS file
+import API_BASE_URL from '../config/api';
 
 // This component is designed to be rendered by React Router
 // where it conditionally renders components based on the current route and auth status.
@@ -25,7 +27,7 @@ export default function Dashboard() {
 
         try {
           // Verify token and fetch fresh user data from backend
-          const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/auth/me', {
+          const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
 
@@ -74,6 +76,11 @@ export default function Dashboard() {
     );
   }
 
+  // Determine if the user is an owner or staff to show specific links
+  const isOwner = user.role === 'owner';
+  const isStaff = user.role === 'staff';
+  const isNurse = user.role === 'nurse';
+
   return (
     <div className="dashboard-container">
       <header className="dashboard-header">
@@ -87,22 +94,24 @@ export default function Dashboard() {
       </header>
 
       <nav className="nav-grid">
-        {/* Patients Management (Staff & Owner) */}
+        {/* Patient Management (Accessible by Owner, Staff, and Nurse) */}
         <a href="/patients" className="nav-card patients">
           <i className="icon fas fa-user-injured"></i>
           <h3>Patient Management</h3>
           <p>View, add, and manage patient demographic information and medical records.</p>
         </a>
 
-        {/* Inventory Management (Staff & Owner - View/Record, Owner - Full Control) */}
-        <a href="/inventory/items" className="nav-card inventory">
-          <i className="icon fas fa-boxes"></i>
-          <h3>Inventory Management</h3>
-          <p>Track stock levels, record usage, and manage clinic supplies.</p>
-        </a>
+        {/* Inventory Management (Accessible by Owner & Staff ONLY) */}
+        {(isOwner || isStaff) && (
+          <a href="/inventory/items" className="nav-card inventory">
+            <i className="icon fas fa-boxes"></i>
+            <h3>Inventory Management</h3>
+            <p>Track stock levels, record usage, and manage clinic supplies.</p>
+          </a>
+        )}
 
-        {/* Admin Tools (Owner Only) */}
-        {user.role === 'owner' && (
+        {/* Admin Tools (Accessible by Owner ONLY) */}
+        {isOwner && (
           <a href="/admin/staff-management" className="nav-card admin">
             <i className="icon fas fa-users-cog"></i>
             <h3>Staff Management</h3>
@@ -110,15 +119,15 @@ export default function Dashboard() {
           </a>
         )}
 
-        {/* View Profile (Staff & Owner) */}
+        {/* View Profile (Accessible by Owner, Staff, and Nurse) */}
         <a href="/profile" className="nav-card profile">
           <i className="icon fas fa-id-card"></i>
           <h3>My Profile</h3>
           <p>View and update your personal account details.</p>
         </a>
 
-        {/* All Inventory Transactions (Owner Only) */}
-        {user.role === 'owner' && (
+        {/* All Inventory Transactions (Accessible by Owner ONLY) */}
+        {isOwner && (
           <a href="/inventory/transactions" className="nav-card inventory">
             <i className="icon fas fa-history"></i>
             <h3>All Inventory Transactions</h3>

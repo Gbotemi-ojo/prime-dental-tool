@@ -10,6 +10,8 @@
   --accent-color: #4CAF50; /* Green for success/positive actions */
   --danger-color: #F44336; /* Red for destructive actions */
   --warning-color: #FFC107; /* Yellow for edit/warning */
+  --invoice-color: #FFC107; /* Added: Yellow for Invoice, consistent with dental-record-detail */
+  --receipt-color: #00BCD4; /* Added: Cyan for Receipt, consistent with dental-record-detail */
   --text-dark: #263238; /* Dark Blue Grey for main text */
   --text-medium: #455A64; /* Lighter Blue Grey for secondary text */
   --text-light: #ffffff; /* White for light backgrounds */
@@ -104,9 +106,12 @@ body {
   flex-wrap: wrap;
 }
 
+/* Base styles for all header buttons */
 .back-button,
 .edit-button,
-.add-record-button {
+.add-record-button,
+.send-invoice-button, /* New button class */
+.send-receipt-button { /* New button class */
   display: inline-flex;
   align-items: center;
   padding: 10px 20px;
@@ -119,8 +124,10 @@ body {
   box-shadow: var(--shadow-sm);
   text-transform: uppercase; /* Make text uppercase */
   letter-spacing: 0.5px;
+  cursor: pointer; /* Indicate it's clickable */
 }
 
+/* Specific button colors */
 .back-button {
   background-color: var(--secondary-color);
   color: var(--text-light);
@@ -154,9 +161,36 @@ body {
   box-shadow: var(--shadow-md);
 }
 
+/* NEW: Send Invoice Button styles */
+.send-invoice-button {
+    background-color: var(--invoice-color); /* Yellow for invoice */
+    color: var(--text-dark); /* Dark text for contrast on yellow */
+}
+
+.send-invoice-button:hover {
+    background-color: #FFA000; /* Darker yellow */
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* NEW: Send Receipt Button styles */
+.send-receipt-button {
+    background-color: var(--receipt-color); /* Cyan for receipt */
+    color: var(--text-light);
+}
+
+.send-receipt-button:hover {
+    background-color: #00838F; /* Darker cyan */
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+
 .back-button i,
 .edit-button i,
-.add-record-button i {
+.add-record-button i,
+.send-invoice-button i, /* Apply to new buttons */
+.send-receipt-button i { /* Apply to new buttons */
   margin-right: 8px;
   font-size: 1.1rem;
 }
@@ -181,9 +215,21 @@ body {
   border-bottom: 1px solid var(--border-color);
 }
 
+/* NEW: Flexbox Grid for Detail Items in sections (for Demographic Information) */
+.detail-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-md); /* Space between items */
+    margin-bottom: var(--spacing-md); /* Space below the grid if not the last element in section */
+}
+
 .detail-item {
+  /* Adjusted flex basis to properly create two columns when wrapped */
+  flex: 1 1 calc(50% - (var(--spacing-md) / 2)); /* Two columns, considering gap */
   display: flex;
-  margin-bottom: var(--spacing-sm);
+  /* Removed flex-direction: column to allow strong/span to be inline */
+  align-items: baseline; /* Align label and value nicely */
+  margin-bottom: var(--spacing-sm); /* Adjusted for grid layout */
   font-size: 1em;
   padding: 5px 0; /* Add slight padding for spacing */
   border-bottom: 1px dashed rgba(0, 0, 0, 0.05); /* Subtle separator */
@@ -198,6 +244,7 @@ body {
   min-width: 150px; /* Increased min-width for better label alignment */
   font-weight: 600;
   flex-shrink: 0; /* Prevent shrinking */
+  margin-right: var(--spacing-xs); /* Space between label and value */
 }
 
 .detail-item span {
@@ -205,6 +252,13 @@ body {
   flex-grow: 1;
   word-break: break-word; /* Allow long text to break */
 }
+
+.restricted-info {
+    color: var(--danger-color); /* Red color for restricted info */
+    font-style: italic;
+    font-weight: 500;
+}
+
 
 /* Medical Records Table */
 .records-table-responsive {
@@ -363,9 +417,12 @@ body {
     width: 100%;
     justify-content: flex-end; /* Align buttons to the right */
   }
+  /* Make all action buttons full width on small screens */
   .back-button,
   .edit-button,
-  .add-record-button {
+  .add-record-button,
+  .send-invoice-button, /* Apply to new buttons */
+  .send-receipt-button { /* Apply to new buttons */
     width: 100%;
     justify-content: center;
   }
@@ -401,7 +458,9 @@ body {
   }
   .back-button,
   .edit-button,
-  .add-record-button {
+  .add-record-button,
+  .send-invoice-button, /* Apply to new buttons */
+  .send-receipt-button { /* Apply to new buttons */
     padding: 8px 15px;
     font-size: 0.9em;
   }

@@ -7,7 +7,9 @@
   /* Consistent Color Palette */
   --primary-color: #3F51B5; /* Indigo */
   --secondary-color: #5C6BC0; /* Lighter Indigo */
-  --accent-color: #4CAF50; /* Green */
+  --accent-color: #4CAF50; /* Green (for edit/success) */
+  --invoice-color: #FFC107; /* Yellow (for Invoice) */
+  --receipt-color: #00BCD4; /* Cyan (for Receipt) */
   --danger-color: #F44336; /* Red */
   --warning-color: #FFC107; /* Yellow */
   --info-color: #2196F3; /* Blue for info */
@@ -76,7 +78,7 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* --- Header Section --- */
+/* --- Header Section (Sticky) --- */
 .detail-header {
   display: flex;
   justify-content: space-between;
@@ -86,6 +88,20 @@ body {
   border-bottom: 2px solid var(--border-color);
   flex-wrap: wrap;
   gap: var(--spacing-md);
+
+  /* Sticky Header Properties */
+  position: sticky;
+  top: 0; /* Sticks to the top of the viewport */
+  background-color: var(--card-bg); /* Ensure background is solid when sticky */
+  z-index: 1000; /* Stays above other content */
+  box-shadow: var(--shadow-md); /* Add a subtle shadow when sticky */
+  padding-top: var(--spacing-md); /* Adjust padding for sticky effect */
+  margin-top: calc(-1 * var(--spacing-xl)); /* Negative margin to pull it up if in app-container */
+  /* This margin-top adjustment is crucial if the parent .record-detail-container
+     has top padding or margin that you want the sticky header to sit above.
+     Adjust based on your .record-detail-container's padding-top if needed.
+     Or, you might put the header outside record-detail-container.
+     For this current structure, we need to compensate. */
 }
 
 .detail-header h1 {
@@ -106,7 +122,11 @@ body {
   flex-wrap: wrap;
 }
 
-.back-button, .edit-button {
+/* Base styles for all header buttons */
+.back-button,
+.edit-button,
+.send-invoice-button, /* New button class */
+.send-receipt-button { /* New button class */
   display: inline-flex;
   align-items: center;
   padding: 10px 20px;
@@ -119,8 +139,10 @@ body {
   box-shadow: var(--shadow-sm);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  cursor: pointer; /* Indicate it's clickable */
 }
 
+/* Specific button colors */
 .back-button {
   background-color: var(--secondary-color);
   color: var(--text-light);
@@ -143,7 +165,33 @@ body {
   box-shadow: var(--shadow-md);
 }
 
-.back-button i, .edit-button i {
+.send-invoice-button {
+    background-color: var(--invoice-color); /* Yellow for invoice */
+    color: var(--text-dark); /* Dark text for contrast on yellow */
+}
+
+.send-invoice-button:hover {
+    background-color: #FFA000; /* Darker yellow */
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.send-receipt-button {
+    background-color: var(--receipt-color); /* Cyan for receipt */
+    color: var(--text-light);
+}
+
+.send-receipt-button:hover {
+    background-color: #00838F; /* Darker cyan */
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+
+.back-button i,
+.edit-button i,
+.send-invoice-button i,
+.send-receipt-button i {
   margin-right: 8px;
   font-size: 1.1rem;
 }
@@ -240,12 +288,12 @@ body {
 
 /* Specific tag colors for better visual distinction */
 .tag-steroids { background-color: #FF7043; } /* Deep Orange */
-.tag-heart { background-color: #E53935; }    /* Red */
+.tag-heart { background-color: #E53935; }     /* Red */
 .tag-asthma { background-color: #66BB6A; }   /* Light Green */
 .tag-diabetes { background-color: #FFEE58; color: var(--text-dark); } /* Yellow (dark text) */
 .tag-epilepsy { background-color: #9C27B0; } /* Purple */
-.tag-pud { background-color: #26C6DA; }      /* Cyan */
-.tag-blood { background-color: #D32F2F; }    /* Dark Red */
+.tag-pud { background-color: #26C6DA; }       /* Cyan */
+.tag-blood { background-color: #D32F2F; }     /* Dark Red */
 .tag-allergy { background-color: #FFCA28; color: var(--text-dark); } /* Amber (dark text) */
 
 
@@ -409,7 +457,7 @@ body {
     width: 100%;
     justify-content: flex-end;
   }
-  .back-button, .edit-button {
+  .back-button, .edit-button, .send-invoice-button, .send-receipt-button { /* Apply to all buttons */
     width: 100%;
     justify-content: center;
   }
@@ -437,7 +485,7 @@ body {
   .detail-header h1 {
     font-size: 1.8em;
   }
-  .back-button, .edit-button {
+  .back-button, .edit-button, .send-invoice-button, .send-receipt-button {
     padding: 8px 15px;
     font-size: 0.9em;
   }

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './patient-form.css'; // Import the CSS file
+import API_BASE_URL from '../config/api';
 
 // Main App component to render the PatientForm
 // In a real application, this would be your main App.js or a specific page component.
@@ -25,6 +26,15 @@ function PatientForm() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
+
+  // Clinic Information (hardcoded as per your request)
+  const clinicInfo = {
+    name: 'Prime Dental Clinic',
+    addressLine1: 'Local government, 104, New Ipaja/Egbeda Road,',
+    addressLine2: 'opposite prestige super-market, Alimosho, Ipaja Rd, Ipaja, Lagos 100006, Lagos',
+    phone: '0703 070 8877',
+  };
+
 
   // Handle input changes
   const handleChange = (e) => {
@@ -59,8 +69,7 @@ function PatientForm() {
     }
 
     try {
-      // Replace 'http://localhost:5000' with your actual backend URL
-      const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/patients/guest-submit', {
+      const response = await fetch(`${API_BASE_URL}/api/patients/guest-submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -96,6 +105,14 @@ function PatientForm() {
 
   return (
     <div className="form-container">
+      {/* Clinic Header Section */}
+      <div className="clinic-header">
+        <h1>{clinicInfo.name}</h1>
+        <p>{clinicInfo.addressLine1}</p>
+        <p>{clinicInfo.addressLine2}</p>
+        <p>Phone: {clinicInfo.phone}</p>
+      </div>
+
       <h2>Patient Information Form</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group">

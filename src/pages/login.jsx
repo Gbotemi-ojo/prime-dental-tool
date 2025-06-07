@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './login-page.css'; // Import the CSS file
+import API_BASE_URL from '../config/api';
 
 // Main App component to render the LoginPage
 // In a real application, you would integrate this into your routing.
@@ -48,8 +49,7 @@ function LoginPage() {
     }
 
     try {
-      // Replace 'http://localhost:5000' with your actual backend URL
-      const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -62,42 +62,36 @@ function LoginPage() {
       if (response.ok) {
         setMessage(data.message || 'Login successful! Redirecting...');
         setIsError(false);
-        
+
         console.log('Login successful:', data);
 
-        // --- START OF CRITICAL FIX: Ensure role and other user data are saved ---
-        // Save the JWT token to localStorage with the key 'jwtToken'
-        if (data.token) { // Assuming your backend sends the token in 'data.token'
-          localStorage.setItem('jwtToken', data.token);
-        } else if (data.accessToken) { // If your backend sends it in 'data.accessToken'
-          localStorage.setItem('jwtToken', data.accessToken);
-        }
-        
-        // IMPORTANT: Save user role, ID, and username separately if your backend provides them directly
-        // Your JWT payload shows 'role', 'userId', and 'username' (if you decode the token)
-        // However, your backend's /api/auth/login response might also send these directly as top-level properties
-        // or nested under a 'user' object. Adjust 'data.role', 'data.user.role' etc. as per your backend's actual response structure.
-        if (data.role) { // If role is directly in the response
-          localStorage.setItem('role', data.role);
-        } else if (data.user && data.user.role) { // If role is nested under 'user'
-          localStorage.setItem('role', data.user.role);
+        // Save the JWT token to localStorage
+        const token = data.token || data.accessToken; // Check both common property names
+        if (token) {
+          localStorage.setItem('jwtToken', token);
         }
 
-        if (data.userId) { // If userId is directly in the response
-            localStorage.setItem('userId', data.userId);
-        } else if (data.user && data.user.id) { // If userId is nested under 'user'
-            localStorage.setItem('userId', data.user.id);
+        // IMPORTANT: Save user role, ID, and username
+        // Prioritize data directly from the response body, then try from a nested 'user' object
+        const userRole = data.role || (data.user && data.user.role);
+        const userId = data.userId || (data.user && data.user.id);
+        const username = data.username || (data.user && data.user.username);
+
+        if (userRole) {
+          localStorage.setItem('role', userRole);
+        }
+        if (userId) {
+          localStorage.setItem('userId', userId);
+        }
+        if (username) {
+          localStorage.setItem('username', username);
         }
 
-        if (data.username) { // If username is directly in the response
-            localStorage.setItem('username', data.username);
-        } else if (data.user && data.user.username) { // If username is nested under 'user'
-            localStorage.setItem('username', data.user.username);
-        }
-        // --- END OF CRITICAL FIX ---
+        // --- UPDATED: Conditional Redirection based on Role ---
+        // Nurses should now go to the dashboard, just like owners and staff.
+        window.location.href = '/dashboard';
+        // --- END of UPDATED ---
 
-        // Redirect to the dashboard upon successful login
-        window.location.href = '/dashboard'; 
       } else {
         setMessage(data.error || 'Login failed. Please check your credentials.');
         setIsError(true);

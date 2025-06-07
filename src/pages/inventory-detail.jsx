@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './inventory-detail.css'; // Import the dedicated CSS file
+import API_BASE_URL from '../config/api';
 
 // This component displays the details of a specific inventory item and its transaction history.
 export default function InventoryDetail() {
@@ -38,6 +39,14 @@ export default function InventoryDetail() {
       return;
     }
 
+    // IMPORTANT CHANGE: Restrict access for 'nurse' role
+    if (role === 'nurse') {
+      console.warn("[InventoryDetail] Unauthorized access: User is a nurse. Redirecting.");
+      // Assuming a general dashboard or a patient management page for nurses
+      navigate('/patient-management'); // Or '/dashboard'
+      return;
+    }
+
     const parsedItemId = parseInt(itemId);
     if (isNaN(parsedItemId)) {
       setError("Invalid Inventory Item ID provided in the URL.");
@@ -48,7 +57,7 @@ export default function InventoryDetail() {
 
     const fetchDetails = async () => {
       try {
-        const itemResponse = await fetch(`https://prime-dental-tool-backend.vercel.app/api/inventory/items/${parsedItemId}`, {
+        const itemResponse = await fetch(`${API_BASE_URL}/api/inventory/items/${parsedItemId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -79,7 +88,7 @@ export default function InventoryDetail() {
 
     const fetchTransactions = async () => {
       try {
-        const transactionsResponse = await fetch(`https://prime-dental-tool-backend.vercel.app/api/inventory/items/${parsedItemId}/transactions`, {
+        const transactionsResponse = await fetch(`${API_BASE_URL}/api/inventory/items/${parsedItemId}/transactions`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -134,20 +143,28 @@ export default function InventoryDetail() {
       return;
     }
 
-    if (!transactionFormData.quantity || isNaN(parseInt(transactionFormData.quantity))) {
-      setTransactionMessage('Please enter a valid quantity.');
+    // Role check for submitting transaction - ONLY OWNER and STAFF
+    if (userRole !== 'owner' && userRole !== 'staff') {
+      setTransactionMessage('You do not have permission to record transactions.');
       setIsTransactionError(true);
       setSubmittingTransaction(false);
       return;
     }
 
+    if (!transactionFormData.quantity || isNaN(parseInt(transactionFormData.quantity)) || parseInt(transactionFormData.quantity) <= 0) {
+      setTransactionMessage('Please enter a valid positive quantity.');
+      setIsTransactionError(true);
+      setSubmittingTransaction(false);
+      return;
+    }
+
+    // Client-side validation for stock_out specific to current stock
     if (transactionFormData.transactionType === 'stock_out' && parseInt(transactionFormData.quantity) > itemDetails.currentStock) {
       setTransactionMessage(`Insufficient stock. Only ${itemDetails.currentStock} ${itemDetails.unitOfMeasure} available.`);
       setIsTransactionError(true);
       setSubmittingTransaction(false);
       return;
     }
-
 
     try {
       const payload = {
@@ -158,7 +175,7 @@ export default function InventoryDetail() {
         notes: transactionFormData.notes,
       };
 
-      const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/inventory/transactions', {
+      const response = await fetch(`${API_BASE_URL}/api/inventory/transactions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -176,35 +193,35 @@ export default function InventoryDetail() {
         setTransactionFormData({ transactionType: 'stock_out', quantity: '', notes: '' });
         setShowRecordTransactionModal(false);
         // Refresh item details and transactions to show updated stock and history
-        setLoadingItem(true); // Re-trigger fetch for item details
-        setLoadingTransactions(true); // Re-trigger fetch for transactions
-        // Re-fetch item details and transactions
         const fetchUpdatedData = async () => {
-          // FIX: Re-parse itemId here to ensure it's defined in this scope
-          const currentParsedItemId = parseInt(itemId);
+          const currentParsedItemId = parseInt(itemId); // Ensure itemId is re-parsed
           if (isNaN(currentParsedItemId)) {
             console.error("Invalid item ID for refetch after transaction.");
-            return; // Exit if ID is invalid
+            return;
           }
 
-          const itemResponse = await fetch(`https://prime-dental-tool-backend.vercel.app/api/inventory/items/${currentParsedItemId}`, {
+          // Re-fetch item details
+          const itemResponse = await fetch(`${API_BASE_URL}/api/inventory/items/${currentParsedItemId}`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           if (itemResponse.ok) {
             const itemData = await itemResponse.json();
             itemData.unitPrice = parseFloat(itemData.unitPrice);
             setItemDetails(itemData);
+          } else {
+            console.error("Failed to re-fetch item details after transaction:", itemResponse.status);
           }
-          setLoadingItem(false);
 
-          const transactionsResponse = await fetch(`https://prime-dental-tool-backend.vercel.app/api/inventory/items/${currentParsedItemId}/transactions`, {
+          // Re-fetch transactions
+          const transactionsResponse = await fetch(`${API_BASE_URL}/api/inventory/items/${currentParsedItemId}/transactions`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           if (transactionsResponse.ok) {
             const transactionsData = await transactionsResponse.json();
             setTransactions(transactionsData);
+          } else {
+            console.error("Failed to re-fetch transactions after transaction:", transactionsResponse.status);
           }
-          setLoadingTransactions(false);
         };
         fetchUpdatedData();
 
@@ -245,17 +262,12 @@ export default function InventoryDetail() {
     );
   }
 
-  if (!itemDetails) {
-    return (
-      <div className="app-container">
-        <div className="inventory-detail-container info-state">
-          <p className="info-message">No item details found for this ID.</p>
-          <a href="/inventory/items" className="back-button">
-            <i className="fas fa-arrow-left"></i> Back to Inventory List
-          </a>
-        </div>
-      </div>
-    );
+  // Also handle case where itemDetails might be null after an error or if role restriction prevents it
+  // This helps prevent rendering the full component if access was denied or item not found.
+  if (!itemDetails || (userRole && userRole === 'nurse')) {
+    // If userRole is nurse, the useEffect already redirected.
+    // If itemDetails is null, it means item not found, and error message is displayed above.
+    return null;
   }
 
   return (
@@ -266,11 +278,13 @@ export default function InventoryDetail() {
           <a href="/inventory/items" className="back-button">
             <i className="fas fa-arrow-left"></i> Back to Inventory
           </a>
+          {/* Record Transaction button: Only for 'owner' and 'staff' */}
           {(userRole === 'owner' || userRole === 'staff') && (
             <button onClick={() => setShowRecordTransactionModal(true)} className="record-transaction-button">
               <i className="fas fa-exchange-alt"></i> Record Transaction
             </button>
           )}
+          {/* Edit Item button: Only for 'owner' */}
           {userRole === 'owner' && (
             <a href={`/inventory/items/${itemDetails.id}/edit`} className="edit-button">
               <i className="fas fa-edit"></i> Edit Item
@@ -354,7 +368,7 @@ export default function InventoryDetail() {
         )}
       </section>
 
-      {/* Record Transaction Modal */}
+      {/* Record Transaction Modal (only rendered if showRecordTransactionModal is true) */}
       {showRecordTransactionModal && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -371,10 +385,23 @@ export default function InventoryDetail() {
                   value={transactionFormData.transactionType}
                   onChange={handleTransactionChange}
                   required
+                  // Only 'owner' and 'staff' can change transaction type.
+                  // 'nurse' will not even see this modal due to the outer check, but if they did,
+                  // this ensures they cannot select other types.
+                  disabled={userRole === 'nurse'} // This line is technically redundant due to outer check, but good for robustness
                 >
-                  <option value="stock_out">Stock Out</option>
-                  <option value="stock_in">Stock In</option>
-                  <option value="adjustment">Adjustment</option>
+                  {/* Options available only if user is 'owner' or 'staff' */}
+                  { (userRole === 'owner' || userRole === 'staff') && (
+                      <>
+                        <option value="stock_out">Stock Out</option>
+                        <option value="stock_in">Stock In</option>
+                        <option value="adjustment">Adjustment</option>
+                      </>
+                  )}
+                  {/* Fallback for nurse, though they shouldn't reach here */}
+                  { userRole === 'nurse' && (
+                    <option value="stock_out">Stock Out</option>
+                  )}
                 </select>
               </div>
               <div className="form-group">
@@ -386,7 +413,7 @@ export default function InventoryDetail() {
                   value={transactionFormData.quantity}
                   onChange={handleTransactionChange}
                   required
-                  min={transactionFormData.transactionType === 'stock_out' ? '1' : ''} // Min 1 for stock_out
+                  min="1" // Quantity must be at least 1 for any transaction
                   placeholder="e.g., 5"
                 />
               </div>

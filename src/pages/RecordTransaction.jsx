@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import './RecordTransaction.css'; // Create this CSS file for styling
+import API_BASE_URL from '../config/api'
 
 export default function RecordTransaction() {
   const navigate = useNavigate();
@@ -15,19 +16,33 @@ export default function RecordTransaction() {
   });
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(null); // Used for both fetch errors and form submission errors
+  const [userRole, setUserRole] = useState(null); // Added to store user role
 
   useEffect(() => {
     const token = localStorage.getItem('jwtToken');
+    const role = localStorage.getItem('role'); // Get the user's role from local storage
+    setUserRole(role); // Store the role in state
+
     if (!token) {
       toast.error('Authentication required. Please log in.');
       navigate('/login');
       return;
     }
 
+    // --- Role-based Access Control ---
+    // Only 'owner' and 'staff' roles are allowed to access this page.
+    if (role !== 'owner' && role !== 'staff') {
+      toast.error('Access denied. Only Staff and Owners can record inventory transactions.');
+      navigate('/dashboard'); // Redirect to dashboard or another appropriate page
+      return;
+    }
+    // --- End Role-based Access Control ---
+
+
     const fetchItems = async () => {
       try {
-        const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/inventory/items', {
+        const response = await fetch(`${API_BASE_URL}/api/inventory/items`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {
@@ -49,7 +64,7 @@ export default function RecordTransaction() {
     };
 
     fetchItems();
-  }, [navigate]);
+  }, [navigate]); // navigate is a dependency
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -58,6 +73,7 @@ export default function RecordTransaction() {
       [name]: value,
     }));
     // Clear item ID if transaction type changes and it's not applicable (though here it always is)
+    // No change needed here, as the logic is already sound for clearing itemId if type changes.
     if (name === 'transactionType' && value === '') {
         setFormData(prevData => ({ ...prevData, itemId: '' }));
     }
@@ -66,8 +82,8 @@ export default function RecordTransaction() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    setError(null);
-    toast.dismiss();
+    setError(null); // Clear previous errors on new submission attempt
+    toast.dismiss(); // Dismiss any lingering toasts
 
     const token = localStorage.getItem('jwtToken');
     if (!token) {
@@ -92,6 +108,7 @@ export default function RecordTransaction() {
       setSubmitting(false);
       return;
     }
+    // For 'adjustment', quantity can be negative, so we only enforce positive for others.
     if (formData.transactionType !== 'adjustment' && parsedQuantity <= 0) {
       setError(`Quantity must be positive for '${formData.transactionType}' transaction.`);
       toast.error(`Quantity must be positive for '${formData.transactionType}' transaction.`);
@@ -107,7 +124,7 @@ export default function RecordTransaction() {
         notes: formData.notes,
       };
 
-      const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/inventory/transactions', {
+      const response = await fetch(`${API_BASE_URL}/api/inventory/transactions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -132,6 +149,7 @@ export default function RecordTransaction() {
         localStorage.clear();
         navigate('/login');
       } else {
+        // Display specific backend error message
         setError(data.error || 'Failed to record transaction.');
         toast.error(data.error || 'Failed to record transaction.');
       }
@@ -144,6 +162,7 @@ export default function RecordTransaction() {
     }
   };
 
+  // Render logic for loading and initial errors (before form interaction)
   if (loading) {
     return (
       <div className="container mt-4">
@@ -156,7 +175,8 @@ export default function RecordTransaction() {
     );
   }
 
-  if (error && !submitting) {
+  // If there's an error during the initial fetch and we're not submitting
+  if (error && !submitting && !formData.itemId) { // Check !formData.itemId to distinguish initial load error from submission error
     return (
       <div className="container mt-4">
         <div className="alert alert-danger" role="alert">
@@ -177,6 +197,13 @@ export default function RecordTransaction() {
       </header>
 
       <form onSubmit={handleSubmit} className="record-transaction-form">
+        {/* Display form-specific errors here */}
+        {error && submitting && ( // Only show error here if it's a submission error
+          <div className="alert alert-danger mb-3" role="alert">
+            {error}
+          </div>
+        )}
+
         <div className="mb-3">
           <label htmlFor="itemId" className="form-label">Inventory Item *</label>
           <select
@@ -225,7 +252,7 @@ export default function RecordTransaction() {
             value={formData.quantity}
             onChange={handleChange}
             required
-            min={formData.transactionType !== 'adjustment' ? "1" : undefined} // Only positive for stock_in/out
+            min={formData.transactionType === 'stock_in' || formData.transactionType === 'stock_out' ? "1" : undefined}
             disabled={submitting}
           />
           {formData.transactionType === 'adjustment' && (

@@ -2,8 +2,6 @@
 import { lazy, Suspense } from "react";
 import "bootstrap/dist/css/bootstrap.min.css"; // Ensure Bootstrap CSS is available
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import NavBar from "./components/Navbar/Navbar"; // Assuming you have this component
-import Footer from "./components/Footer/Footer"; // Assuming you have this component
 import Loader from "./components/Loader/Loader"; // Assuming you have a Loader component for Suspense fallback
 import { ToastContainer } from "react-toastify"; // For notifications
 import "react-toastify/dist/ReactToastify.css"; // CSS for react-toastify
@@ -28,15 +26,9 @@ const EditStaff = lazy(() => import("./pages/edit-staff"));
 const ProfilePage = lazy(() => import("./pages/profile-page"));
 const RecordTransaction = lazy(() => import("./pages/RecordTransaction"));
 const AllTransactions = lazy(() => import("./pages/AllTransactions"));
-const Shop = lazy(() => import("./pages/Shop"));
-const Cart = lazy(() => import("./pages/Cart"));
-const Product = lazy(() => import("./pages/Product"));
-const BlogList = lazy(() => import("./pages/Bloglist"));
-const BlogDetail = lazy(() => import("./pages/Blogdetail"));
-const Privacy = lazy(() => import("./pages/privacy"));
-const Terms = lazy(() => import("./pages/terms"));
-// NEW: Lazy-load Patient Receipts component
 const PatientReceiptsPage = lazy(() => import("./pages/PatientReceiptsPage"));
+// NEW: Lazy-load InvoicePage component
+const InvoicePage = lazy(() => import("./pages/InvoicePage"));
 
 
 function App() {
@@ -79,8 +71,9 @@ function App() {
             <Route path="/patients/:patientId/dental-records/new" element={<AddDentalRecord />} />
             <Route path="/patients/:patientId/dental-records/:recordId" element={<DentalRecordDetail />} />
             <Route path="/patients/:patientId/dental-records/:recordId/edit" element={<EditDentalRecord />} />
-            {/* NEW: Patient Receipts Route */}
             <Route path="/patients/:patientId/receipts" element={<PatientReceiptsPage />} />
+            {/* NEW: Patient Invoice Route */}
+            <Route path="/patients/:patientId/invoice" element={<InvoicePage />} />
 
 
             {/* Inventory Management Routes */}
@@ -100,19 +93,6 @@ function App() {
             <Route path="/admin/staff-management/:userId" element={<StaffDetail />} />
             <Route path="/admin/staff-management/:userId/edit" element={<EditStaff />} />
 
-            {/* Shop/Product Routes */}
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/shop/:id" element={<Product />} />
-            <Route path="/cart" element={<Cart />} />
-
-            {/* Blog & Static Pages */}
-            <Route path="/bloglist" element={<BlogList />} />
-            <Route path="/blogdetail/:id" element={<BlogDetail />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/terms" element={<Terms />} />
-
-            {/* Optional: Catch-all route for 404 Not Found pages */}
-            {/* <Route path="*" element={<NotFound />} /> */}
           </Routes>
         </div>
 

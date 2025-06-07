@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify'; // For sleek notifications
 import './staff-detail.css'; // Import the dedicated CSS file
+import API_BASE_URL from '../config/api'
 
 // This component displays the details of a specific staff member.
 export default function StaffDetail() {
@@ -52,7 +53,7 @@ export default function StaffDetail() {
       try {
         // Backend API endpoint to fetch a single user by ID
         // You'll need to create this route on your backend: GET /api/admin/users/:id
-        const response = await fetch(`https://prime-dental-tool-backend.vercel.app/api/admin/users/${parsedUserId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/admin/users/${parsedUserId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -97,7 +98,7 @@ export default function StaffDetail() {
 
     try {
       const newStatus = !staffMember.isActive; // Toggle current status
-      const response = await fetch(`https://prime-dental-tool-backend.vercel.app/api/admin/users/${staffMember.id}/status`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/users/${staffMember.id}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -144,7 +145,7 @@ export default function StaffDetail() {
     }
 
     try {
-      const response = await fetch(`https://prime-dental-tool-backend.vercel.app/api/admin/users/${staffMember.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/users/${staffMember.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

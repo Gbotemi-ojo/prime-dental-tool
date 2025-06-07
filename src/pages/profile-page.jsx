@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify'; // For sleek notifications
 import './profile-page.css'; // Import the dedicated CSS file
+import API_BASE_URL from '../config/api'
 
 // This component allows a logged-in user to view and update their personal profile details.
 export default function ProfilePage() {
@@ -40,8 +41,8 @@ export default function ProfilePage() {
 
     const fetchProfile = async () => {
       try {
-        // UPDATED: Using your existing /api/auth/me endpoint
-        const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/auth/me', {
+        // This endpoint remains correct for fetching the current user's profile data
+        const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -129,10 +130,8 @@ export default function ProfilePage() {
         email: profileData.email || null, // Send null if empty string
       };
 
-      // IMPORTANT: This PUT endpoint needs to be implemented on your backend
-      // It should be specific for a user updating THEIR OWN profile (e.g., /api/user/profile)
-      // NOT the /api/admin/users/:id endpoint which is for admin management.
-      const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/user/profile', {
+      // CORRECTED ENDPOINT for general profile update: /api/admin/users/profile
+      const response = await fetch(`${API_BASE_URL}/api/admin/users/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -203,9 +202,8 @@ export default function ProfilePage() {
     }
 
     try {
-      // IMPORTANT: This PUT endpoint needs to be implemented on your backend
-      // It should be specific for a user changing THEIR OWN password (e.g., /api/user/profile/password)
-      const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/user/profile/password', {
+      // CORRECTED ENDPOINT for password change: /api/admin/users/profile/password
+      const response = await fetch(`${API_BASE_URL}/api/admin/users/profile/password`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

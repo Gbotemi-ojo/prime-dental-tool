@@ -1,7 +1,9 @@
 // src/pages/add-dental-record.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom'; // Import useNavigate for redirection
+import { toast } from 'react-toastify'; // Import toast for notifications
 import './add-dental-record.css'; // Import the dedicated CSS file
+import API_BASE_URL from '../config/api'
 
 // This component is now ready to be used directly in your React Router setup.
 // Example: <Route path="/patients/:patientId/dental-records/new" element={<AddDentalRecord />} />
@@ -45,17 +47,22 @@ export default function AddDentalRecord() {
     oralHygiene: '',
     investigations: '',
     xrayFindings: '',
-    provisionalDiagnosis: [],
-    treatmentPlan: [],
+    provisionalDiagnosis: [], // This will store the selected diagnosis items
+    treatmentPlan: [],       // This will store the selected treatment plan items
     calculus: '',
     recordDate: new Date().toISOString().split('T')[0],
   });
+
+  // State for currently selected option in the dropdowns (before adding to list)
+  const [selectedProvisionalDiagnosisOption, setSelectedProvisionalDiagnosisOption] = useState('');
+  const [selectedTreatmentPlanOption, setSelectedTreatmentPlanOption] = useState('');
+
 
   // Options for Provisional Diagnosis dropdown
   const provisionalDiagnosisOptions = [
     "Dental Caries (Tooth Decay)", "Reversible pulpitis", "Irreversible pulpitis (symptomatic/asymptomatic)",
     "Pulp necrosis", "Pulp calcification (pulp stones)", "Internal resorption", "Acute apical periodontitis",
-    "Chronic apical periodonti", "Periapical abscess (acute/chronic)", "Periapical cyst (radicular cyst)",
+    "Chronic apical periodontitis", "Periapical abscess (acute/chronic)", "Periapical cyst (radicular cyst)",
     "Condensing osteitis (focal sclerosing osteomyelitis)", "Gingivitis (plaque-induced or non-plaque-induced)",
     "Necrotizing ulcerative gingivitis (NUG)", "Gingival hyperplasia/hypertrophy (drug-induced, hormonal, or hereditary)",
     "Chronic periodontitis (localized/generalized)", "Aggressive periodontitis", "Necrotizing periodontitis",
@@ -114,7 +121,7 @@ export default function AddDentalRecord() {
       }
 
       try {
-        const response = await fetch(`https://prime-dental-tool-backend.vercel.app/api/patients/${parsedPatientId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/patients/${parsedPatientId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -141,10 +148,12 @@ export default function AddDentalRecord() {
     fetchPatientName();
   }, [patientId, navigate]); // Add navigate to dependency array
 
+  // General handler for text/checkbox inputs and quadrant fields
   const handleChange = (e) => {
-    const { name, value, type, checked, options } = e.target;
+    const { name, value, type, checked } = e.target;
 
     if (name.includes('.')) {
+      // Handle quadrant-specific inputs (e.g., teethPresent.q1)
       const [parentName, quadrantKey] = name.split('.');
       setFormData((prevData) => ({
         ...prevData,
@@ -153,29 +162,65 @@ export default function AddDentalRecord() {
           [quadrantKey]: value,
         },
       }));
-    } else if (type === 'select-multiple') {
-      // Create a Set for efficient lookups/additions, then convert back to array
-      let newSelectedOptions = new Set(formData[name]);
-      const clickedValue = value;
-
-      if (newSelectedOptions.has(clickedValue)) {
-        newSelectedOptions.delete(clickedValue);
-      } else {
-        newSelectedOptions.add(clickedValue);
-      }
-
-      // Convert Set back to a sorted array for consistent state
-      setFormData((prevData) => ({
-        ...prevData,
-        [name]: Array.from(newSelectedOptions).sort(),
-      }));
     } else {
+      // Handle regular text and checkbox inputs
       setFormData((prevData) => ({
         ...prevData,
         [name]: type === 'checkbox' ? checked : value,
       }));
     }
   };
+
+  // --- Provisional Diagnosis Handlers ---
+  const handleAddProvisionalDiagnosis = () => {
+    if (selectedProvisionalDiagnosisOption) {
+      // Check for duplicates before adding
+      if (!formData.provisionalDiagnosis.includes(selectedProvisionalDiagnosisOption)) {
+        setFormData(prevData => ({
+          ...prevData,
+          provisionalDiagnosis: [...prevData.provisionalDiagnosis, selectedProvisionalDiagnosisOption].sort() // Keep sorted
+        }));
+        setSelectedProvisionalDiagnosisOption(''); // Clear the select after adding
+      } else {
+        toast.warn("This diagnosis has already been added.");
+      }
+    } else {
+      toast.warn("Please select a provisional diagnosis to add.");
+    }
+  };
+
+  const handleRemoveProvisionalDiagnosis = (diagnosisToRemove) => {
+    setFormData(prevData => ({
+      ...prevData,
+      provisionalDiagnosis: prevData.provisionalDiagnosis.filter(d => d !== diagnosisToRemove)
+    }));
+  };
+
+  // --- Treatment Plan Handlers ---
+  const handleAddTreatmentPlan = () => {
+    if (selectedTreatmentPlanOption) {
+      // Check for duplicates before adding
+      if (!formData.treatmentPlan.includes(selectedTreatmentPlanOption)) {
+        setFormData(prevData => ({
+          ...prevData,
+          treatmentPlan: [...prevData.treatmentPlan, selectedTreatmentPlanOption].sort() // Keep sorted
+        }));
+        setSelectedTreatmentPlanOption(''); // Clear the select after adding
+      } else {
+        toast.warn("This treatment plan has already been added.");
+      }
+    } else {
+      toast.warn("Please select a treatment plan to add.");
+    }
+  };
+
+  const handleRemoveTreatmentPlan = (planToRemove) => {
+    setFormData(prevData => ({
+      ...prevData,
+      treatmentPlan: prevData.treatmentPlan.filter(p => p !== planToRemove)
+    }));
+  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -208,7 +253,7 @@ export default function AddDentalRecord() {
         userId: parseInt(userId), // Ensure userId is an integer
       };
 
-      const response = await fetch(`https://prime-dental-tool-backend.vercel.app/api/patients/${patientId}/dental-records`, {
+      const response = await fetch(`${API_BASE_URL}/api/patients/${patientId}/dental-records`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -236,8 +281,8 @@ export default function AddDentalRecord() {
           periodontalCondition: '',
           oralHygiene: '',
           investigations: '', xrayFindings: '',
-          provisionalDiagnosis: [],
-          treatmentPlan: [],
+          provisionalDiagnosis: [], // Reset to empty array
+          treatmentPlan: [],       // Reset to empty array
           calculus: '',
           recordDate: new Date().toISOString().split('T')[0],
         });
@@ -272,9 +317,9 @@ export default function AddDentalRecord() {
       <div className="app-container">
         <div className="add-record-container">
           <p className="info-message error">Error: {error}</p>
-          <a href={`/patients/${patientId}`} className="back-button" style={{ margin: '20px auto', display: 'block', width: 'fit-content' }}>
+          <button onClick={() => navigate(`/patients/${patientId}`)} className="back-button" style={{ margin: '20px auto', display: 'block', width: 'fit-content' }}>
             <i className="fas fa-arrow-left"></i> Back to Patient Details
-          </a>
+          </button>
         </div>
       </div>
     );
@@ -282,14 +327,22 @@ export default function AddDentalRecord() {
 
   return (
     <div className="add-record-container">
-      <header className="record-form-header">
-        <h1>Add Dental Record for {patientName}</h1>
-        <div className="actions">
-          <a href={`/patients/${patientId}`} className="back-button">
-            <i className="fas fa-arrow-left"></i> Back to Patient Details
-          </a>
-        </div>
-      </header>
+<header className="record-form-header">
+  <h1>Add Dental Record for {patientName}</h1>
+  <div className="actions">
+    <button onClick={() => navigate(`/patients/${patientId}`)} className="back-button">
+      <i className="fas fa-arrow-left"></i> Back to Patient Details
+    </button>
+    {/* New Generate Invoice Button */}
+    <button onClick={() => navigate(`/patients/${patientId}/invoice`)} className="generate-invoice-button">
+      <i className="fas fa-file-invoice"></i>Send Invoice
+    </button>
+    {/* New Generate Receipt Button */}
+    <button onClick={() => navigate(`/patients/${patientId}/receipt`)} className="generate-receipt-button">
+      <i className="fas fa-receipt"></i> Send Receipt
+    </button>
+  </div>
+</header>
 
       <form onSubmit={handleSubmit}>
         <section className="form-section">
@@ -602,42 +655,77 @@ export default function AddDentalRecord() {
                 placeholder="e.g., Periapical radiolucency at apex of 16, bone loss"
               ></textarea>
             </div>
+
+            {/* Provisional Diagnosis - Click and Add */}
             <div className="form-group full-width-grid-item">
-              <label htmlFor="provisionalDiagnosis">Provisional Diagnosis *</label>
-              <select
-                id="provisionalDiagnosis"
-                name="provisionalDiagnosis"
-                value={formData.provisionalDiagnosis}
-                onChange={handleChange}
-                multiple
-                size="10"
-                required
-              >
-                {provisionalDiagnosisOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
+              <label htmlFor="provisionalDiagnosisSelect">Provisional Diagnosis *</label>
+              <div className="add-remove-control">
+                <select
+                  id="provisionalDiagnosisSelect"
+                  value={selectedProvisionalDiagnosisOption}
+                  onChange={(e) => setSelectedProvisionalDiagnosisOption(e.target.value)}
+                  className="form-select"
+                >
+                  <option value="">Select a diagnosis</option>
+                  {provisionalDiagnosisOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+                <button type="button" onClick={handleAddProvisionalDiagnosis} className="add-button">
+                  Add Diagnosis
+                </button>
+              </div>
+              {formData.provisionalDiagnosis.length > 0 && (
+                <ul className="added-items-list">
+                  {formData.provisionalDiagnosis.map((diagnosis, index) => (
+                    <li key={index}>
+                      {diagnosis}
+                      <button type="button" onClick={() => handleRemoveProvisionalDiagnosis(diagnosis)} className="remove-item-button">
+                        <i className="fas fa-trash"></i>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
+
+            {/* Treatment Plan - Click and Add */}
             <div className="form-group full-width-grid-item">
-              <label htmlFor="treatmentPlan">Treatment Plan *</label>
-              <select
-                id="treatmentPlan"
-                name="treatmentPlan"
-                value={formData.treatmentPlan}
-                onChange={handleChange}
-                multiple
-                size="10"
-                required
-              >
-                {treatmentPlanOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
+              <label htmlFor="treatmentPlanSelect">Treatment Plan *</label>
+              <div className="add-remove-control">
+                <select
+                  id="treatmentPlanSelect"
+                  value={selectedTreatmentPlanOption}
+                  onChange={(e) => setSelectedTreatmentPlanOption(e.target.value)}
+                  className="form-select"
+                >
+                  <option value="">Select a treatment plan</option>
+                  {treatmentPlanOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+                <button type="button" onClick={handleAddTreatmentPlan} className="add-button">
+                  Add Plan
+                </button>
+              </div>
+              {formData.treatmentPlan.length > 0 && (
+                <ul className="added-items-list">
+                  {formData.treatmentPlan.map((plan, index) => (
+                    <li key={index}>
+                      {plan}
+                      <button type="button" onClick={() => handleRemoveTreatmentPlan(plan)} className="remove-item-button">
+                        <i className="fas fa-trash"></i>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
+
             <div className="form-group">
               <label htmlFor="recordDate">Record Date</label>
               <input

@@ -1,18 +1,44 @@
+/* src/pages/patient-list.css */
+
+/* --- Root Variables for Theming --- */
+:root {
+    --primary-color: #3F51B5; /* Deep Blue (e.g., for header, primary buttons) */
+    --secondary-color: #5C6BC0; /* Lighter Blue (e.g., for hover states) */
+    --accent-color: #00BCD4; /* Cyan (e.g., for invoice/receipt buttons) */
+    --accent-dark: #0097A7; /* Darker Cyan */
+    --success-color: #28a745; /* Green */
+    --success-dark: #218838;
+    --danger-color: #dc3545; /* Red */
+    --warning-color: #ffc107; /* Yellow */
+    --info-color: #6c757d; /* Gray */
+    --info-dark: #5a6268;
+
+    --text-dark: #333;
+    --text-medium: #495057;
+    --text-light: #ffffff;
+    --border-color: #e0e0e0;
+    --background-light: #f0f2f5;
+    --background-card: #ffffff;
+    --shadow-light: rgba(0, 0, 0, 0.08);
+    --shadow-medium: rgba(0, 0, 0, 0.1);
+    --shadow-heavy: rgba(0, 0, 0, 0.15);
+}
+
 /* General container for the entire patient list page */
 .app-container {
     display: flex;
     justify-content: center;
     min-height: 100vh;
-    background-color: #f0f2f5; /* Light gray background */
+    background-color: var(--background-light);
     padding: 20px;
     box-sizing: border-box;
 }
 
 /* Main content wrapper for the patient list */
 .patient-list-container {
-    background-color: #ffffff;
+    background-color: var(--background-card);
     border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 6px 20px var(--shadow-light);
     padding: 30px;
     width: 100%;
     max-width: 1200px; /* Max width for larger screens */
@@ -20,19 +46,19 @@
     margin-bottom: 20px;
 }
 
-/* Header section */
+/* --- Header section --- */
 .patient-list-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
     padding-bottom: 15px;
-    border-bottom: 2px solid #e0e0e0;
+    border-bottom: 2px solid var(--border-color);
 }
 
 .patient-list-header h1 {
     font-size: 2.2rem;
-    color: #333;
+    color: var(--text-dark);
     font-weight: 700;
     margin: 0;
 }
@@ -53,30 +79,28 @@
     font-weight: 600;
     transition: all 0.3s ease;
     font-size: 0.95rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px var(--shadow-medium);
+    border: none; /* Use background color for button distinctiveness */
+    cursor: pointer;
 }
 
 .back-to-dashboard-button {
-    background-color: #6c757d; /* Gray for back button */
-    color: #ffffff;
-    border: 1px solid #6c757d;
+    background-color: var(--info-color);
+    color: var(--text-light);
 }
 
 .back-to-dashboard-button:hover {
-    background-color: #5a6268;
-    border-color: #545b62;
+    background-color: var(--info-dark);
     transform: translateY(-2px);
 }
 
 .add-patient-button {
-    background-color: #28a745; /* Green for add button */
-    color: #ffffff;
-    border: 1px solid #28a745;
+    background-color: var(--success-color);
+    color: var(--text-light);
 }
 
 .add-patient-button:hover {
-    background-color: #218838;
-    border-color: #1e7e34;
+    background-color: var(--success-dark);
     transform: translateY(-2px);
 }
 
@@ -86,7 +110,7 @@
     font-size: 1.1rem;
 }
 
-/* Search and filter section */
+/* --- Search and filter section --- */
 .search-filter-section {
     margin-bottom: 30px;
 }
@@ -94,21 +118,21 @@
 .search-input {
     width: 100%;
     padding: 14px 20px;
-    border: 1px solid #ced4da;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 1rem;
-    color: #495057;
+    color: var(--text-medium);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    box-sizing: border-box;
 }
 
 .search-input::placeholder {
-    color: #6c757d;
+    color: var(--info-color);
 }
 
 .search-input:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(63, 81, 181, 0.25); /* Primary color shadow */
     outline: none;
 }
 
@@ -116,47 +140,47 @@
 
 /* Wrapper for responsive tables */
 .table-responsive {
-    overflow-x: auto; /* Allows horizontal scrolling on small screens */
-    -webkit-overflow-scrolling: touch; /* Smoother scrolling on iOS */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* Subtle shadow for the table container */
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 0 4px 15px var(--shadow-light);
     border-radius: 8px;
 }
 
 .patient-table {
     width: 100%;
-    border-collapse: collapse; /* Removes space between table borders */
+    border-collapse: collapse;
     margin-top: 0;
     font-size: 0.95rem;
-    min-width: 700px; /* Ensures table doesn't get too squished */
+    min-width: 800px; /* Increased min-width to accommodate more action buttons */
 }
 
 .patient-table thead {
-    background-color: #3F51B5; /* Deep blue header */
-    color: #ffffff;
-    position: sticky; /* Sticky header for scrollable tables */
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    position: sticky;
     top: 0;
-    z-index: 1; /* Ensures header stays above content when scrolling */
+    z-index: 1;
 }
 
 .patient-table th {
     padding: 15px 20px;
     text-align: left;
     font-weight: 600;
-    border-bottom: 2px solid #e0e0e0;
-    white-space: nowrap; /* Prevents header text from wrapping */
+    border-bottom: 2px solid var(--border-color); /* Still useful for visual separation */
+    white-space: nowrap;
 }
 
 .patient-table tbody tr {
-    border-bottom: 1px solid #dee2e6; /* Light border between rows */
+    border-bottom: 1px solid #dee2e6;
     transition: background-color 0.2s ease;
 }
 
 .patient-table tbody tr:nth-child(even) {
-    background-color: #f8f9fa; /* Alternate row color */
+    background-color: #f8f9fa;
 }
 
 .patient-table tbody tr:hover {
-    background-color: #e9ecef; /* Hover effect */
+    background-color: #e9ecef;
     cursor: pointer;
 }
 
@@ -164,11 +188,11 @@
     padding: 12px 20px;
     text-align: left;
     vertical-align: middle;
-    color: #343a40;
-    white-space: nowrap; /* Prevents content from wrapping, especially for phone/email */
-    max-width: 200px; /* Limit width of cells to prevent overly wide columns */
-    overflow: hidden; /* Hide overflowing text */
-    text-overflow: ellipsis; /* Add ellipsis for overflowing text */
+    color: var(--text-dark);
+    white-space: nowrap;
+    max-width: 250px; /* Adjusted max-width */
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Styles for the table actions cell to allow multiple buttons */
@@ -178,66 +202,83 @@
     flex-wrap: wrap; /* Allow buttons to wrap if space is tight */
     justify-content: flex-start;
     align-items: center;
+    padding-top: 10px; /* Add some vertical padding for button groups */
+    padding-bottom: 10px;
 }
 
-/* Styling for the 'View Details' button within the table */
-.table-view-details-button {
+/* Base style for all table action buttons */
+.table-view-details-button,
+.table-invoice-button, /* New button */
+.table-receipts-button {
     display: inline-flex;
     align-items: center;
-    padding: 8px 15px;
-    background-color: var(--primary-color); /* Using primary theme color */
-    color: var(--text-light);
+    padding: 8px 12px; /* Slightly adjusted padding for consistency */
     border: none;
     border-radius: 6px;
     text-decoration: none;
     font-weight: 500;
-    font-size: 0.85rem;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Consistent shadow */
+    font-size: 0.8rem; /* Slightly smaller font for more buttons */
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 2px 5px var(--shadow-light);
     cursor: pointer;
+    white-space: nowrap; /* Prevent button text from wrapping */
+}
+
+/* Specific styles for View Details button */
+.table-view-details-button {
+    background-color: var(--primary-color);
+    color: var(--text-light);
 }
 
 .table-view-details-button:hover {
-    background-color: var(--secondary-color); /* Lighter primary on hover */
+    background-color: var(--secondary-color);
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 8px var(--shadow-medium);
 }
 
-.table-view-details-button i {
-    margin-right: 5px; /* Space between icon and text */
+/* Specific styles for Invoice button */
+.table-invoice-button {
+    background-color: var(--warning-color); /* Yellow/Orange for Invoice */
+    color: var(--text-dark); /* Dark text for contrast */
 }
 
-/* Styling for the Receipts button in the table */
-.patient-table .table-receipts-button {
-    display: inline-flex;
-    align-items: center;
-    padding: 8px 15px;
-    background-color: #00bcd4; /* Keeping cyan for distinction, but could use another theme color */
-    color: #ffffff;
-    border: none;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.85rem;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    box-shadow: 0 2px 5px rgba(0, 188, 212, 0.2);
-    cursor: pointer;
+.table-invoice-button:hover {
+    background-color: #e0a800; /* Darker yellow */
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
 }
 
-.patient-table .table-receipts-button:hover {
-    background-color: #0097a7; /* Darker cyan on hover */
+/* Specific styles for Receipts button */
+.table-receipts-button {
+    background-color: var(--accent-color); /* Cyan for Receipts */
+    color: var(--text-light);
+}
+
+.table-receipts-button:hover {
+    background-color: var(--accent-dark);
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0, 188, 212, 0.3);
 }
 
-.patient-table .table-receipts-button i {
-    margin-right: 5px; /* Space between icon and text */
+/* Icon spacing for all table buttons */
+.table-view-details-button i,
+.table-invoice-button i,
+.table-receipts-button i {
+    margin-right: 5px;
+    font-size: 0.9rem; /* Slightly smaller icon size for density */
+}
+
+/* --- Restricted Info (for Nurse Role) --- */
+.restricted-info {
+    font-style: italic;
+    color: var(--info-color);
+    font-size: 0.9em;
 }
 
 /* --- Spinner (Loading Indicator) Styles --- */
 .spinner {
     border: 4px solid #f3f3f3;
-    border-top: 4px solid #3F51B5; /* Blue spinner */
+    border-top: 4px solid var(--primary-color);
     border-radius: 50%;
     width: 40px;
     height: 40px;
@@ -256,7 +297,7 @@
     padding: 20px;
     background-color: #e9ecef;
     border-radius: 8px;
-    color: #343a40;
+    color: var(--text-dark);
     margin-top: 20px;
     font-size: 1.1rem;
 }
@@ -268,7 +309,16 @@
 }
 
 /* --- Responsive Adjustments --- */
-@media (max-width: 768px) {
+@media (max-width: 992px) { /* Adjust breakpoint for tablet landscape */
+    .patient-list-container {
+        padding: 25px;
+    }
+    .patient-table {
+        min-width: 750px; /* Adjust min-width if necessary */
+    }
+}
+
+@media (max-width: 768px) { /* Tablet portrait and smaller */
     .patient-list-header {
         flex-direction: column;
         align-items: flex-start;
@@ -284,7 +334,7 @@
     .back-to-dashboard-button,
     .add-patient-button {
         width: 100%;
-        justify-content: center; /* Center text and icon */
+        justify-content: center;
     }
 
     .patient-list-container {
@@ -303,7 +353,7 @@
 
     .patient-table {
         /* min-width is crucial for horizontal scroll */
-        min-width: 600px; /* Adjust as needed for your data density */
+        min-width: 650px; /* Adjusted min-width for more buttons */
     }
 
     .patient-table th,
@@ -312,19 +362,23 @@
         font-size: 0.9rem;
     }
 
-    /* Ensure table action buttons stack on very small screens if needed */
+    /* Ensure table action buttons stack on smaller screens */
     .patient-table .table-actions-cell {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch; /* Stretch buttons to fill width */
+        gap: 6px; /* Slightly reduced gap */
     }
     .table-view-details-button,
+    .table-invoice-button,
     .table-receipts-button {
-        width: 100%;
+        width: 100%; /* Make buttons fill the cell width */
         justify-content: center;
+        padding: 8px 10px; /* Adjust padding for smaller width */
+        font-size: 0.8rem;
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 480px) { /* Mobile */
     .patient-list-header h1 {
         font-size: 1.5rem;
     }
@@ -333,11 +387,5 @@
     .patient-table td {
         padding: 8px 10px;
         font-size: 0.8rem;
-    }
-
-    .table-view-details-button,
-    .table-receipts-button {
-        padding: 6px 10px;
-        font-size: 0.75rem;
     }
 }

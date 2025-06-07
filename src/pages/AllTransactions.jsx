@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import './AllTransactions.css'; // Create this CSS file for styling
+import API_BASE_URL from '../config/api'
 
 export default function AllTransactions() {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ export default function AllTransactions() {
 
     const fetchTransactions = async () => {
       try {
-        const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/inventory/transactions', {
+        const response = await fetch(`${API_BASE_URL}/api/inventory/transactions`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 

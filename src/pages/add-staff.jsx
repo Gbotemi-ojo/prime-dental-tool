@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify'; // For sleek notifications
 import './add-staff.css'; // Import the dedicated CSS file
+import API_BASE_URL from '../config/api';
 
 // This component allows 'owner' roles to add new staff members.
 export default function AddStaff() {
@@ -13,7 +14,7 @@ export default function AddStaff() {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'staff', // Default role for new staff accounts
+    role: '', // Changed default role to empty, forcing selection
   });
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -58,8 +59,8 @@ export default function AddStaff() {
     toast.dismiss(); // Clear any existing toasts
 
     // Client-side validation
-    if (!formData.username || !formData.password || !formData.confirmPassword) {
-      setError('Username, Password, and Confirm Password are required.');
+    if (!formData.username || !formData.password || !formData.confirmPassword || !formData.role) {
+      setError('Username, Password, Confirm Password, and Role are required.');
       toast.error('Please fill in all required fields.');
       setSubmitting(false);
       return;
@@ -94,7 +95,7 @@ export default function AddStaff() {
         role: formData.role, // Send the selected role
       };
 
-      const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/admin/users/staff', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/users/staff`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -116,7 +117,7 @@ export default function AddStaff() {
           email: '',
           password: '',
           confirmPassword: '',
-          role: 'staff',
+          role: '', // Reset role to empty after submission
         });
       } else if (response.status === 401 || response.status === 403) {
         toast.error(data.error || "Authorization failed. Please log in again.");
@@ -235,18 +236,20 @@ export default function AddStaff() {
             />
           </div>
 
-          {/* Role (can be fixed to 'staff' if only staff accounts are added here) */}
+          {/* Role selection for Owner */}
           <div className="form-group">
-            <label htmlFor="role">Role</label>
+            <label htmlFor="role">Role *</label>
             <select
               id="role"
               name="role"
               value={formData.role}
               onChange={handleChange}
               required
-              disabled // Disable if only 'staff' role can be added here
+              // Removed 'disabled' attribute to allow selection
             >
+              <option value="">Select Role</option> {/* Added a default empty option */}
               <option value="staff">Staff</option>
+              <option value="nurse">Nurse</option> {/* Added Nurse option */}
               {/* <option value="owner">Owner</option> // Uncomment if owners can create other owners */}
             </select>
           </div>

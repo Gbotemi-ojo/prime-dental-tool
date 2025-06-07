@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify'; // For sleek notifications
 import './edit-item.css'; // Import the dedicated CSS file
+import API_BASE_URL from '../config/api'
 
 // This component allows owners to edit details of an existing inventory item.
 export default function EditItem() {
@@ -52,7 +53,7 @@ export default function EditItem() {
 
     const fetchItemDetails = async () => {
       try {
-        const response = await fetch(`https://prime-dental-tool-backend.vercel.app/api/inventory/items/${parsedItemId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/inventory/items/${parsedItemId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -153,7 +154,7 @@ export default function EditItem() {
     }
 
     try {
-      const response = await fetch(`https://prime-dental-tool-backend.vercel.app/inventory/items/${itemId}`, {
+      const response = await fetch(`${API_BASE_URL}/inventory/items/${itemId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

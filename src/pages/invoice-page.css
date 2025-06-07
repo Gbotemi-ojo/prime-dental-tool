@@ -1,0 +1,749 @@
+/* src/pages/invoice-page.css */
+
+/* Variables (ensure these are consistent across your app CSS) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --primary-color: #3F51B5; /* Indigo */
+    --secondary-color: #5C6BC0; /* Lighter Indigo */
+    --accent-color: #4CAF50; /* Green */
+    --danger-color: #F44336; /* Red */
+    --warning-color: #FFC107; /* Yellow */
+    --info-color: #2196F3; /* Blue for info */
+    --invoice-color: #FFC107; /* Yellow for Invoice buttons */
+    --receipt-color: #00BCD4; /* Cyan for Receipt buttons */
+    --text-dark: #263238;
+    --text-medium: #455A64;
+    --text-light: #ffffff;
+    --bg-light: #ECEFF1;
+    --bg-medium: #CFD8DC;
+    --card-bg: #ffffff;
+    --border-color: #E0E0E0;
+    --input-bg: #F5F7F8;
+    --table-header-bg: #E8EAF6;
+    --table-row-even: #F5F5F5;
+    --table-row-hover: #E3F2FD;
+
+    --shadow-sm: rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
+    --shadow-md: rgba(0, 0, 0, 0.08) 0px 4px 12px;
+    --shadow-lg: rgba(0, 0, 0, 0.15) 0px 8px 24px;
+    --shadow-xl: rgba(0, 0, 0, 0.25) 0px 16px 48px;
+
+    --spacing-xs: 8px;
+    --spacing-sm: 12px;
+    --spacing-md: 20px;
+    --spacing-lg: 30px;
+    --spacing-xl: 40px;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-medium) 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    color: var(--text-dark);
+    line-height: 1.6;
+}
+
+.app-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: var(--spacing-xl);
+    box-sizing: border-box;
+}
+
+.invoice-container {
+    background-color: var(--card-bg);
+    padding: var(--spacing-xl);
+    border-radius: 15px;
+    box-shadow: var(--shadow-xl);
+    width: 100%;
+    max-width: 900px; /* Adjust max-width as needed */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    animation: fadeIn 0.8s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header Section */
+.invoice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 2px solid var(--border-color);
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+}
+
+.invoice-header h1 {
+    color: var(--primary-color);
+    font-weight: 800;
+    font-size: 2.2em;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.invoice-header .actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* Base styles for all header buttons */
+.back-button,
+.generate-invoice-button,
+.print-invoice-button,
+.add-service-button,
+.remove-service-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    box-shadow: var(--shadow-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+/* Specific button colors */
+.back-button {
+    background-color: var(--secondary-color);
+    color: var(--text-light);
+}
+
+.back-button:hover {
+    background-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.generate-invoice-button {
+    background-color: var(--invoice-color);
+    color: var(--text-dark);
+}
+
+.generate-invoice-button:hover {
+    background-color: #FFA000;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.print-invoice-button {
+    background-color: var(--info-color); /* Blue for print */
+    color: var(--text-light);
+}
+
+.print-invoice-button:hover {
+    background-color: #1976D2;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.add-service-button {
+    background-color: var(--accent-color); /* Green for add */
+    color: var(--text-light);
+}
+
+.add-service-button:hover {
+    background-color: #388E3C; /* Darker green */
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.remove-service-button {
+    background-color: var(--danger-color); /* Red for remove */
+    color: var(--text-light);
+    padding: 8px 15px; /* Slightly smaller padding for table buttons */
+    font-size: 0.85rem;
+}
+
+.remove-service-button:hover {
+    background-color: #D32F2F; /* Darker red */
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+
+/* Icon styling for all relevant buttons */
+.back-button i,
+.generate-invoice-button i,
+.print-invoice-button i,
+.add-service-button i,
+.remove-service-button i {
+    margin-right: 8px;
+    font-size: 1.1rem;
+}
+
+/* Form Section */
+.invoice-form-section {
+    background-color: var(--bg-light);
+    border-radius: 10px;
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+    border-left: 5px solid var(--primary-color);
+}
+
+.invoice-form-section h2 {
+    color: var(--primary-color);
+    font-size: 1.8em;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: var(--spacing-md);
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.patient-info-display,
+.dental-record-context {
+    background-color: var(--card-bg);
+    padding: var(--spacing-md);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    margin-bottom: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.patient-info-display p,
+.dental-record-context p {
+    margin: var(--spacing-xs) 0;
+    color: var(--text-medium);
+}
+
+.patient-info-display strong,
+.dental-record-context strong {
+    color: var(--text-dark);
+}
+
+.restricted-info {
+    color: var(--danger-color);
+    font-style: italic;
+    font-weight: 500;
+}
+
+.service-selection {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.form-select,
+.form-control {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1em;
+    color: var(--text-dark);
+    background-color: var(--input-bg);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-select:focus,
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.2);
+    outline: none;
+}
+
+.service-selection .form-select {
+    flex-grow: 1;
+    min-width: 200px;
+}
+
+.invoice-items-list {
+    margin-top: var(--spacing-md);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.invoice-items-list h3 {
+    background-color: var(--table-header-bg);
+    color: var(--primary-color);
+    margin: 0;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 1.1em;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.services-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.services-table th,
+.services-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.services-table th {
+    background-color: var(--table-header-bg);
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.services-table tbody tr:nth-child(even) {
+    background-color: var(--table-row-even);
+}
+
+.services-table tbody tr:hover {
+    background-color: var(--table-row-hover);
+}
+
+.quantity-input,
+.price-input {
+    width: 80px; /* Adjust width as needed */
+    padding: 6px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    font-size: 0.9em;
+    text-align: right;
+}
+
+.subtotal-display {
+    padding: var(--spacing-md);
+    text-align: right;
+    font-size: 1.1em;
+    font-weight: 600;
+    background-color: var(--bg-light);
+    border-top: 1px solid var(--border-color);
+}
+
+.hmo-selection {
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-md);
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.hmo-selection label {
+    display: block;
+    margin-bottom: var(--spacing-xs);
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.hmo-status-message {
+    margin-top: var(--spacing-sm);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: 5px;
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+.hmo-status-message.not-onboard {
+    background-color: #ffe0b2; /* Light orange */
+    color: #e65100; /* Dark orange text */
+}
+
+/* Invoice Display Area */
+.invoice-display-area {
+    background-color: var(--card-bg);
+    padding: var(--spacing-xl);
+    border-radius: 15px;
+    box-shadow: var(--shadow-xl);
+    width: 100%;
+    max-width: 800px; /* Optimal width for A4-like print */
+    margin: 0 auto; /* Center the invoice for display/print */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.invoice-company-info {
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: var(--spacing-sm);
+}
+
+.invoice-company-info h2 {
+    color: var(--primary-color);
+    font-size: 2.5em;
+    margin-bottom: var(--spacing-xs);
+}
+
+.invoice-company-info p {
+    margin: 0;
+    color: var(--text-medium);
+    font-size: 0.95em;
+}
+
+.invoice-header-display {
+    text-align: right;
+    margin-bottom: var(--spacing-lg);
+}
+
+.invoice-header-display h2 {
+    color: var(--primary-color);
+    font-size: 2em;
+    margin-bottom: var(--spacing-sm);
+}
+
+.invoice-header-display p {
+    margin: 0;
+    font-size: 1em;
+    color: var(--text-dark);
+}
+
+.invoice-patient-info {
+    margin-bottom: var(--spacing-lg);
+    border: 1px solid var(--border-color);
+    padding: var(--spacing-md);
+    border-radius: 8px;
+    background-color: var(--bg-light);
+}
+
+.invoice-patient-info h3 {
+    color: var(--primary-color);
+    margin-top: 0;
+    margin-bottom: var(--spacing-sm);
+    font-size: 1.2em;
+}
+
+.invoice-patient-info p {
+    margin: var(--spacing-xs) 0;
+    color: var(--text-medium);
+}
+
+.invoice-services-rendered {
+    margin-bottom: var(--spacing-lg);
+}
+
+.invoice-services-rendered h3 {
+    color: var(--primary-color);
+    margin-top: 0;
+    margin-bottom: var(--spacing-sm);
+    font-size: 1.2em;
+}
+
+.invoice-services-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.invoice-services-table th,
+.invoice-services-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.invoice-services-table th {
+    background-color: var(--table-header-bg);
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.invoice-services-table tbody tr:nth-child(even) {
+    background-color: var(--table-row-even);
+}
+
+.invoice-summary {
+    text-align: right;
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-md);
+    border-top: 2px solid var(--border-color);
+}
+
+.invoice-summary p {
+    margin: var(--spacing-xs) 0;
+    font-size: 1.1em;
+    color: var(--text-dark);
+}
+
+.invoice-summary .total-due {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: var(--danger-color); /* Highlight total due */
+}
+
+.invoice-notes {
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-md);
+    border-top: 1px dashed var(--border-color);
+}
+
+.invoice-notes h3 {
+    color: var(--primary-color);
+    font-size: 1.2em;
+    margin-bottom: var(--spacing-sm);
+}
+
+.invoice-notes p {
+    color: var(--text-medium);
+    font-size: 0.95em;
+    margin-bottom: var(--spacing-xs);
+}
+
+.invoice-treatment-context {
+    background-color: var(--bg-light);
+    padding: var(--spacing-md);
+    border-radius: 8px;
+    border: 1px dashed var(--border-color);
+    margin-top: var(--spacing-md);
+}
+.invoice-treatment-context p {
+    margin: 0;
+    font-size: 0.9em;
+    color: var(--text-medium);
+}
+.invoice-treatment-context strong {
+    color: var(--text-dark);
+}
+
+.invoice-footer {
+    text-align: center;
+    margin-top: var(--spacing-xl);
+    padding-top: var(--spacing-md);
+    border-top: 2px solid var(--primary-color);
+}
+
+.invoice-footer p {
+    margin: var(--spacing-xs) 0;
+    color: var(--text-medium);
+}
+
+/* Spinner (Loading Indicator) Styles */
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Info/Error Messages */
+.info-message {
+    text-align: center;
+    padding: 20px;
+    background-color: var(--bg-light);
+    border-radius: 8px;
+    color: var(--text-medium);
+    margin-top: 20px;
+    font-size: 1.1rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.info-message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Print Specific Styles */
+@media print {
+    body {
+        background: none; /* No background gradient on print */
+    }
+    .invoice-container {
+        box-shadow: none; /* No shadow on print */
+        max-width: 100%; /* Use full width for print */
+        padding: 0; /* No padding on print */
+    }
+    .invoice-header .actions, /* Hide buttons on print */
+    .invoice-form-section { /* Hide form section on print */
+        display: none;
+    }
+    .printable-content {
+        display: block !important; /* Ensure the invoice display area is visible */
+        width: 100%;
+        margin: 0;
+        padding: 20px; /* Add some padding back for the printed content */
+    }
+    .invoice-display-area {
+        box-shadow: none;
+        border-radius: 0;
+        gap: var(--spacing-md); /* Reduce gap for print */
+    }
+    .invoice-company-info,
+    .invoice-header-display,
+    .invoice-patient-info,
+    .invoice-services-rendered,
+    .invoice-summary,
+    .invoice-notes,
+    .invoice-footer {
+        margin-bottom: var(--spacing-md); /* Adjust margins for print */
+        padding-bottom: var(--spacing-sm);
+    }
+    .invoice-company-info {
+        border-bottom: 1px solid var(--primary-color);
+    }
+    .invoice-summary {
+        border-top: 1px solid var(--border-color);
+    }
+    .invoice-footer {
+        border-top: 1px solid var(--primary-color);
+    }
+}
+
+
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+    .app-container {
+        padding: var(--spacing-md);
+    }
+    .invoice-container {
+        padding: var(--spacing-lg);
+        gap: var(--spacing-md);
+    }
+    .invoice-header h1 {
+        font-size: 2em;
+    }
+    .invoice-header .actions {
+        gap: var(--spacing-sm);
+    }
+    .invoice-form-section h2 {
+        font-size: 1.6em;
+    }
+}
+
+@media (max-width: 768px) {
+    .invoice-container {
+        padding: var(--spacing-md);
+        margin: var(--spacing-sm);
+        gap: var(--spacing-md);
+    }
+    .invoice-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-sm);
+    }
+    .invoice-header h1 {
+        font-size: 1.8em;
+        width: 100%;
+    }
+    .invoice-header .actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+    .back-button,
+    .generate-invoice-button,
+    .print-invoice-button,
+    .add-service-button {
+        width: 100%;
+        justify-content: center;
+    }
+    .service-selection {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .service-selection .form-select {
+        min-width: unset;
+        width: 100%;
+    }
+    .invoice-items-list h3 {
+        font-size: 1em;
+    }
+    .services-table,
+    .invoice-services-table {
+        min-width: 450px; /* Ensure scrollability */
+        font-size: 0.85rem;
+    }
+    .services-table th,
+    .services-table td,
+    .invoice-services-table th,
+    .invoice-services-table td {
+        padding: 8px 10px;
+    }
+    .quantity-input,
+    .price-input {
+        width: 60px;
+        font-size: 0.8em;
+    }
+    .remove-service-button {
+        padding: 6px 10px;
+        font-size: 0.75rem;
+    }
+    .invoice-display-area {
+        padding: var(--spacing-md);
+        gap: var(--spacing-md);
+    }
+    .invoice-company-info h2 {
+        font-size: 2em;
+    }
+    .invoice-header-display h2 {
+        font-size: 1.6em;
+    }
+    .invoice-patient-info h3,
+    .invoice-services-rendered h3,
+    .invoice-notes h3 {
+        font-size: 1.1em;
+    }
+    .invoice-summary .total-due {
+        font-size: 1.2em;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-container {
+        padding: var(--spacing-sm);
+    }
+    .invoice-container {
+        padding: var(--spacing-sm);
+        margin: var(--spacing-xs);
+        gap: var(--spacing-sm);
+    }
+    .invoice-header h1 {
+        font-size: 1.6em;
+    }
+    .back-button,
+    .generate-invoice-button,
+    .print-invoice-button,
+    .add-service-button {
+        padding: 8px 15px;
+        font-size: 0.9em;
+    }
+    .invoice-form-section h2 {
+        font-size: 1.4em;
+    }
+    .services-table,
+    .invoice-services-table {
+        min-width: 300px;
+    }
+}

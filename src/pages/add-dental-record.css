@@ -617,3 +617,214 @@ button[type="submit"]:disabled {
     font-size: 0.65em;
   }
 }
+
+/* Styles for the new "Add/Remove" functionality */
+
+.add-remove-control {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px; /* Space between the controls and the list */
+  align-items: center;
+}
+
+.add-remove-control .form-select {
+  flex-grow: 1; /* Allow select to take available space */
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.add-button {
+  background-color: #28a745; /* Green for add button */
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.add-button:hover {
+  background-color: #218838;
+}
+
+.added-items-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border: 1px solid #eee;
+  border-radius: 5px;
+  max-height: 200px; /* Limit height and add scroll for many items */
+  overflow-y: auto;
+  background-color: #fdfdfd;
+}
+
+.added-items-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.added-items-list li:last-child {
+  border-bottom: none;
+}
+
+.remove-item-button {
+  background: none;
+  border: none;
+  color: #dc3545; /* Red for remove button */
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: color 0.2s ease-in-out;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remove-item-button:hover {
+  color: #c82333;
+}
+
+/* Ensure full-width-grid-item still behaves correctly with these new elements */
+.full-width-grid-item {
+  grid-column: 1 / -1; /* Spans across all columns in the grid */
+}
+/* src/pages/add-dental-record.css */
+
+/* ... (existing imports and :root variables) ... */
+
+:root {
+    /* ... existing colors ... */
+    --invoice-color: #FFC107; /* Yellow, consistent with patient-detail's warning/edit */
+    --receipt-color: #00BCD4; /* Cyan, a distinct color for receipts */
+    /* ... rest of your :root variables ... */
+}
+
+/* ... (existing body, .app-container, .add-record-container styles) ... */
+
+/* Header Section */
+/* ... (existing .add-record-header and h1 styles) ... */
+
+.add-record-header .actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+    /* Added to align buttons consistently */
+    align-items: center;
+}
+
+/* Base styles for all header buttons (ensure this section applies to all) */
+.back-button,
+.generate-invoice-button, /* Added */
+.generate-receipt-button, /* Added */
+.add-service-button, /* Existing, included for completeness */
+.remove-service-button /* Existing, included for completeness */
+{
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    box-shadow: var(--shadow-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    white-space: nowrap; /* Prevents text from wrapping on smaller buttons */
+}
+
+/* Specific button colors and hovers */
+
+.back-button {
+    background-color: var(--secondary-color);
+    color: var(--text-light);
+}
+
+.back-button:hover {
+    background-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* NEW: Generate Invoice Button */
+.generate-invoice-button {
+    background-color: var(--invoice-color); /* Yellow */
+    color: var(--text-dark); /* Dark text for contrast */
+}
+
+.generate-invoice-button:hover {
+    background-color: #FFA000; /* Darker yellow */
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* NEW: Generate Receipt Button */
+.generate-receipt-button {
+    background-color: var(--receipt-color); /* Cyan */
+    color: var(--text-light);
+}
+
+.generate-receipt-button:hover {
+    background-color: #00838F; /* Darker cyan */
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Icon styling for all relevant buttons */
+.back-button i,
+.generate-invoice-button i,
+.generate-receipt-button i,
+.add-service-button i,
+.remove-service-button i {
+    margin-right: 8px;
+    font-size: 1.1rem;
+}
+
+/* --- (rest of your existing CSS, including .form-section, .form-group, .form-control,
+   .service-selection, .add-service-button, .procedures-list-display,
+   .procedures-table, .remove-service-button, etc.) --- */
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    /* ... existing responsive rules ... */
+
+    .add-record-header .actions {
+        width: 100%;
+        justify-content: flex-end; /* Align buttons to the right */
+        flex-direction: column; /* Stack buttons vertically */
+        gap: var(--spacing-sm); /* Adjust gap for stacking */
+    }
+
+    /* Make all action buttons full width on small screens */
+    .back-button,
+    .generate-invoice-button,
+    .generate-receipt-button,
+    .add-service-button { /* Apply to all header and add service buttons */
+        width: 100%;
+        justify-content: center; /* Center text and icon */
+    }
+
+    /* ... rest of your existing responsive rules ... */
+}
+
+@media (max-width: 480px) {
+    /* ... existing responsive rules ... */
+
+    .back-button,
+    .generate-invoice-button,
+    .generate-receipt-button,
+    .add-service-button { /* Apply to all header and add service buttons */
+        padding: 8px 15px;
+        font-size: 0.9em;
+    }
+
+    /* ... rest of your existing responsive rules ... */
+}

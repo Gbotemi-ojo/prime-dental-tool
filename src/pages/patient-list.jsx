@@ -1,6 +1,8 @@
+// src/pages/patient-list.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate for programmatic navigation
 import './patient-list.css'; // Make sure this CSS file exists and is linked!
+import API_BASE_URL from '../config/api';
 
 // Main App component to render the PatientList
 // In a real application, this would be integrated into your routing.
@@ -33,7 +35,7 @@ function PatientList() {
       }
 
       try {
-        const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/patients', {
+        const response = await fetch(`${API_BASE_URL}/api/patients`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -75,8 +77,9 @@ function PatientList() {
   // Filtered patients based on search term
   const filteredPatients = patients.filter(patient =>
     patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.phoneNumber.includes(searchTerm) ||
-    (patient.email && patient.email.toLowerCase().includes(searchTerm.toLowerCase()))
+    // Only include phone/email in search if the user is NOT a nurse
+    (userRole !== 'nurse' && patient.phoneNumber && patient.phoneNumber.includes(searchTerm)) || // Added null check for safety
+    (userRole !== 'nurse' && patient.email && patient.email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   if (loading) {
@@ -111,12 +114,11 @@ function PatientList() {
           <button onClick={() => navigate('/dashboard')} className="back-to-dashboard-button">
             <i className="fas fa-arrow-left"></i> Back to Dashboard
           </button>
+          {/* Add New Patient button - still only for owner/staff */}
           {(userRole === 'owner' || userRole === 'staff') && (
-            <>
-              <button onClick={() => navigate('/patients/new')} className="add-patient-button">
-                <i className="fas fa-plus-circle"></i> Add New Patient
-              </button>
-            </>
+            <button onClick={() => navigate('/')} className="add-patient-button">
+              <i className="fas fa-plus-circle"></i> Add New Patient
+            </button>
           )}
         </div>
       </header>
@@ -124,7 +126,7 @@ function PatientList() {
       <section className="search-filter-section">
         <input
           type="text"
-          placeholder="Search patients by name, phone, or email..."
+          placeholder="Search patients by name..." // Changed placeholder as nurses can only search by name effectively
           className="search-input"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -150,19 +152,41 @@ function PatientList() {
               {filteredPatients.map((patient) => (
                 <tr key={patient.id}>
                   <td>{patient.name}</td>
-                  <td>{patient.phoneNumber}</td>
-                  <td>{patient.email || 'N/A'}</td> {/* Display N/A if email is null/undefined */}
+                  <td>
+                    {/* Conditional rendering for phone number */}
+                    {userRole === 'nurse' ? (
+                      <span className="restricted-info">[Restricted]</span> // Better indicator
+                    ) : (
+                      patient.phoneNumber
+                    )}
+                  </td>
+                  <td>
+                    {/* Conditional rendering for email */}
+                    {userRole === 'nurse' ? (
+                      <span className="restricted-info">[Restricted]</span> // Better indicator
+                    ) : (
+                      patient.email || 'N/A'
+                    )}
+                  </td>
                   <td>{patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
                   <td>{patient.sex}</td>
-                  <td className="table-actions-cell"> {/* Added a class for styling multiple buttons */}
-                    <button onClick={() => navigate(`/patients/${patient.id}`)} className="table-view-details-button">
-                      View Details
-                    </button>
-                    {/* NEW: Receipts Button per patient */}
+                  <td className="table-actions-cell">
+                    {/* Hide "View Details" button from nurses */}
                     {(userRole === 'owner' || userRole === 'staff') && (
-                      <button onClick={() => navigate(`/patients/${patient.id}/receipts`)} className="table-receipts-button">
-                        <i className="fas fa-receipt"></i> Receipts
+                      <button onClick={() => navigate(`/patients/${patient.id}`)} className="table-view-details-button">
+                        View Details
                       </button>
+                    )}
+                    {/* NEW: Invoice and Receipts Buttons per patient - NOW visible for nurses too */}
+                    {(userRole === 'owner' || userRole === 'staff' || userRole === 'nurse') && ( // ADDED 'nurse' here
+                      <>
+                        <button onClick={() => navigate(`/patients/${patient.id}/invoice`)} className="table-invoice-button">
+                          <i className="fas fa-file-invoice"></i> Invoice
+                        </button>
+                        <button onClick={() => navigate(`/patients/${patient.id}/receipts`)} className="table-receipts-button">
+                          <i className="fas fa-receipt"></i> Receipts
+                        </button>
+                      </>
                     )}
                   </td>
                 </tr>
@@ -174,3 +198,4 @@ function PatientList() {
     </div>
   );
 }
+

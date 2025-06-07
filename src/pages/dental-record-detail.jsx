@@ -1,13 +1,15 @@
 // src/pages/dental-record-detail.jsx
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom'; // Make sure react-router-dom is installed
+import { useParams, useNavigate } from 'react-router-dom'; // Import useNavigate
 import './dental-record-detail.css'; // Ensure this CSS file is in the same directory
+import API_BASE_URL from '../config/api'
 
 // This component is now ready to be used directly in your React Router setup.
 // Example: <Route path="/patients/:patientId/dental-records/:recordId" element={<DentalRecordDetail />} />
 export default function DentalRecordDetail() {
   // useParams hook extracts parameters directly from the URL
   const { patientId, recordId } = useParams();
+  const navigate = useNavigate(); // Initialize useNavigate
 
   // Parse IDs to integers, as URL parameters are strings
   const parsedPatientId = parseInt(patientId);
@@ -26,7 +28,7 @@ export default function DentalRecordDetail() {
       setUserRole(role);
 
       if (!token) {
-        window.location.href = '/login'; // Redirect to login if no token
+        navigate('/login'); // Use navigate for redirection
         return;
       }
 
@@ -39,8 +41,7 @@ export default function DentalRecordDetail() {
 
       try {
         // Fetch Patient Name (to display in header)
-        // This is a separate API call to get the patient's name
-        const patientResponse = await fetch(`https://prime-dental-tool-backend.vercel.app/api/patients/${parsedPatientId}`, {
+        const patientResponse = await fetch(`${API_BASE_URL}/api/patients/${parsedPatientId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (patientResponse.ok) {
@@ -52,7 +53,7 @@ export default function DentalRecordDetail() {
         }
 
         // Fetch Dental Record Details for the specific patient and record
-        const recordResponse = await fetch(`https://prime-dental-tool-backend.vercel.app/api/patients/${parsedPatientId}/dental-records/${parsedRecordId}`, {
+        const recordResponse = await fetch(`${API_BASE_URL}/api/patients/${parsedPatientId}/dental-records/${parsedRecordId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -63,7 +64,7 @@ export default function DentalRecordDetail() {
           setError('Dental record not found.');
         } else if (recordResponse.status === 401 || recordResponse.status === 403) {
           localStorage.clear(); // Clear token if unauthorized/forbidden
-          window.location.href = '/login'; // Redirect to login
+          navigate('/login'); // Redirect to login
         } else {
           const errorData = await recordResponse.json();
           setError(errorData.error || `Failed to fetch dental record details. Status: ${recordResponse.status}`);
@@ -77,7 +78,7 @@ export default function DentalRecordDetail() {
     };
 
     fetchRecordDetails();
-  }, [parsedPatientId, parsedRecordId]); // Dependency array: re-run effect if IDs change
+  }, [parsedPatientId, parsedRecordId, navigate]); // Add navigate to dependency array
 
   // Helper to render quadrant data in a structured way
   const renderQuadrantData = (data) => {
@@ -112,9 +113,9 @@ export default function DentalRecordDetail() {
         <div className="record-detail-container error-state">
           <p className="info-message error">Error: {error}</p>
           {/* Use parsedPatientId for back link */}
-          <a href={`/patients/${parsedPatientId}`} className="back-button">
+          <button onClick={() => navigate(`/patients/${parsedPatientId}`)} className="back-button">
             <i className="fas fa-arrow-left"></i> Back to Patient Details
-          </a>
+          </button>
         </div>
       </div>
     );
@@ -126,9 +127,9 @@ export default function DentalRecordDetail() {
         <div className="record-detail-container no-record-state">
           <p className="info-message">Dental record not found.</p>
           {/* Use parsedPatientId for back link */}
-          <a href={`/patients/${parsedPatientId}`} className="back-button">
+          <button onClick={() => navigate(`/patients/${parsedPatientId}`)} className="back-button">
             <i className="fas fa-arrow-left"></i> Back to Patient Details
-          </a>
+          </button>
         </div>
       </div>
     );
@@ -136,19 +137,30 @@ export default function DentalRecordDetail() {
 
   return (
     <div className="record-detail-container">
-      <header className="detail-header">
+      <header className="detail-header"> {/* This header will be sticky */}
         <h1>Dental Record for <span className="patient-name-highlight">{patientName || 'Patient'}</span></h1>
         <div className="actions">
-          {/* Use parsedPatientId for back link */}
-          <a href={`/patients/${parsedPatientId}`} className="back-button">
+          {/* Back Button */}
+          <button onClick={() => navigate(`/patients/${parsedPatientId}`)} className="back-button">
             <i className="fas fa-arrow-left"></i> Back to Patient Details
-          </a>
-          {/* EDIT DENTAL RECORD BUTTON - Renders if user is 'owner' or 'staff' */}
+          </button>
+
+          {/* Conditional buttons for owner/staff */}
           {(userRole === 'owner' || userRole === 'staff') && (
-            // Use parsedPatientId and record?.id for edit link
-            <a href={`/patients/${parsedPatientId}/dental-records/${record?.id}/edit`} className="edit-button">
-              <i className="fas fa-edit"></i> Edit Record
-            </a>
+            <>
+              <button onClick={() => navigate(`/patients/${parsedPatientId}/dental-records/${record?.id}/edit`)} className="edit-button">
+                <i className="fas fa-edit"></i> Edit Record
+              </button>
+              {/* Send Invoice Button related to this record */}
+              {/* CORRECTED LINK: Navigates to /patients/:patientId/invoice */}
+              <button onClick={() => navigate(`/patients/${parsedPatientId}/invoice`)} className="send-invoice-button">
+                  <i className="fas fa-paper-plane"></i> Send Invoice
+              </button>
+              {/* Send Receipt Button related to this record */}
+              <button onClick={() => navigate(`/patients/${parsedPatientId}/receipts`)} className="send-receipt-button">
+                  <i className="fas fa-envelope"></i> Send Receipt
+              </button>
+            </>
           )}
         </div>
       </header>
@@ -193,7 +205,7 @@ export default function DentalRecordDetail() {
       <section className="detail-section">
         <h2>Medical History (Medications)</h2>
         <div className="medication-tags-group">
-          {record.medicationS && <span className="medication-tag tag-steroids">Steroids</span>}
+          {record.medicationS && <span className="medication-tag tag-steroids">Sickle cell</span>}
           {record.medicationH && <span className="medication-tag tag-heart">Heart Disease</span>}
           {record.medicationA && <span className="medication-tag tag-asthma">Asthma</span>}
           {record.medicationD && <span className="medication-tag tag-diabetes">Diabetes</span>}

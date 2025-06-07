@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './add-item.css'; // Import the dedicated CSS file
+import API_BASE_URL from '../config/api'
 
 // This component provides a form to add a new inventory item.
 export default function AddItem() {
@@ -83,7 +84,7 @@ export default function AddItem() {
         unitPrice: parseFloat(formData.unitPrice),
       };
 
-      const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/inventory/items', {
+      const response = await fetch(`${API_BASE_URL}/api/inventory/items`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

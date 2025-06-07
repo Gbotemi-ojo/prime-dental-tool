@@ -1,8 +1,9 @@
 // src/pages/staff-list.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify'; // For sleek notifications
 import './staff-list.css'; // Import the dedicated CSS file
+import API_BASE_URL from '../config/api'
 
 // This component displays a list of staff members (users with 'owner' or 'staff' roles).
 export default function StaffList() {
@@ -35,7 +36,7 @@ export default function StaffList() {
 
       try {
         // --- IMPORTANT: Updated API endpoint to match your backend ---
-        const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/admin/users/staff', {
+        const response = await fetch(`${API_BASE_URL}/api/admin/users/staff`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify'; // For sleek notifications
 import './edit-staff.css'; // Import the dedicated CSS file
+import API_BASE_URL from '../config/api';
 
 // This component allows 'owner' roles to edit details of an existing staff member.
 export default function EditStaff() {
@@ -12,7 +13,7 @@ export default function EditStaff() {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
-    role: '', // Can be 'staff' or 'owner'
+    role: '', // Can be 'staff', 'owner', or 'nurse'
     isActive: true,
   });
   const [loading, setLoading] = useState(true);
@@ -49,7 +50,7 @@ export default function EditStaff() {
     const fetchStaffDetails = async () => {
       try {
         // Use the existing GET /api/admin/users/:id endpoint
-        const response = await fetch(`https://prime-dental-tool-backend.vercel.app/api/admin/users/${parsedUserId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/admin/users/${parsedUserId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -132,9 +133,9 @@ export default function EditStaff() {
         return;
     }
     if (String(userId) === String(loggedInUserId) && !formData.isActive) {
-        toast.error("You cannot deactivate your own account.");
-        setSubmitting(false);
-        return;
+      toast.error("You cannot deactivate your own account.");
+      setSubmitting(false);
+      return;
     }
 
     try {
@@ -148,7 +149,7 @@ export default function EditStaff() {
 
       // You'll need a PUT /api/admin/users/:id endpoint on your backend
       // This endpoint should handle updating user details (username, email, role, isActive)
-      const response = await fetch(`https://prime-dental-tool-backend.vercel.app/api/admin/users/${userId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/users/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -266,8 +267,9 @@ export default function EditStaff() {
               // Disable role change if editing own owner account
               disabled={isEditingOwnOwnerAccount}
             >
-              <option value="staff">Staff</option>
               <option value="owner">Owner</option>
+              <option value="staff">Staff</option>
+              <option value="nurse">Nurse</option> {/* ADDED NURSE ROLE */}
             </select>
             {isEditingOwnOwnerAccount && (
                 <p className="field-note">You cannot change your own role from 'owner'.</p>

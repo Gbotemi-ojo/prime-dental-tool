@@ -2,12 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom'; // Import useParams and useNavigate
 import './patient-detail.css'; // Import the CSS file for patient detail
+import API_BASE_URL from '../config/api';
 
 // This component is designed to be rendered by React Router
 // Example: <Route path="/patients/:patientId" element={<PatientDetail />} />
 export default function PatientDetail() {
   // Directly get the patientId from the URL parameters as defined in App.jsx
-  const { patientId } = useParams(); // CHANGED: Destructuring 'patientId' directly
+  const { patientId } = useParams(); // Destructuring 'patientId' directly
   const navigate = useNavigate(); // Initialize navigate hook for programmatic redirection
 
   const [patient, setPatient] = useState(null);
@@ -39,7 +40,7 @@ export default function PatientDetail() {
 
       try {
         // Fetch Patient Details
-        const patientResponse = await fetch(`https://prime-dental-tool-backend.vercel.app/api/patients/${parsedPatientId}`, {
+        const patientResponse = await fetch(`${API_BASE_URL}/api/patients/${parsedPatientId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -64,7 +65,7 @@ export default function PatientDetail() {
         }
 
         // Fetch Dental Records for this patient
-        const recordsResponse = await fetch(`https://prime-dental-tool-backend.vercel.app/api/patients/${parsedPatientId}/dental-records`, {
+        const recordsResponse = await fetch(`${API_BASE_URL}/api/patients/${parsedPatientId}/dental-records`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -92,7 +93,7 @@ export default function PatientDetail() {
 
     // Re-run effect if patientId or navigate function changes
     fetchData();
-  }, [patientId, navigate]); // CHANGED: Dependency array now uses 'patientId'
+  }, [patientId, navigate]); // Dependency array now uses 'patientId'
 
   if (loading) {
     return (
@@ -111,9 +112,9 @@ export default function PatientDetail() {
         <div className="patient-detail-container">
           <p className="info-message error">Error: {error}</p>
           {/* Link back to patient list */}
-          <a href="/patients" className="back-button" style={{ margin: '20px auto', display: 'block', width: 'fit-content' }}>
+          <button onClick={() => navigate('/patients')} className="back-button" style={{ margin: '20px auto', display: 'block', width: 'fit-content' }}>
             <i className="fas fa-arrow-left"></i> Back to Patient List
-          </a>
+          </button>
         </div>
       </div>
     );
@@ -125,9 +126,9 @@ export default function PatientDetail() {
         <div className="patient-detail-container">
           <p className="info-message">Patient data not found.</p>
           {/* Link back to patient list */}
-          <a href="/patients" className="back-button" style={{ margin: '20px auto', display: 'block', width: 'fit-content' }}>
+          <button onClick={() => navigate('/patients')} className="back-button" style={{ margin: '20px auto', display: 'block', width: 'fit-content' }}>
             <i className="fas fa-arrow-left"></i> Back to Patient List
-          </a>
+          </button>
         </div>
       </div>
     );
@@ -138,43 +139,62 @@ export default function PatientDetail() {
       <header className="detail-header">
         <h1>Patient: {patient.name}</h1>
         <div className="actions">
-          {/* Link back to patient list */}
-          <a href="/patients" className="back-button">
+          {/* Back to List Button */}
+          <button onClick={() => navigate('/patients')} className="back-button">
             <i className="fas fa-arrow-left"></i> Back to List
-          </a>
+          </button>
           {/* EDIT PATIENT BUTTON - Renders if user is 'owner' or 'staff' */}
           {(userRole === 'owner' || userRole === 'staff') && (
-            <a href={`/patients/${patient.id}/edit`} className="edit-button">
-              <i className="fas fa-edit"></i> Edit Patient
-            </a>
-          )}
-          {/* ADD DENTAL RECORD BUTTON - Renders if user is 'owner' or 'staff' */}
-          {(userRole === 'owner' || userRole === 'staff') && (
-            <a href={`/patients/${patient.id}/dental-records/new`} className="add-record-button">
-              <i className="fas fa-plus-circle"></i> Add Dental Record
-            </a>
+            <>
+              {/* ADD DENTAL RECORD BUTTON - Renders if user is 'owner' or 'staff' */}
+              <button onClick={() => navigate(`/patients/${patient.id}/dental-records/new`)} className="add-record-button">
+                <i className="fas fa-plus-circle"></i> Add Dental Record
+              </button>
+              {/* NEW: Send Invoice Button */}
+              <button onClick={() => navigate(`/patients/${patient.id}/invoice`)} className="send-invoice-button">
+                <i className="fas fa-file-invoice"></i> Send Invoice
+              </button>
+              {/* NEW: Send Receipt Button */}
+              <button onClick={() => navigate(`/patients/${patient.id}/receipts`)} className="send-receipt-button">
+                <i className="fas fa-receipt"></i> Send Receipt
+              </button>
+            </>
           )}
         </div>
       </header>
 
       <section className="detail-section">
         <h2>Demographic Information</h2>
-        <div className="detail-item">
-          <strong>Patient ID:</strong> <span>{patient.id}</span>
+        <div className="detail-grid"> {/* Apply detail-grid for proper layout */}
+          <div className="detail-item">
+            <strong>Patient ID:</strong> <span>{patient.id}</span>
+          </div>
+          <div className="detail-item">
+            <strong>Phone Number:</strong>{' '}
+            {/* Conditional rendering for phone number */}
+            {userRole === 'nurse' ? (
+              <span className="restricted-info">Restricted</span> // Display "Restricted"
+            ) : (
+              <span>{patient.phoneNumber}</span>
+            )}
+          </div>
+          <div className="detail-item">
+            <strong>Email:</strong>{' '}
+            {/* Conditional rendering for email */}
+            {userRole === 'nurse' ? (
+              <span className="restricted-info">Restricted</span> // Display "Restricted"
+            ) : (
+              <span>{patient.email || 'N/A'}</span>
+            )}
+          </div>
+          <div className="detail-item">
+            <strong>Date of Birth:</strong> <span>{patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString() : 'N/A'}</span>
+          </div>
+          <div className="detail-item">
+            <strong>Sex:</strong> <span>{patient.sex}</span>
+          </div>
+          {/* Add more patient details as needed */}
         </div>
-        <div className="detail-item">
-          <strong>Phone Number:</strong> <span>{patient.phoneNumber}</span>
-        </div>
-        <div className="detail-item">
-          <strong>Email:</strong> <span>{patient.email || 'N/A'}</span>
-        </div>
-        <div className="detail-item">
-          <strong>Date of Birth:</strong> <span>{patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString() : 'N/A'}</span>
-        </div>
-        <div className="detail-item">
-          <strong>Sex:</strong> <span>{patient.sex}</span>
-        </div>
-        {/* Add more patient details as needed */}
       </section>
 
       <section className="detail-section">
@@ -207,10 +227,10 @@ export default function PatientDetail() {
                     <td>{Array.isArray(record.treatmentPlan) ? record.treatmentPlan.join(', ') : record.treatmentPlan || 'N/A'}</td>
                     <td>{record.doctorUsername || 'N/A'}</td>
                     <td>
-                      {/* CORRECTED: Link to dental record detail now includes patient.id */}
-                      <a href={`/patients/${patient.id}/dental-records/${record.id}`} className="view-record-button">
+                      {/* Link to dental record detail now includes patient.id */}
+                      <button onClick={() => navigate(`/patients/${patient.id}/dental-records/${record.id}`)} className="view-record-button">
                         View
-                      </a>
+                      </button>
                     </td>
                   </tr>
                 ))}

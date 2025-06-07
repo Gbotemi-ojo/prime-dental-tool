@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './inventory-list.css'; // Import the dedicated CSS file
+import API_BASE_URL from '../config/api';
 
 // This component displays a list of inventory items.
 export default function InventoryList() {
@@ -25,8 +26,15 @@ export default function InventoryList() {
         return;
       }
 
+      // IMPORTANT CHANGE: Redirect 'nurse' role away from this page
+      if (role === 'nurse') {
+        console.warn("[InventoryList] Unauthorized access: User is a nurse. Redirecting to patient management.");
+        navigate('/patient-management'); // Redirect nurses to patient management
+        return; // Stop further execution of this useEffect
+      }
+
       try {
-        const response = await fetch('https://prime-dental-tool-backend.vercel.app/api/inventory/items', {
+        const response = await fetch(`${API_BASE_URL}/api/inventory/items`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -66,6 +74,12 @@ export default function InventoryList() {
     item.category.toLowerCase().includes(searchTerm.toLowerCase())
     // item.sku.toLowerCase().includes(searchTerm.toLowerCase()) // Removed SKU from search
   );
+
+  // If userRole is nurse, prevent rendering the component.
+  // The useEffect above will handle the redirection.
+  if (userRole === 'nurse') {
+    return null;
+  }
 
   if (loading) {
     return (
@@ -150,4 +164,3 @@ export default function InventoryList() {
     </div>
   );
 }
-
