@@ -541,11 +541,11 @@ export default function PatientReceiptsPage() {
                         )}
                         <p><strong>Payment Method:</strong> {paymentMethod || 'N/A'}</p>
                         <p className="total-due">
-                            <strong>Total Amount Due from Patient:</strong> ₦{totalDue.toLocaleString()}
+                            <strong>Total Amount Paid by the Patient:</strong> ₦{totalDue.toLocaleString()}
                         </p>
                     </div>
                     <div className="receipt-footer">
-                        <p>Thank you for your business!</p>
+                        <p>Thank you for your patronage!</p>
                         <p>Signature: _________________________</p>
                         <p className="clinic-contact">
                             {process.env.REACT_APP_CLINIC_NAME || 'Prime Dental Clinic'} |

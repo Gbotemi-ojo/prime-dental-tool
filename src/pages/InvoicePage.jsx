@@ -324,9 +324,9 @@ export default function InvoicePage() {
                     hmo: selectedHMO,
                     hmoCoveredAmount: coveredAmount,
                     notes: "Please make payment within 7 days of invoice date.",
-                    clinicName: "Your Dental Clinic Name", // Replace with actual clinic name from config if available
-                    clinicAddress: "123 Dental Lane, City, Country", // Replace with actual clinic address
-                    clinicPhone: "(123) 456-7890", // Replace with actual clinic phone
+                    clinicName: "PRIME DENTAL CLINIC", // Replace with actual clinic name from config if available
+                    clinicAddress: " local government, 104, New Ipaja/Egbeda Road, opposite prestige super-market, Alimosho, Ipaja Rd, Ipaja, Lagos 100006, Lagos", // Replace with actual clinic address
+                    clinicPhone: "0703 070 8877", // Replace with actual clinic phone
                     clinicEmail: "info@dentalclinic.com" // Replace with actual clinic email
                 })
             });
