@@ -21,7 +21,7 @@ export default function PatientReceiptsPage() {
     const [paymentMethod, setPaymentMethod] = useState('');
     const [showReceipt, setShowReceipt] = useState(false);
     const [isSendingEmail, setIsSendingEmail] = useState(false);
-
+    
     // Hardcoded list of services with base prices
     const serviceOptions = [
         { name: "Registration & Consultation", price: 5000 },

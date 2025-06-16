@@ -23,6 +23,7 @@
   --shadow-sm: rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
   --shadow-md: rgba(0, 0, 0, 0.08) 0px 4px 12px;
   --shadow-lg: rgba(0, 0, 0, 0.15) 0px 8px 24px;
+  --shadow-xl: rgba(0, 0, 0, 0.2) 0px 10px 30px;
 
   /* Spacing */
   --spacing-xs: 8px;
@@ -103,11 +104,12 @@ body {
 
 .back-button,
 .generate-receipt-button,
-.print-receipt-button {
+.print-receipt-button,
+.send-receipt-button {
   display: inline-flex;
   align-items: center;
   padding: 10px 20px;
-  border: none;
+  border: none; /* Default to no border, specific buttons will add one if needed */
   border-radius: 8px;
   text-decoration: none;
   font-weight: 600;
@@ -117,11 +119,13 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   cursor: pointer;
+  outline: none; /* Remove outline on focus */
 }
 
 .back-button {
   background-color: var(--secondary-color);
   color: var(--text-light);
+  border: 1px solid var(--primary-color);
 }
 
 .back-button:hover {
@@ -131,19 +135,26 @@ body {
 }
 
 .generate-receipt-button {
-  background-color: var(--accent-color);
+  /* Enhanced styling for Generate Receipt Button */
+  background: linear-gradient(135deg, var(--accent-color) 0%, #388E3C 100%); /* Green gradient */
   color: var(--text-light);
+  border: 1px solid #388E3C; /* Darker green border */
+  position: relative; /* For potential future effects */
+  overflow: hidden; /* For potential future effects */
+  box-shadow: 0 4px 15px rgba(0, 128, 0, 0.2); /* Softer, more spread out shadow */
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smoother transition */
 }
 
 .generate-receipt-button:hover {
-  background-color: #388E3C; /* Darker green */
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  background: linear-gradient(135deg, #388E3C 0%, #2E7D32 100%); /* Darker gradient on hover */
+  transform: translateY(-3px) scale(1.02); /* More pronounced lift and slight scale */
+  box-shadow: 0 8px 25px rgba(0, 128, 0, 0.35); /* Deeper shadow on hover */
 }
 
 .print-receipt-button {
   background-color: #607D8B; /* Blue Grey for print */
   color: var(--text-light);
+  border: 1px solid #455A64;
 }
 
 .print-receipt-button:hover {
@@ -152,9 +163,27 @@ body {
   box-shadow: var(--shadow-md);
 }
 
+.send-receipt-button {
+  background: linear-gradient(135deg, var(--primary-color) 0%, #303F9F 100%); /* Blue gradient for send */
+  color: var(--text-light);
+  border: 1px solid #303F9F; /* Darker blue border */
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(63, 81, 181, 0.2); /* Softer shadow */
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.send-receipt-button:hover {
+  background: linear-gradient(135deg, #303F9F 0%, #1A237E 100%); /* Darker blue gradient on hover */
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(63, 81, 181, 0.35); /* Deeper shadow on hover */
+}
+
+
 .back-button i,
 .generate-receipt-button i,
-.print-receipt-button i {
+.print-receipt-button i,
+.send-receipt-button i { /* Added .send-receipt-button here */
   margin-right: 8px;
   font-size: 1.1rem;
 }
@@ -515,7 +544,7 @@ body {
     width: 100%;
     justify-content: flex-end;
   }
-  .back-button, .generate-receipt-button, .print-receipt-button {
+  .back-button, .generate-receipt-button, .print-receipt-button, .send-receipt-button {
     width: 100%;
     justify-content: center;
   }
@@ -563,7 +592,7 @@ body {
   .receipts-header h1 {
     font-size: 1.8em;
   }
-  .back-button, .generate-receipt-button, .print-receipt-button {
+  .back-button, .generate-receipt-button, .print-receipt-button, .send-receipt-button {
     padding: 8px 15px;
     font-size: 0.9em;
   }

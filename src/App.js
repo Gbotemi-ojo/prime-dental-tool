@@ -27,8 +27,9 @@ const ProfilePage = lazy(() => import("./pages/profile-page"));
 const RecordTransaction = lazy(() => import("./pages/RecordTransaction"));
 const AllTransactions = lazy(() => import("./pages/AllTransactions"));
 const PatientReceiptsPage = lazy(() => import("./pages/PatientReceiptsPage"));
-// NEW: Lazy-load InvoicePage component
 const InvoicePage = lazy(() => import("./pages/InvoicePage"));
+// NEW: Lazy-load RevenueReportPage component
+const RevenueReportPage = lazy(() => import("./pages/RevenueReportPage"));
 
 
 function App() {
@@ -72,7 +73,7 @@ function App() {
             <Route path="/patients/:patientId/dental-records/:recordId" element={<DentalRecordDetail />} />
             <Route path="/patients/:patientId/dental-records/:recordId/edit" element={<EditDentalRecord />} />
             <Route path="/patients/:patientId/receipts" element={<PatientReceiptsPage />} />
-            {/* NEW: Patient Invoice Route */}
+            {/* Patient Invoice Route */}
             <Route path="/patients/:patientId/invoice" element={<InvoicePage />} />
 
 
@@ -92,6 +93,9 @@ function App() {
             <Route path="/admin/staff-management/new" element={<AddStaff />} />
             <Route path="/admin/staff-management/:userId" element={<StaffDetail />} />
             <Route path="/admin/staff-management/:userId/edit" element={<EditStaff />} />
+
+            {/* NEW: Revenue Report Route */}
+            <Route path="/revenue-report" element={<RevenueReportPage />} />
 
           </Routes>
         </div>

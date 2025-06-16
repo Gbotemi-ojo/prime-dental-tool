@@ -134,6 +134,15 @@ export default function Dashboard() {
             <p>Review comprehensive history of all inventory movements.</p>
           </a>
         )}
+
+        {/* Revenue Report (Accessible by Owner ONLY) */}
+        {isOwner && (
+          <a href="/revenue-report" className="nav-card revenue-report">
+            <i className="icon fas fa-chart-line"></i> {/* Changed icon to chart-line for reports */}
+            <h3>Revenue Report</h3>
+            <p>View and analyze total revenue over different time periods.</p>
+          </a>
+        )}
       </nav>
     </div>
   );
