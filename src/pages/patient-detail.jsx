@@ -15,7 +15,7 @@ export default function PatientDetail() {
   const [dentalRecords, setDentalRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [userRole, setUserRole] = useState(null); // To determine access for 'Edit Patient', 'Add Record'
+  const [userRole, setUserRole] = useState(null); // To determine access for buttons
 
   useEffect(() => {
     const fetchData = async () => {
@@ -143,18 +143,22 @@ export default function PatientDetail() {
           <button onClick={() => navigate('/patients')} className="back-button">
             <i className="fas fa-arrow-left"></i> Back to List
           </button>
-          {/* EDIT PATIENT BUTTON - Renders if user is 'owner' or 'staff' */}
+
+          {/* ADD DENTAL RECORD BUTTON - Now visible for owner, staff, nurse, and doctor */}
+          {(userRole === 'owner' || userRole === 'staff' || userRole === 'nurse' || userRole === 'doctor') && (
+            <button onClick={() => navigate(`/patients/${patient.id}/dental-records/new`)} className="add-record-button">
+              <i className="fas fa-plus-circle"></i> Add Dental Record
+            </button>
+          )}
+
+          {/* EDIT PATIENT BUTTON - Renders if user is 'owner' or 'staff' (doctors do not edit patient demographics) */}
           {(userRole === 'owner' || userRole === 'staff') && (
             <>
-              {/* ADD DENTAL RECORD BUTTON - Renders if user is 'owner' or 'staff' */}
-              <button onClick={() => navigate(`/patients/${patient.id}/dental-records/new`)} className="add-record-button">
-                <i className="fas fa-plus-circle"></i> Add Dental Record
-              </button>
-              {/* NEW: Send Invoice Button */}
+              {/* Send Invoice Button - Renders if user is 'owner' or 'staff' (hidden from doctors) */}
               <button onClick={() => navigate(`/patients/${patient.id}/invoice`)} className="send-invoice-button">
                 <i className="fas fa-file-invoice"></i> Send Invoice
               </button>
-              {/* NEW: Send Receipt Button */}
+              {/* Send Receipt Button - Renders if user is 'owner' or 'staff' (hidden from doctors) */}
               <button onClick={() => navigate(`/patients/${patient.id}/receipts`)} className="send-receipt-button">
                 <i className="fas fa-receipt"></i> Send Receipt
               </button>

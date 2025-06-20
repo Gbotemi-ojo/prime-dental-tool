@@ -1,7 +1,7 @@
 // src/pages/patient-list.jsx
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for programmatic navigation
-import './patient-list.css'; // Make sure this CSS file exists and is linked!
+import React, { useState, useEffect, useMemo } from 'react'; // Added useMemo
+import { useNavigate } from 'react-router-dom';
+import './patient-list.css';
 import API_BASE_URL from '../config/api';
 
 // Main App component to render the PatientList
@@ -15,26 +15,47 @@ export default function App() {
 }
 
 function PatientList() {
-  const [patients, setPatients] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // State to hold all patients fetched from the API
+  const [allPatients, setAllPatients] = useState([]);
+  // State for search term
   const [searchTerm, setSearchTerm] = useState('');
-  const [userRole, setUserRole] = useState(null); // To determine access for 'Add Patient' and 'Receipts'
-  const navigate = useNavigate(); // Initialize useNavigate hook
+  // State for the selected date filter, initialized to today's date
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  // State for loading indicator
+  const [loading, setLoading] = useState(true);
+  // State for error messages
+  const [error, setError] = useState(null);
+  // State to store user role for access control
+  const [userRole, setUserRole] = useState(null);
+  // Hook for programmatic navigation
+  const navigate = useNavigate();
 
+  // Helper function to format a Date object or ISO string to YYYY-MM-DD
+  const formatDateForInput = (date) => {
+    if (!date) return '';
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Effect hook to fetch patients when the component mounts or navigate changes
   useEffect(() => {
     const fetchPatients = async () => {
       const token = localStorage.getItem('jwtToken');
-      const role = localStorage.getItem('role'); // Get role from local storage
+      const role = localStorage.getItem('role');
       setUserRole(role);
 
+      // Redirect to login if no token is found
       if (!token) {
         console.log("No JWT token found in localStorage. Redirecting to login.");
-        navigate('/login'); // Use navigate instead of window.location.href
+        navigate('/login');
         return;
       }
 
       try {
+        // Fetch all patients (client-side filtering will be applied later)
         const response = await fetch(`${API_BASE_URL}/api/patients`, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -43,12 +64,14 @@ function PatientList() {
 
         if (response.ok) {
           const data = await response.json();
-          setPatients(data);
+          setAllPatients(data); // Store all fetched patients
         } else if (response.status === 401 || response.status === 403) {
+          // Handle authentication/authorization errors
           console.error(`Authentication error (${response.status}):`, response.statusText);
-          localStorage.clear(); // Clear all auth related storage
-          navigate('/login'); // Redirect to login
+          localStorage.clear(); // Clear storage and redirect
+          navigate('/login');
         } else {
+          // Handle other API errors
           let errorMsg = `Failed to fetch patients. Status: ${response.status} ${response.statusText}`;
           try {
             const errorData = await response.json();
@@ -64,35 +87,53 @@ function PatientList() {
           console.error('API Error details:', response.status, response.statusText, errorMsg);
         }
       } catch (err) {
+        // Handle network errors
         setError('Network error. Could not connect to the server. Please ensure the backend is running and accessible.');
         console.error('Network Error during fetch:', err);
       } finally {
-        setLoading(false);
+        setLoading(false); // Set loading to false regardless of success or failure
       }
     };
 
     fetchPatients();
-  }, [navigate]); // Add navigate to dependency array
+  }, [navigate]); // navigate is a dependency as it's used inside the effect
 
-  // Filtered patients based on search term
-  const filteredPatients = patients.filter(patient =>
-    patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    // Only include phone/email in search if the user is NOT a nurse
-    (userRole !== 'nurse' && patient.phoneNumber && patient.phoneNumber.includes(searchTerm)) || // Added null check for safety
-    (userRole !== 'nurse' && patient.email && patient.email.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  // Memoized filtering logic for patients based on search term and selected date
+  const filteredPatients = useMemo(() => {
+    let tempPatients = allPatients;
 
+    // 1. Filter by selected date
+    if (selectedDate) {
+      const formattedSelectedDate = formatDateForInput(selectedDate);
+      tempPatients = tempPatients.filter(patient => {
+        // Assuming 'createdAt' is the field that stores the patient's creation date (e.g., ISO string)
+        // If your API uses a different field name (e.g., 'addedDate'), update 'patient.createdAt' accordingly.
+        return patient.createdAt && formatDateForInput(patient.createdAt) === formattedSelectedDate;
+      });
+    }
+
+    // 2. Filter by search term (applied after date filter)
+    return tempPatients.filter(patient =>
+      patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      // Conditional search by phone/email for non-nurse roles
+      (userRole !== 'nurse' && patient.phoneNumber && patient.phoneNumber.includes(searchTerm)) ||
+      (userRole !== 'nurse' && patient.email && patient.email.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  }, [allPatients, searchTerm, selectedDate, userRole]); // Re-run when these dependencies change
+
+  // Loading state rendering
   if (loading) {
     return (
       <div className="app-container">
         <div className="patient-list-container" style={{ textAlign: 'center', padding: '50px' }}>
           <p className="info-message">Loading patient data...</p>
-          <div className="spinner"></div> {/* Using CSS for spinner */}
+          <div className="spinner"></div>
         </div>
       </div>
     );
   }
 
+  // Error state rendering
   if (error) {
     return (
       <div className="app-container">
@@ -106,6 +147,7 @@ function PatientList() {
     );
   }
 
+  // Main rendering of the patient list
   return (
     <div className="patient-list-container">
       <header className="patient-list-header">
@@ -114,7 +156,6 @@ function PatientList() {
           <button onClick={() => navigate('/dashboard')} className="back-to-dashboard-button">
             <i className="fas fa-arrow-left"></i> Back to Dashboard
           </button>
-          {/* Add New Patient button - still only for owner/staff */}
           {(userRole === 'owner' || userRole === 'staff') && (
             <button onClick={() => navigate('/')} className="add-patient-button">
               <i className="fas fa-plus-circle"></i> Add New Patient
@@ -126,17 +167,24 @@ function PatientList() {
       <section className="search-filter-section">
         <input
           type="text"
-          placeholder="Search patients by name..." // Changed placeholder as nurses can only search by name effectively
+          placeholder="Search patients by name..."
           className="search-input"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
+        {/* Date Picker Input */}
+        <input
+          type="date"
+          className="date-input" // New class for styling
+          value={formatDateForInput(selectedDate)} // Display selected date
+          onChange={(e) => setSelectedDate(new Date(e.target.value))} // Update selected date
+        />
       </section>
 
       {filteredPatients.length === 0 ? (
-        <p className="info-message">No patients found. Try adjusting your search or add a new patient.</p>
+        <p className="info-message">No patients found for the selected criteria. Try adjusting your search or date filter.</p>
       ) : (
-        <div className="table-responsive"> {/* Wrapper for horizontal scrolling on small screens */}
+        <div className="table-responsive">
           <table className="patient-table">
             <thead>
               <tr>
@@ -153,17 +201,15 @@ function PatientList() {
                 <tr key={patient.id}>
                   <td>{patient.name}</td>
                   <td>
-                    {/* Conditional rendering for phone number */}
                     {userRole === 'nurse' ? (
-                      <span className="restricted-info">[Restricted]</span> // Better indicator
+                      <span className="restricted-info">[Restricted]</span>
                     ) : (
                       patient.phoneNumber
                     )}
                   </td>
                   <td>
-                    {/* Conditional rendering for email */}
                     {userRole === 'nurse' ? (
-                      <span className="restricted-info">[Restricted]</span> // Better indicator
+                      <span className="restricted-info">[Restricted]</span>
                     ) : (
                       patient.email || 'N/A'
                     )}
@@ -171,14 +217,14 @@ function PatientList() {
                   <td>{patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
                   <td>{patient.sex}</td>
                   <td className="table-actions-cell">
-                    {/* Hide "View Details" button from nurses */}
-                    {(userRole === 'owner' || userRole === 'staff') && (
+                    {/* Hide "View Details" button from nurses and doctors */}
+                    {(userRole === 'owner' || userRole === 'staff') && ( // Doctor role explicitly removed here
                       <button onClick={() => navigate(`/patients/${patient.id}`)} className="table-view-details-button">
                         View Details
                       </button>
                     )}
-                    {/* NEW: Invoice and Receipts Buttons per patient - NOW visible for nurses too */}
-                    {(userRole === 'owner' || userRole === 'staff' || userRole === 'nurse') && ( // ADDED 'nurse' here
+                    {/* Invoice and Receipts Buttons - Hidden from doctors */}
+                    {(userRole === 'owner' || userRole === 'staff' || userRole === 'nurse') && ( // Doctor role explicitly removed here
                       <>
                         <button onClick={() => navigate(`/patients/${patient.id}/invoice`)} className="table-invoice-button">
                           <i className="fas fa-file-invoice"></i> Invoice
@@ -198,4 +244,3 @@ function PatientList() {
     </div>
   );
 }
-

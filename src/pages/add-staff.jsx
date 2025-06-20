@@ -245,11 +245,11 @@ export default function AddStaff() {
               value={formData.role}
               onChange={handleChange}
               required
-              // Removed 'disabled' attribute to allow selection
             >
               <option value="">Select Role</option> {/* Added a default empty option */}
               <option value="staff">Staff</option>
-              <option value="nurse">Nurse</option> {/* Added Nurse option */}
+              <option value="nurse">Nurse</option>
+              <option value="doctor">Doctor</option> {/* Added Doctor option */}
               {/* <option value="owner">Owner</option> // Uncomment if owners can create other owners */}
             </select>
           </div>

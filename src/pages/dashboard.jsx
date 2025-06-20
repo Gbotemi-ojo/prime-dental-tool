@@ -76,10 +76,11 @@ export default function Dashboard() {
     );
   }
 
-  // Determine if the user is an owner or staff to show specific links
+  // Determine user roles for conditional rendering
   const isOwner = user.role === 'owner';
   const isStaff = user.role === 'staff';
   const isNurse = user.role === 'nurse';
+  const isDoctor = user.role === 'doctor'; // New: Check for doctor role
 
   return (
     <div className="dashboard-container">
@@ -94,12 +95,14 @@ export default function Dashboard() {
       </header>
 
       <nav className="nav-grid">
-        {/* Patient Management (Accessible by Owner, Staff, and Nurse) */}
-        <a href="/patients" className="nav-card patients">
-          <i className="icon fas fa-user-injured"></i>
-          <h3>Patient Management</h3>
-          <p>View, add, and manage patient demographic information and medical records.</p>
-        </a>
+        {/* Patient Management (Accessible by Owner, Staff, Nurse, and Doctor) */}
+        {(isOwner || isStaff || isNurse || isDoctor) && (
+          <a href="/patients" className="nav-card patients">
+            <i className="icon fas fa-user-injured"></i>
+            <h3>Patient Management</h3>
+            <p>View, add, and manage patient demographic information and medical records.</p>
+          </a>
+        )}
 
         {/* Inventory Management (Accessible by Owner & Staff ONLY) */}
         {(isOwner || isStaff) && (
@@ -119,12 +122,14 @@ export default function Dashboard() {
           </a>
         )}
 
-        {/* View Profile (Accessible by Owner, Staff, and Nurse) */}
-        <a href="/profile" className="nav-card profile">
-          <i className="icon fas fa-id-card"></i>
-          <h3>My Profile</h3>
-          <p>View and update your personal account details.</p>
-        </a>
+        {/* View Profile (Accessible by Owner, Staff, Nurse, and Doctor) */}
+        {(isOwner || isStaff || isNurse || isDoctor) && (
+          <a href="/profile" className="nav-card profile">
+            <i className="icon fas fa-id-card"></i>
+            <h3>My Profile</h3>
+            <p>View and update your personal account details.</p>
+          </a>
+        )}
 
         {/* All Inventory Transactions (Accessible by Owner ONLY) */}
         {isOwner && (

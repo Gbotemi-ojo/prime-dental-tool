@@ -18,6 +18,7 @@ export default function AddDentalRecord() {
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [userRole, setUserRole] = useState(null); // State to store user role
 
   // Initial state for quadrant fields
   const initialQuadrantState = { q1: '', q2: '', q3: '', q4: '' };
@@ -58,7 +59,7 @@ export default function AddDentalRecord() {
   const [selectedTreatmentPlanOption, setSelectedTreatmentPlanOption] = useState('');
 
 
-  // Options for Provisional Diagnosis dropdown
+  // Options for Provisional Diagnosis dropdown (remains unchanged as per previous logic)
   const provisionalDiagnosisOptions = [
     "Dental Caries (Tooth Decay)", "Reversible pulpitis", "Irreversible pulpitis (symptomatic/asymptomatic)",
     "Pulp necrosis", "Pulp calcification (pulp stones)", "Internal resorption", "Acute apical periodontitis",
@@ -87,27 +88,66 @@ export default function AddDentalRecord() {
     "Sleep apnea (obstructive, related to oral anatomy)",
   ];
 
-  // Options for Treatment Plan dropdown
+  // Options for Treatment Plan dropdown - UPDATED to match serviceOptions names
   const treatmentPlanOptions = [
-    "Registration & Consultation", "Registration & Consultation (family)", "SCALING AND POLISHING",
-    "SCALING AND POLISHING WITH GROSS STAIN", "SIMPLE EXTRACTION ANTERIOR", "SIMPLE EXTRACTION POSTERIOR",
-    "EXTRACTION OF RETAINED ROOT", "SURGICAL EXTRACTION (IMPACTED 3RD MOLAR)", "TEMPORARY DRESSING",
-    "AMALGAM FILLING", "FUJI 9(POSTERIOR GIC (PER FILLING)", "TOOTH WHITENING 3 SESSIONS",
-    "CURRETAGE/SUBGINGIVAL (PER TOOTH)", "COMPOSITE BUILDUP", "REMOVABLE DENTURE(ADDITIONAL TOOTH)",
-    "PFM CROWN", "TOPICAL FLOURIDATION/DESENSITIZATION", "X-RAY", "ROOT CANAL TREATMENT ANTERIOR",
-    "ROOT CANAL TREATMENT POSTERIOR", "GINGIVECTOMY/OPERCULECTOMY", "SPLINTING WITH WIRES",
-    "SPLINTING WITH GIC COMPOSITE", "INCISION & DRAINAGE/SUTURING WITH DEBRIDMENT", "FISSURE SEALANT",
-    "PULPOTOMY/PULPECTOMY", "STAINLESS STEEL CROWN", "BAND & LOOP SPACE MAINTAINERS",
-    "LLA & TPA SPACE MAINTAINERS", "ESSIX RETAINER", "CROWN CEMENTATION", "ESTETIC TOOTH FILLING",
-    "ZIRCONIUM CROWN", "GOLD CROWN", "FLEXIBLE DENTURE PER TEETH", "FLEXIBLE DENTURS 2ND TEETH",
-    "METALLIC CROWN", "DENTAL IMPLANT-ONE TEETH", "DENTAL IMPLANT - TWO TEETH", "ORTHODONTIST CONSULT",
-    "PARTIAL DENTURE", "DENTURE REPAIR", "GIC FILLING", "BRACES CONSULTATION", "BRACES",
-    "FLUORIDE TREATMENT", "INTERMAXILLARY FIXATION", "ALIGNERS", "E-MAX CROWN"
+    "Registration & Consultation",
+    "Registration & Consultation (family)",
+    "Scaling and Polishing", // Changed from SCALING AND POLISHING
+    "Scaling and Polishing with Gross Stain", // Changed from SCALING AND POLISHING WITH GROSS STAIN
+    "Simple Extraction Anterior",
+    "Simple Extraction Posterior",
+    "Extraction of Retained Root",
+    "Surgical Extraction (Impacted 3rd Molar)",
+    "Temporary Dressing",
+    "Amalgam Filling",
+    "Fuji 9 (Posterior GIC (per Filling)", // Adjusted casing and parentheses
+    "Tooth Whitening (3 Sessions)", // Adjusted casing and parentheses
+    "Curretage/Subgingival (per tooth)", // Adjusted casing and parentheses
+    "Composite Buildup",
+    "Removable Denture (Additional Tooth)", // Adjusted casing and parentheses
+    "PFM Crown",
+    "Topical Flouridation/Desensitization",
+    "X-Ray", // Changed from X-RAY
+    "Root Canal Treatment Anterior",
+    "Root Canal Treatment Posterior",
+    "Gingivectomy/Operculectomy",
+    "Splinting with Wires",
+    "Splinting with GIC Composite",
+    "Incision & Drainage/Suturing with Debridement", // Adjusted casing and ampersand
+    "Fissure Sealant",
+    "Pulpotomy/Pulpectomy",
+    "Stainless Steel Crown",
+    "Band & Loop Space Maintainers",
+    "LLA & TPA Space Maintainers",
+    "Essix Retainer",
+    "Crown Cementation",
+    "Esthetic Tooth Filling", // Changed from ESTETIC TOOTH FILLING
+    "Zirconium Crown",
+    "Gold Crown",
+    "Flexible Denture (per tooth)", // Changed from FLEXIBLE DENTURE PER TEETH
+    "Flexible Denture (2nd tooth)", // Changed from FLEXIBLE DENTURS 2ND TEETH
+    "Metallic Crown",
+    "Dental Implant – One Tooth", // Changed from DENTAL IMPLANT-ONE TEETH
+    "Dental Implant – Two Teeth", // Changed from DENTAL IMPLANT - TWO TEETH
+    "Orthodontist Consult",
+    "Partial Denture",
+    "Denture Repair",
+    "GIC Filling",
+    "Braces Consultation",
+    "Braces",
+    "Fluoride Treatment", // Changed from FLUORIDE TREATMENT
+    "Intermaxillary Fixation",
+    "Aligners",
+    "E-Max Crown"
   ];
 
+
   useEffect(() => {
-    const fetchPatientName = async () => {
+    const fetchPatientDataAndUserRole = async () => {
       const token = localStorage.getItem('jwtToken');
+      const role = localStorage.getItem('role');
+      setUserRole(role); // Set user role from local storage
+
       if (!token) {
         navigate('/login'); // Use navigate for redirection
         return;
@@ -145,7 +185,7 @@ export default function AddDentalRecord() {
       }
     };
 
-    fetchPatientName();
+    fetchPatientDataAndUserRole();
   }, [patientId, navigate]); // Add navigate to dependency array
 
   // General handler for text/checkbox inputs and quadrant fields
@@ -327,22 +367,34 @@ export default function AddDentalRecord() {
 
   return (
     <div className="add-record-container">
-<header className="record-form-header">
-  <h1>Add Dental Record for {patientName}</h1>
-  <div className="actions">
-    <button onClick={() => navigate(`/patients/${patientId}`)} className="back-button">
-      <i className="fas fa-arrow-left"></i> Back to Patient Details
-    </button>
-    {/* New Generate Invoice Button */}
-    <button onClick={() => navigate(`/patients/${patientId}/invoice`)} className="generate-invoice-button">
-      <i className="fas fa-file-invoice"></i>Send Invoice
-    </button>
-    {/* New Generate Receipt Button */}
-    <button onClick={() => navigate(`/patients/${patientId}/receipt`)} className="generate-receipt-button">
-      <i className="fas fa-receipt"></i> Send Receipt
-    </button>
-  </div>
-</header>
+      <header className="record-form-header">
+        <h1>Add Dental Record for {patientName}</h1>
+        <div className="actions">
+          {/* Back to Patient Details Button */}
+          <button onClick={() => navigate(`/patients/${patientId}`)} className="back-button">
+            <i className="fas fa-arrow-left"></i> Back to Patient Details
+          </button>
+
+          {/* All Patient List Button */}
+          <button onClick={() => navigate('/patients')} className="all-patients-button">
+            <i className="fas fa-users"></i> All Patient List
+          </button>
+
+          {/* Send Invoice Button - Hidden from doctors */}
+          {(userRole === 'owner' || userRole === 'staff' || userRole === 'nurse') && (
+            <button onClick={() => navigate(`/patients/${patientId}/invoice`)} className="generate-invoice-button">
+              <i className="fas fa-file-invoice"></i> Send Invoice
+            </button>
+          )}
+
+          {/* Send Receipt Button - Hidden from doctors */}
+          {(userRole === 'owner' || userRole === 'staff' || userRole === 'nurse') && (
+            <button onClick={() => navigate(`/patients/${patientId}/receipts`)} className="generate-receipt-button">
+              <i className="fas fa-receipt"></i> Send Receipt
+            </button>
+          )}
+        </div>
+      </header>
 
       <form onSubmit={handleSubmit}>
         <section className="form-section">

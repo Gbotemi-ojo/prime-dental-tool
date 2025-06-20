@@ -17,7 +17,8 @@ const serviceOptions = [
     { name: "Surgical Extraction (Impacted 3rd Molar)", price: 100000 },
     { name: "Temporary Dressing", price: 20000 },
     { name: "Amalgam Filling", price: 30000 },
-    { name: "Fuji 9 (Posterior GIC per Filling)", price: 50000 },
+    // CORRECTED: Naming to EXACTLY match the reported string from treatmentPlan for "Fuji 9"
+    { name: "Fuji 9 (Posterior GIC (per Filling)", price: 50000 },
     { name: "Tooth Whitening (3 Sessions)", price: 100000 },
     { name: "Curretage/Subgingival (per tooth)", price: 30000 },
     { name: "Composite Buildup", price: 50000 },
@@ -63,7 +64,7 @@ const hmoOptions = [
     { name: "IHMS", status: "ONBOARD" },
     { name: "HEALTH PARTNERS", status: "ONBOARD" },
     { name: "ZENOR", status: "ONBOARD" },
-    { name: "PHILIPS", status: "ONBOARD" },
+    { name: "PHILIPS", "status": "ONBOARD" },
     { name: "PRO HEALTH", status: "ONBOARD" },
     { name: "FOUNTAIN HEALTH", status: "ONBOARD" },
     { name: "DOT HMO", status: "ONBOARD" },
@@ -180,10 +181,12 @@ export default function InvoicePage() {
 
                         if (latestRecord.treatmentPlan && Array.isArray(latestRecord.treatmentPlan)) {
                             const preAddedItems = latestRecord.treatmentPlan.map((planItem, index) => {
+                                // Trim the planItem and convert to lowercase for case-insensitive matching
                                 const serviceMatch = serviceOptions.find(s => s.name.toLowerCase() === planItem.toLowerCase().trim());
                                 return {
                                     id: `tp-${Date.now()}-${index}`,
                                     name: planItem.trim(),
+                                    // Use the price from serviceMatch, default to 0 if no match
                                     price: serviceMatch ? serviceMatch.price : 0,
                                     quantity: 1
                                 };
@@ -295,7 +298,6 @@ export default function InvoicePage() {
         const token = localStorage.getItem('jwtToken');
         if (!token) {
             toast.error('Authentication token missing. Please log in.');
-            navigate('/login');
             return;
         }
 
@@ -323,7 +325,7 @@ export default function InvoicePage() {
                     totalAmount: totalDue,
                     hmo: selectedHMO,
                     hmoCoveredAmount: coveredAmount,
-                    notes: "Please make payment within 7 days of invoice date.",
+                    notes: "Thank you for your patronage.",
                     clinicName: "PRIME DENTAL CLINIC", // Replace with actual clinic name from config if available
                     clinicAddress: " local government, 104, New Ipaja/Egbeda Road, opposite prestige super-market, Alimosho, Ipaja Rd, Ipaja, Lagos 100006, Lagos", // Replace with actual clinic address
                     clinicPhone: "0703 070 8877", // Replace with actual clinic phone
@@ -530,9 +532,9 @@ export default function InvoicePage() {
             ) : (
                 <div className="invoice-display-area printable-content">
                     <div className="invoice-company-info">
-                        <h2>Your Dental Clinic Name</h2> {/* Replace with actual clinic name */}
-                        <p>123 Dental Lane, City, Country</p>
-                        <p>Phone: (123) 456-7890 | Email: info@dentalclinic.com</p>
+                        <h2>Prime Dental Clinic</h2> {/* Replace with actual clinic name */}
+                        <p>local government, 104, New Ipaja/Egbeda Road, opposite prestige super-market, Alimosho, Ipaja Rd, Ipaja, Lagos 100006, Lagos</p>
+                        <p>Phone: 0703 070 8877 </p>
                     </div>
                     <div className="invoice-header-display">
                         <h2>INVOICE</h2>

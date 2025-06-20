@@ -13,8 +13,8 @@ export default function App() {
 }
 
 function PatientForm() {
-  // State to hold form data
-  const [formData, setFormData] = useState({
+  // State to hold new patient form data
+  const [newPatientFormData, setNewPatientFormData] = useState({
     name: '',
     sex: '',
     dateOfBirth: '',
@@ -22,10 +22,18 @@ function PatientForm() {
     email: '',
   });
 
-  // State for form submission status and messages
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [isError, setIsError] = useState(false);
+  // State to hold returning patient phone number
+  const [returningPatientPhoneNumber, setReturningPatientPhoneNumber] = useState('');
+
+  // State for form submission status and messages for New Guest Form
+  const [loadingNewGuest, setLoadingNewGuest] = useState(false);
+  const [newGuestMessage, setNewGuestMessage] = useState('');
+  const [isNewGuestError, setIsNewGuestError] = useState(false);
+
+  // State for form submission status and messages for Returning Guest Form
+  const [loadingReturningGuest, setLoadingReturningGuest] = useState(false);
+  const [returningGuestMessage, setReturningGuestMessage] = useState('');
+  const [isReturningGuestError, setIsReturningGuestError] = useState(false);
 
   // Clinic Information (hardcoded as per your request)
   const clinicInfo = {
@@ -35,36 +43,40 @@ function PatientForm() {
     phone: '0703 070 8877',
   };
 
-
-  // Handle input changes
-  const handleChange = (e) => {
+  // Handle input changes for new patient form
+  const handleNewPatientChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
+    setNewPatientFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
   };
 
-  // Handle form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage('');
-    setIsError(false);
+  // Handle input changes for returning patient form
+  const handleReturningPatientPhoneChange = (e) => {
+    setReturningPatientPhoneNumber(e.target.value);
+  };
 
-    // Basic client-side validation
-    if (!formData.name || !formData.sex || !formData.phoneNumber) {
-      setMessage('Please fill in all required fields (Name, Sex, Phone Number).');
-      setIsError(true);
-      setLoading(false);
+  // Handle new guest patient form submission
+  const handleNewGuestSubmit = async (e) => {
+    e.preventDefault();
+    setLoadingNewGuest(true);
+    setNewGuestMessage(''); // Clear previous message
+    setIsNewGuestError(false); // Clear previous error state
+
+    // Basic client-side validation for new guest
+    if (!newPatientFormData.name || !newPatientFormData.sex || !newPatientFormData.phoneNumber) {
+      setNewGuestMessage('Please fill in all required fields (Name, Sex, Phone Number).');
+      setIsNewGuestError(true);
+      setLoadingNewGuest(false);
       return;
     }
 
     // Email format validation (optional, but good practice)
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      setMessage('Please enter a valid email address.');
-      setIsError(true);
-      setLoading(false);
+    if (newPatientFormData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newPatientFormData.email)) {
+      setNewGuestMessage('Please enter a valid email address.');
+      setIsNewGuestError(true);
+      setLoadingNewGuest(false);
       return;
     }
 
@@ -74,16 +86,16 @@ function PatientForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(newPatientFormData),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        setMessage(data.message || 'Patient information submitted successfully!');
-        setIsError(false);
+        setNewGuestMessage(data.message || 'New patient information submitted successfully!');
+        setIsNewGuestError(false);
         // Clear the form on successful submission
-        setFormData({
+        setNewPatientFormData({
           name: '',
           sex: '',
           dateOfBirth: '',
@@ -91,15 +103,74 @@ function PatientForm() {
           email: '',
         });
       } else {
-        setMessage(data.error || 'Failed to submit patient information. Please try again.');
-        setIsError(true);
+        setNewGuestMessage(data.error || 'Failed to submit new patient information. Please try again.');
+        setIsNewGuestError(true);
       }
     } catch (error) {
-      console.error('Submission error:', error);
-      setMessage('Network error or server is unreachable. Please try again later.');
-      setIsError(true);
+      console.error('New patient submission error:', error);
+      setNewGuestMessage('Network error or server is unreachable. Please try again later.');
+      setIsNewGuestError(true);
     } finally {
-      setLoading(false);
+      setLoadingNewGuest(false);
+    }
+  };
+
+  // Handle returning guest patient form submission
+  const handleReturningGuestSubmit = async (e) => {
+    e.preventDefault();
+    setLoadingReturningGuest(true);
+    setReturningGuestMessage(''); // Clear previous message
+    setIsReturningGuestError(false); // Clear previous error state
+
+    if (!returningPatientPhoneNumber) {
+      setReturningGuestMessage('Please enter the phone number for returning patient.');
+      setIsReturningGuestError(true);
+      setLoadingReturningGuest(false);
+      return;
+    }
+
+    try {
+      // NOTE: The backend endpoint `/api/patients/returning-guest-visit` currently
+      // requires authentication (e.g., JWT token). To truly make this accessible
+      // on a public landing page without a staff member logging in, you would
+      // need to adjust the backend route to *not* require authentication for this
+      // specific endpoint, or implement a mechanism for anonymous/public access.
+      // This frontend change *removes the attempt to send a token*, but the backend
+      // will still enforce its security rules.
+      // const token = localStorage.getItem('jwtToken');
+      // if (!token) {
+      //   console.warn("No JWT token found for returning guest submission. This endpoint might require authentication.");
+      //   setReturningGuestMessage("Authentication required to record returning guest visit. Please log in.");
+      //   setIsReturningGuestError(true);
+      //   setLoadingReturningGuest(false);
+      //   return;
+      // }
+
+      const response = await fetch(`${API_BASE_URL}/api/patients/returning-guest-visit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // 'Authorization': `Bearer ${token}` // Removed as per request for public access
+        },
+        body: JSON.stringify({ phoneNumber: returningPatientPhoneNumber }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setReturningGuestMessage(data.message || `Visit recorded for ${data.patientName || 'returning guest'}!`);
+        setIsReturningGuestError(false);
+        setReturningPatientPhoneNumber(''); // Clear the phone number field
+      } else {
+        setReturningGuestMessage(data.error || 'Failed to record returning guest visit. Please try again.');
+        setIsReturningGuestError(true);
+      }
+    } catch (error) {
+      console.error('Returning guest submission error:', error);
+      setReturningGuestMessage('Network error or server is unreachable. Please try again later.');
+      setIsReturningGuestError(true);
+    } finally {
+      setLoadingReturningGuest(false);
     }
   };
 
@@ -113,85 +184,123 @@ function PatientForm() {
         <p>Phone: {clinicInfo.phone}</p>
       </div>
 
-      <h2>Patient Information Form</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="name">Full Name *</label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            placeholder="e.g., John Doe"
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="sex">Sex *</label>
-          <select
-            id="sex"
-            name="sex"
-            value={formData.sex}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select Sex</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="dateOfBirth">Date of Birth</label>
-          <input
-            type="date"
-            id="dateOfBirth"
-            name="dateOfBirth"
-            value={formData.dateOfBirth}
-            onChange={handleChange}
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="phoneNumber">Phone Number *</label>
-          <input
-            type="tel"
-            id="phoneNumber"
-            name="phoneNumber"
-            value={formData.phoneNumber}
-            onChange={handleChange}
-            required
-            placeholder="e.g., +1234567890"
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="email">Email Address</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="e.g., john.doe@example.com"
-          />
-        </div>
-
-        {message && (
-          <div className={`message ${isError ? 'error' : 'success'}`}>
-            {message}
+      {/* Section for New Patients */}
+      <div className="form-section">
+        <h2>New Patient Registration</h2>
+        <p className="section-description">Fill out this form if you are visiting for the first time.</p>
+        <form onSubmit={handleNewGuestSubmit}>
+          <div className="form-group">
+            <label htmlFor="newName">Full Name *</label>
+            <input
+              type="text"
+              id="newName"
+              name="name"
+              value={newPatientFormData.name}
+              onChange={handleNewPatientChange}
+              required
+              placeholder="e.g., John Doe"
+            />
           </div>
-        )}
 
-        <div className="form-actions">
-          <button type="submit" disabled={loading}>
-            {loading ? 'Submitting...' : 'Submit Information'}
-          </button>
-        </div>
-      </form>
+          <div className="form-group">
+            <label htmlFor="newSex">Sex *</label>
+            <select
+              id="newSex"
+              name="sex"
+              value={newPatientFormData.sex}
+              onChange={handleNewPatientChange}
+              required
+            >
+              <option value="">Select Sex</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="newDateOfBirth">Date of Birth</label>
+            <input
+              type="date"
+              id="newDateOfBirth"
+              name="dateOfBirth"
+              value={newPatientFormData.dateOfBirth}
+              onChange={handleNewPatientChange}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="newPhoneNumber">Phone Number *</label>
+            <input
+              type="tel"
+              id="newPhoneNumber"
+              name="phoneNumber"
+              value={newPatientFormData.phoneNumber}
+              onChange={handleNewPatientChange}
+              required
+              placeholder="e.g., +1234567890"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="newEmail">Email Address</label>
+            <input
+              type="email"
+              id="newEmail"
+              name="email"
+              value={newPatientFormData.email}
+              onChange={handleNewPatientChange}
+              placeholder="e.g., john.doe@example.com"
+            />
+          </div>
+
+          <div className="form-actions">
+            <button type="submit" disabled={loadingNewGuest}>
+              {loadingNewGuest ? 'Submitting New Patient...' : 'Register New Patient'}
+            </button>
+          </div>
+          {/* New Guest Message Display */}
+          {newGuestMessage && (
+            <div className={`message ${isNewGuestError ? 'error' : 'success'}`}>
+              {newGuestMessage}
+            </div>
+          )}
+        </form>
+      </div>
+
+      {/* Separator */}
+      <div className="form-separator">OR</div>
+
+      {/* Section for Returning Patients */}
+      <div className="form-section returning-patient-section">
+        <h2>Returning Patient Check-in</h2>
+        <p className="section-description">If you've visited us before, please enter your phone number to check-in.</p>
+        <form onSubmit={handleReturningGuestSubmit}>
+          <div className="form-group">
+            <label htmlFor="returningPhoneNumber">Phone Number *</label>
+            <input
+              type="tel"
+              id="returningPhoneNumber"
+              name="returningPhoneNumber"
+              value={returningPatientPhoneNumber}
+              onChange={handleReturningPatientPhoneChange}
+              required
+              placeholder="e.g., +1234567890"
+            />
+          </div>
+          <div className="form-actions">
+            <button type="submit" disabled={loadingReturningGuest} className="returning-button">
+              {loadingReturningGuest ? 'Checking In...' : 'Check-in as Returning Patient'}
+            </button>
+          </div>
+          {/* Returning Guest Message Display */}
+          {returningGuestMessage && (
+            <div className={`message ${isReturningGuestError ? 'error' : 'success'}`}>
+              {returningGuestMessage}
+            </div>
+          )}
+        </form>
+      </div>
 
       <div className="login-link">
         Are you a staff member? <a href="/login">Login here</a>

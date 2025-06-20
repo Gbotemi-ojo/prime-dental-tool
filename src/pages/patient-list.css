@@ -113,10 +113,15 @@
 /* --- Search and filter section --- */
 .search-filter-section {
     margin-bottom: 30px;
+    display: flex; /* Make it a flex container */
+    gap: 15px;    /* Space between search input and date picker */
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    align-items: center; /* Vertically align items */
 }
 
 .search-input {
-    width: 100%;
+    flex: 1; /* Allow search input to grow */
+    min-width: 250px; /* Minimum width before wrapping */
     padding: 14px 20px;
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -133,6 +138,31 @@
 .search-input:focus {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 0.2rem rgba(63, 81, 181, 0.25); /* Primary color shadow */
+    outline: none;
+}
+
+/* NEW: Style for the date input */
+.date-input {
+    flex: 0 0 auto; /* Don't grow, size based on content */
+    padding: 14px 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    color: var(--text-medium);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    box-sizing: border-box;
+    /* Specific styles for date input icon/text on different browsers */
+    -webkit-appearance: none; /* Remove default styling on Webkit browsers */
+    -moz-appearance: none;    /* Remove default styling on Mozilla browsers */
+    appearance: none;         /* Remove default styling for other browsers */
+    background: #fff url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%236c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>') no-repeat right 15px center; /* Custom calendar icon */
+    background-size: 20px;
+    padding-right: 45px; /* Adjust padding to make space for the icon */
+}
+
+.date-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(63, 81, 181, 0.25);
     outline: none;
 }
 
@@ -347,8 +377,16 @@
         font-size: 1.8rem;
     }
 
-    .search-input {
-        padding: 12px 15px;
+    .search-filter-section {
+        flex-direction: column; /* Stack search and date inputs vertically */
+        gap: 10px; /* Adjust gap for stacking */
+        align-items: stretch; /* Stretch items to full width */
+    }
+
+    .search-input,
+    .date-input {
+        width: 100%; /* Make them take full width when stacked */
+        min-width: unset; /* Remove min-width constraint */
     }
 
     .patient-table {
