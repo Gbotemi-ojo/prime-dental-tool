@@ -7,16 +7,21 @@
   --primary-blue: #2196F3;
   --light-blue: #BBDEFB;
   --dark-blue: #1976D2;
-  --accent-green: #4CAF50;
+  --accent-green: #4CAF50; /* Base green for returning patient button */
+  --dark-green: #388E3C; /* Darker green for gradient */
   --accent-red: #F44336;
-  --accent-orange: #FF9800; /* New color for returning patient button */
+  --accent-orange: #FF9800; /* Original orange for returning patient button (kept for reference if needed elsewhere) */
+  --accent-purple: #9C27B0; /* Original color for a selection button (kept for reference if needed elsewhere) */
+  --accent-teal: #009688; /* Original color for another selection button (kept for reference if needed elsewhere) */
   --text-dark: #333;
+  --text-medium: #555;
   --text-light: #fff;
   --bg-light: #f8f9fa;
   --bg-dark: #e0e0e0;
   --border-color: #ccc;
   --shadow-light: rgba(0, 0, 0, 0.1);
   --shadow-medium: rgba(0, 0, 0, 0.2);
+  --info-color: #007bff;
 }
 
 body {
@@ -66,29 +71,42 @@ body {
     text-align: center;
     margin-bottom: 30px;
     padding-bottom: 20px;
-    border-bottom: 2px solid var(--primary-blue); /* A nice separator */
+    border-bottom: 2px solid var(--primary-blue);
 }
 
 .clinic-header h1 {
     color: var(--dark-blue);
-    font-size: 2.8em; /* Larger, more prominent */
+    font-size: 2.8em;
     margin-bottom: 5px;
-    font-weight: 800; /* Extra bold for impact */
+    font-weight: 800;
     letter-spacing: -0.5px;
 }
 
+/* UPDATED: Styling for the tagline to ensure clear visibility and prominence */
+.clinic-tagline {
+    color: var(--text-dark); /* Changed to text-dark for strong contrast on light background */
+    font-size: 1.6em; /* Further increased font size */
+    font-weight: 800; /* Made even bolder */
+    margin-top: 8px; /* Increased top margin */
+    margin-bottom: 20px; /* Increased bottom margin for more separation */
+    letter-spacing: 1px; /* Increased letter spacing for emphasis */
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.3); /* Stronger text shadow for pop */
+}
+
+
 .clinic-header p {
-    color: var(--text-dark);
-    font-size: 1em;
-    margin: 3px 0;
-    line-height: 1.4;
+    color: var(--text-medium); /* Slightly softer color for address lines */
+    font-size: 0.95em; /* Slightly smaller font size for address lines */
+    margin: 4px 0; /* Adjusted margin for better line spacing */
+    line-height: 1.5;
 }
 
 /* Styles for phone number to make it stand out a bit */
 .clinic-header p:last-of-type {
-    font-weight: 600;
+    font-weight: 700; /* Made phone number bolder */
     color: var(--primary-blue);
-    margin-top: 10px;
+    margin-top: 15px; /* Increased top margin for more separation */
+    font-size: 1.1em; /* Slightly larger font for phone number */
 }
 /* --- End Clinic Header Styling --- */
 
@@ -96,12 +114,12 @@ body {
 h2 {
   text-align: center;
   color: var(--dark-blue);
-  margin-bottom: 30px; /* Adjusted for section spacing */
+  margin-bottom: 30px;
   font-weight: 700;
   font-size: 2.2em;
 }
 
-/* New: Styles for individual form sections (new patient, returning patient) */
+/* Styles for individual form sections (new patient, returning patient) */
 .form-section {
   border: 1px solid var(--border-color);
   border-radius: 10px;
@@ -112,9 +130,9 @@ h2 {
 
 .form-section h2 {
   margin-top: 0;
-  font-size: 1.8em; /* Slightly smaller for section headings */
+  font-size: 1.8em;
   color: var(--primary-blue);
-  margin-bottom: 15px; /* Tighter spacing within section */
+  margin-bottom: 15px;
 }
 
 .section-description {
@@ -151,10 +169,10 @@ select {
   color: var(--text-dark);
   box-sizing: border-box;
   transition: all 0.3s ease;
-  -webkit-appearance: none; /* Remove default styling for selects on some browsers */
+  -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  background-color: var(--text-light); /* Changed to light for better contrast on bg-light form section */
+  background-color: var(--text-light);
 }
 
 input[type="text"]:focus,
@@ -173,7 +191,7 @@ select {
   background-image: url('data:image/svg+xml;utf8,<svg fill="%23333" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
   background-repeat: no-repeat;
   background-position: right 10px center;
-  padding-right: 30px; /* Make space for the arrow */
+  padding-right: 30px;
 }
 
 .form-actions {
@@ -193,45 +211,130 @@ button {
   transition: all 0.3s ease;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Default button shadow */
 }
 
-button[type="submit"] {
-  background: linear-gradient(45deg, var(--primary-blue), var(--dark-blue));
-  color: var(--text-light);
-  box-shadow: 0 4px 15px var(--shadow-light);
-}
-
-button[type="submit"]:hover {
-  background: linear-gradient(45deg, var(--dark-blue), var(--primary-blue));
-  box-shadow: 0 6px 20px var(--shadow-medium);
+button:hover {
   transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); /* Default hover shadow */
 }
 
-button[type="submit"]:disabled {
+button:disabled {
   background: #a0c4e8;
   cursor: not-allowed;
   box-shadow: none;
   transform: none;
 }
 
-/* New: Styling for the returning patient button */
-.returning-button {
-  background: linear-gradient(45deg, var(--accent-orange), #E65100); /* Orange gradient */
+/* Specific styling for the submit button */
+button[type="submit"] {
+  background: linear-gradient(45deg, var(--primary-blue), var(--dark-blue));
   color: var(--text-light);
-  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+}
+
+button[type="submit"]:hover {
+  background: linear-gradient(45deg, var(--dark-blue), var(--primary-blue));
+}
+
+/* Styling for the returning patient submit button */
+.returning-button {
+  background: linear-gradient(45deg, var(--accent-orange), #E65100);
+  color: var(--text-light);
 }
 
 .returning-button:hover {
   background: linear-gradient(45deg, #E65100, var(--accent-orange));
-  box-shadow: 0 6px 20px rgba(255, 152, 0, 0.6);
-  transform: translateY(-2px);
 }
 
 .returning-button:disabled {
-  background: #ffcc80; /* Lighter orange for disabled state */
-  cursor: not-allowed;
+  background: #ffcc80;
+}
+
+/* Styles for the form selection buttons */
+.form-selection-buttons {
+  display: flex;
+  flex-direction: column; /* Stack buttons vertically on smaller screens */
+  gap: 20px;
+  margin-top: 20px;
+  margin-bottom: 30px;
+  align-items: center; /* Center buttons horizontally */
+}
+
+.form-selection-buttons button {
+  width: 80%;
+  max-width: 300px;
+  padding: 18px 25px;
+  font-size: 1.2em;
+  font-weight: 700;
+  border-radius: 12px;
+  text-transform: capitalize;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.form-selection-buttons button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+}
+
+/* New patient button color */
+.new-patient-button {
+  background: linear-gradient(45deg, var(--primary-blue), var(--dark-blue)); /* Blue gradient */
+  color: var(--text-light);
+}
+
+.new-patient-button:hover {
+  background: linear-gradient(45deg, var(--dark-blue), var(--primary-blue));
+}
+
+/* Returning patient button color */
+.returning-patient-button {
+  background: linear-gradient(45deg, var(--accent-green), var(--dark-green)); /* Green gradient */
+  color: var(--text-light);
+}
+
+.returning-patient-button:hover {
+  background: linear-gradient(45deg, var(--dark-green), var(--accent-green));
+}
+
+/* Styling for the back button */
+.back-button {
+  background-color: transparent;
+  color: var(--primary-blue);
+  border: 2px solid var(--primary-blue);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 15px;
   box-shadow: none;
-  transform: none;
+}
+
+.back-button:hover {
+  background-color: var(--light-blue);
+  color: var(--dark-blue);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px var(--shadow-light);
+}
+
+.back-button:disabled {
+  background-color: transparent;
+  border-color: #a0c4e8;
+  color: #a0c4e8;
+  cursor: not-allowed;
+}
+
+/* Style for the descriptive text above selection buttons */
+.form-selection-description {
+  text-align: center;
+  color: var(--text-dark);
+  font-size: 1.1em;
+  margin-bottom: 25px;
+  line-height: 1.6;
+  font-weight: 500;
+  max-width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 10px;
 }
 
 
@@ -263,13 +366,13 @@ button[type="submit"]:disabled {
 }
 
 .message.success {
-  background-color: #e8f5e9; /* Light green */
+  background-color: #e8f5e9;
   color: var(--accent-green);
   border: 1px solid var(--accent-green);
 }
 
 .message.error {
-  background-color: #ffebee; /* Light red */
+  background-color: #ffebee;
   color: var(--accent-red);
   border: 1px solid var(--accent-red);
 }
@@ -279,12 +382,12 @@ button[type="submit"]:disabled {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* New: Separator style */
+/* Separator style */
 .form-separator {
   text-align: center;
   margin: 30px 0;
   font-weight: 600;
-  color: var(--info-color); /* Using info-color from patient-list for consistency */
+  color: var(--info-color);
   position: relative;
   font-size: 1.2em;
 }
@@ -316,13 +419,13 @@ button[type="submit"]:disabled {
     gap: 20px;
   }
   .clinic-header h1 {
-    font-size: 2.2em; /* Adjust for smaller screens */
+    font-size: 2.2em;
   }
   .clinic-header p {
     font-size: 0.9em;
   }
   .form-section h2 {
-    font-size: 1.6em; /* Adjusted for smaller screens */
+    font-size: 1.6em;
   }
   h2 {
     font-size: 1.8em;
@@ -336,12 +439,21 @@ button[type="submit"]:disabled {
     padding: 10px 12px;
   }
   .form-separator {
-    margin: 25px 0; /* Adjust separator margin */
+    margin: 25px 0;
     font-size: 1em;
   }
   .form-separator::before,
   .form-separator::after {
-    width: 35%; /* Adjust line width for smaller screens */
+    width: 35%;
+  }
+  .form-selection-buttons button {
+    width: 90%;
+    padding: 15px 20px;
+    font-size: 1.1em;
+  }
+  .form-selection-description {
+    font-size: 1em;
+    max-width: 90%;
   }
 }
 
@@ -352,13 +464,13 @@ button[type="submit"]:disabled {
     gap: 15px;
   }
   .clinic-header h1 {
-    font-size: 1.8em; /* Further adjust for very small screens */
+    font-size: 1.8em;
   }
   .clinic-header p {
     font-size: 0.85em;
   }
   .form-section h2 {
-    font-size: 1.4em; /* Adjusted for very small screens */
+    font-size: 1.4em;
   }
   h2 {
     font-size: 1.6em;
@@ -372,11 +484,21 @@ button[type="submit"]:disabled {
       font-size: 0.85em;
   }
   .form-separator {
-    margin: 20px 0; /* Adjust separator margin */
+    margin: 20px 0;
     font-size: 0.9em;
   }
   .form-separator::before,
   .form-separator::after {
-    width: 30%; /* Further adjust line width */
+    width: 30%;
+  }
+  .form-selection-buttons button {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 1em;
+  }
+  .form-selection-description {
+    font-size: 0.95em;
+    max-width: 100%;
+    padding: 0 5px;
   }
 }

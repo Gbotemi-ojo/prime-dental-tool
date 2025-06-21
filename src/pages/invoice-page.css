@@ -110,6 +110,7 @@ body {
 .back-button,
 .generate-invoice-button,
 .print-invoice-button,
+.send-email-button, /* Added new button class */
 .add-service-button,
 .remove-service-button {
     display: inline-flex;
@@ -162,6 +163,19 @@ body {
     box-shadow: var(--shadow-md);
 }
 
+/* New Email Button */
+.send-email-button {
+    background-color: #4CAF50; /* A pleasant green */
+    color: var(--text-light);
+}
+
+.send-email-button:hover {
+    background-color: #388E3C;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+
 .add-service-button {
     background-color: var(--accent-color); /* Green for add */
     color: var(--text-light);
@@ -191,6 +205,7 @@ body {
 .back-button i,
 .generate-invoice-button i,
 .print-invoice-button i,
+.send-email-button i, /* Added new button class */
 .add-service-button i,
 .remove-service-button i {
     margin-right: 8px;
@@ -477,6 +492,10 @@ body {
     background-color: var(--table-row-even);
 }
 
+.invoice-services-table tbody tr:hover {
+    background-color: var(--table-row-hover);
+}
+
 .invoice-summary {
     text-align: right;
     margin-top: var(--spacing-md);
@@ -493,8 +512,17 @@ body {
 .invoice-summary .total-due {
     font-size: 1.4em;
     font-weight: 700;
-    color: var(--danger-color); /* Highlight total due */
 }
+
+/* NEW: Styles for HMO covered status in invoice summary */
+.invoice-summary .total-due.due-balance {
+    color: var(--warning-color); /* Use warning color for balance due */
+}
+
+.invoice-summary .total-due.fully-covered {
+    color: var(--accent-color); /* Use accent color (green) for fully covered */
+}
+
 
 .invoice-notes {
     margin-top: var(--spacing-lg);
@@ -665,6 +693,7 @@ body {
     .back-button,
     .generate-invoice-button,
     .print-invoice-button,
+    .send-email-button, /* Added for responsiveness */
     .add-service-button {
         width: 100%;
         justify-content: center;
@@ -735,6 +764,7 @@ body {
     .back-button,
     .generate-invoice-button,
     .print-invoice-button,
+    .send-email-button, /* Added for responsiveness */
     .add-service-button {
         padding: 8px 15px;
         font-size: 0.9em;

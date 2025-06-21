@@ -13,6 +13,11 @@
     --info-color: #6c757d; /* Gray */
     --info-dark: #5a6268;
 
+    /* Reverted accent-purple for Edit Bio to match other table buttons */
+    --accent-purple: #8E44AD; /* Keeping it for specific 'Edit Bio' use if needed, but its base matches other buttons now */
+    --accent-purple-dark: #7F8C8D;
+
+
     --text-dark: #333;
     --text-medium: #495057;
     --text-light: #ffffff;
@@ -32,18 +37,23 @@
     background-color: var(--background-light);
     padding: 20px;
     box-sizing: border-box;
+    font-family: 'Inter', sans-serif; /* Ensure Inter font is applied globally */
+    color: var(--text-dark);
 }
 
 /* Main content wrapper for the patient list */
 .patient-list-container {
     background-color: var(--background-card);
-    border-radius: 12px;
-    box-shadow: 0 6px 20px var(--shadow-light);
-    padding: 30px;
+    border-radius: 12px; /* Reverted to 12px */
+    box-shadow: 0 6px 20px var(--shadow-light); /* Reverted to lighter shadow */
+    padding: 30px; /* Reverted to 30px */
     width: 100%;
-    max-width: 1200px; /* Max width for larger screens */
-    margin-top: 20px;
-    margin-bottom: 20px;
+    max-width: 1200px;
+    margin-top: 20px; /* Reverted to 20px */
+    margin-bottom: 20px; /* Reverted to 20px */
+    display: flex;
+    flex-direction: column;
+    gap: 30px; /* Reverted to 30px */
 }
 
 /* --- Header section --- */
@@ -51,236 +61,257 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid var(--border-color);
+    margin-bottom: 30px; /* Reverted to 30px */
+    padding-bottom: 15px; /* Reverted to 15px */
+    border-bottom: 2px solid var(--border-color); /* Reverted to default border-color */
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
 .patient-list-header h1 {
-    font-size: 2.2rem;
-    color: var(--text-dark);
-    font-weight: 700;
+    font-size: 2.2rem; /* Reverted to 2.2rem */
+    color: var(--text-dark); /* Reverted to text-dark */
+    font-weight: 700; /* Reverted to 700 */
     margin: 0;
+    letter-spacing: -0.5px;
 }
 
 /* Action buttons in header */
 .patient-list-header .actions {
     display: flex;
-    gap: 15px;
+    gap: 15px; /* Reverted to 15px */
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .back-to-dashboard-button,
 .add-patient-button {
     display: inline-flex;
     align-items: center;
-    padding: 10px 20px;
-    border-radius: 8px;
+    padding: 10px 20px; /* Reverted to 10px 20px */
+    border-radius: 8px; /* Reverted to 8px */
     text-decoration: none;
     font-weight: 600;
+    font-size: 0.95rem; /* Reverted to 0.95rem */
     transition: all 0.3s ease;
-    font-size: 0.95rem;
-    box-shadow: 0 2px 8px var(--shadow-medium);
-    border: none; /* Use background color for button distinctiveness */
+    box-shadow: 0 2px 8px var(--shadow-medium); /* Reverted to shadow-medium */
+    border: none;
     cursor: pointer;
+    white-space: nowrap;
 }
 
 .back-to-dashboard-button {
-    background-color: var(--info-color);
+    background-color: var(--info-color); /* Reverted to info-color */
     color: var(--text-light);
 }
 
 .back-to-dashboard-button:hover {
-    background-color: var(--info-dark);
-    transform: translateY(-2px);
+    background-color: var(--info-dark); /* Reverted to info-dark */
+    transform: translateY(-2px); /* Reverted to -2px */
+    box-shadow: 0 4px 8px var(--shadow-medium); /* Reverted to shadow-medium */
 }
 
 .add-patient-button {
-    background-color: var(--success-color);
+    background-color: var(--success-color); /* Reverted to success-color */
     color: var(--text-light);
 }
 
 .add-patient-button:hover {
-    background-color: var(--success-dark);
-    transform: translateY(-2px);
+    background-color: var(--success-dark); /* Reverted to success-dark */
+    transform: translateY(-2px); /* Reverted to -2px */
+    box-shadow: 0 4px 8px var(--shadow-medium); /* Reverted to shadow-medium */
 }
 
 .back-to-dashboard-button i,
 .add-patient-button i {
     margin-right: 8px;
-    font-size: 1.1rem;
+    font-size: 1.1rem; /* Reverted to 1.1rem */
 }
 
 /* --- Search and filter section --- */
 .search-filter-section {
-    margin-bottom: 30px;
-    display: flex; /* Make it a flex container */
-    gap: 15px;    /* Space between search input and date picker */
-    flex-wrap: wrap; /* Allow wrapping on smaller screens */
-    align-items: center; /* Vertically align items */
+    margin-bottom: 30px; /* Reverted to 30px */
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start; /* Reverted to flex-start */
 }
 
-.search-input {
-    flex: 1; /* Allow search input to grow */
-    min-width: 250px; /* Minimum width before wrapping */
-    padding: 14px 20px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
+.search-input,
+.date-input {
+    flex: 1;
+    min-width: 250px; /* Reverted to 250px */
+    padding: 14px 20px; /* Reverted to 14px 20px */
+    border: 1px solid var(--border-color); /* Reverted to border-color */
+    border-radius: 8px; /* Reverted to 8px */
     font-size: 1rem;
     color: var(--text-medium);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
     box-sizing: border-box;
+    background-color: #fff; /* Reverted to #fff */
 }
 
 .search-input::placeholder {
-    color: var(--info-color);
+    color: var(--info-color); /* Reverted to info-color */
 }
 
-.search-input:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(63, 81, 181, 0.25); /* Primary color shadow */
-    outline: none;
-}
-
-/* NEW: Style for the date input */
-.date-input {
-    flex: 0 0 auto; /* Don't grow, size based on content */
-    padding: 14px 20px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 1rem;
-    color: var(--text-medium);
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    box-sizing: border-box;
-    /* Specific styles for date input icon/text on different browsers */
-    -webkit-appearance: none; /* Remove default styling on Webkit browsers */
-    -moz-appearance: none;    /* Remove default styling on Mozilla browsers */
-    appearance: none;         /* Remove default styling for other browsers */
-    background: #fff url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%236c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>') no-repeat right 15px center; /* Custom calendar icon */
-    background-size: 20px;
-    padding-right: 45px; /* Adjust padding to make space for the icon */
-}
-
+.search-input:focus,
 .date-input:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(63, 81, 181, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(63, 81, 181, 0.25); /* Reverted to rgba(63, 81, 181, 0.25) */
     outline: none;
+}
+
+/* Style for the date input with custom icon */
+.date-input {
+    background: #fff url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%236c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>') no-repeat right 15px center;
+    background-size: 20px;
+    padding-right: 45px;
 }
 
 /* --- Table specific styles --- */
-
-/* Wrapper for responsive tables */
 .table-responsive {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    box-shadow: 0 4px 15px var(--shadow-light);
-    border-radius: 8px;
+    border-radius: 8px; /* Reverted to 8px */
+    box-shadow: 0 4px 15px var(--shadow-light); /* Reverted to shadow-light */
 }
 
 .patient-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 0;
-    font-size: 0.95rem;
-    min-width: 800px; /* Increased min-width to accommodate more action buttons */
+    font-size: 0.95rem; /* Reverted to 0.95rem */
+    min-width: 900px; /* Increased min-width to accommodate new column and action buttons comfortably */
 }
 
 .patient-table thead {
-    background-color: var(--primary-color);
+    background-color: var(--primary-color); /* Reverted to primary-color */
     color: var(--text-light);
-    position: sticky;
-    top: 0;
-    z-index: 1;
 }
 
 .patient-table th {
-    padding: 15px 20px;
+    padding: 15px 20px; /* Reverted to 15px 20px */
     text-align: left;
-    font-weight: 600;
-    border-bottom: 2px solid var(--border-color); /* Still useful for visual separation */
+    font-weight: 600; /* Reverted to 600 */
+    border-bottom: 2px solid var(--border-color); /* Reverted to border-color */
     white-space: nowrap;
+    text-transform: unset; /* Reverted to unset */
+    letter-spacing: unset; /* Reverted to unset */
+}
+/* Apply border-radius to the first and last header cells for table top corners */
+.patient-table th:first-child {
+    border-top-left-radius: 8px; /* Reverted to 8px */
 }
 
+.patient-table th:last-child {
+    border-top-right-radius: 8px; /* Reverted to 8px */
+}
+
+
 .patient-table tbody tr {
-    border-bottom: 1px solid #dee2e6;
-    transition: background-color 0.2s ease;
+    background-color: #fff; /* Reverted to #fff */
+    border-bottom: 1px solid #dee2e6; /* Reverted to #dee2e6 */
+    transition: background-color 0.2s ease; /* Removed transform and shadow */
 }
 
 .patient-table tbody tr:nth-child(even) {
-    background-color: #f8f9fa;
+    background-color: #f8f9fa; /* Reverted to #f8f9fa */
 }
 
 .patient-table tbody tr:hover {
-    background-color: #e9ecef;
+    background-color: #e9ecef; /* Reverted to #e9ecef */
     cursor: pointer;
+    transform: unset; /* Ensure no transform */
+    box-shadow: unset; /* Ensure no box-shadow */
+    position: unset; /* Ensure no position change */
+    z-index: unset; /* Ensure no z-index change */
 }
 
 .patient-table td {
-    padding: 12px 20px;
+    padding: 12px 20px; /* Reverted to 12px 20px */
     text-align: left;
     vertical-align: middle;
     color: var(--text-dark);
     white-space: nowrap;
-    max-width: 250px; /* Adjusted max-width */
+    max-width: 200px; /* Adjusted max-width for columns to fit HMO column */
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
+/* NEW: Style for the HMO Covered column */
+.patient-table th:nth-child(6), /* HMO Covered header */
+.patient-table td:nth-child(6) { /* HMO Covered data cell */
+    text-align: center; /* Center the 'Yes'/'No' text */
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.patient-table td:nth-child(6) {
+    /* Optional: Style 'Yes' and 'No' differently if desired */
+    /* span.hmo-yes { color: var(--success-color); font-weight: 600; } */
+    /* span.hmo-no { color: var(--danger-color); font-weight: 600; } */
+}
+
+
 /* Styles for the table actions cell to allow multiple buttons */
 .patient-table .table-actions-cell {
     display: flex;
-    gap: 8px; /* Space between buttons */
-    flex-wrap: wrap; /* Allow buttons to wrap if space is tight */
+    gap: 8px;
+    flex-wrap: wrap;
     justify-content: flex-start;
     align-items: center;
-    padding-top: 10px; /* Add some vertical padding for button groups */
+    padding-top: 10px;
     padding-bottom: 10px;
+    min-width: 240px; /* Ensure enough space for buttons without wrapping too aggressively */
 }
 
 /* Base style for all table action buttons */
 .table-view-details-button,
-.table-invoice-button, /* New button */
-.table-receipts-button {
+.table-invoice-button,
+.table-receipts-button,
+.table-edit-bio-button {
     display: inline-flex;
     align-items: center;
-    padding: 8px 12px; /* Slightly adjusted padding for consistency */
+    padding: 8px 12px; /* Reverted to 8px 12px */
     border: none;
     border-radius: 6px;
-    text-decoration: none;
     font-weight: 500;
-    font-size: 0.8rem; /* Slightly smaller font for more buttons */
+    font-size: 0.8rem; /* Reverted to 0.8rem */
     transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
     box-shadow: 0 2px 5px var(--shadow-light);
     cursor: pointer;
-    white-space: nowrap; /* Prevent button text from wrapping */
+    white-space: nowrap;
+    text-transform: unset; /* Reverted to unset */
 }
 
 /* Specific styles for View Details button */
 .table-view-details-button {
-    background-color: var(--primary-color);
+    background-color: var(--primary-color); /* Reverted to primary-color */
     color: var(--text-light);
 }
 
 .table-view-details-button:hover {
-    background-color: var(--secondary-color);
+    background-color: var(--secondary-color); /* Reverted to secondary-color */
     transform: translateY(-1px);
     box-shadow: 0 4px 8px var(--shadow-medium);
 }
 
 /* Specific styles for Invoice button */
 .table-invoice-button {
-    background-color: var(--warning-color); /* Yellow/Orange for Invoice */
-    color: var(--text-dark); /* Dark text for contrast */
+    background-color: var(--warning-color); /* Reverted to warning-color */
+    color: var(--text-dark);
 }
 
 .table-invoice-button:hover {
-    background-color: #e0a800; /* Darker yellow */
+    background-color: #e0a800;
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
 }
 
 /* Specific styles for Receipts button */
 .table-receipts-button {
-    background-color: var(--accent-color); /* Cyan for Receipts */
+    background-color: var(--accent-color); /* Reverted to accent-color */
     color: var(--text-light);
 }
 
@@ -290,30 +321,45 @@
     box-shadow: 0 4px 8px rgba(0, 188, 212, 0.3);
 }
 
+/* Specific styles for Edit Bio button */
+.table-edit-bio-button {
+    background-color: var(--accent-purple); /* Purple for Edit Bio */
+    color: var(--text-light);
+}
+
+.table-edit-bio-button:hover {
+    background-color: var(--accent-purple-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px var(--shadow-medium);
+}
+
+
 /* Icon spacing for all table buttons */
 .table-view-details-button i,
 .table-invoice-button i,
-.table-receipts-button i {
-    margin-right: 5px;
-    font-size: 0.9rem; /* Slightly smaller icon size for density */
+.table-receipts-button i,
+.table-edit-bio-button i {
+    margin-right: 5px; /* Reverted to 5px */
+    font-size: 0.9rem; /* Reverted to 0.9rem */
 }
 
 /* --- Restricted Info (for Nurse Role) --- */
 .restricted-info {
     font-style: italic;
-    color: var(--info-color);
+    color: var(--info-color); /* Reverted to info-color */
     font-size: 0.9em;
+    font-weight: 500;
 }
 
 /* --- Spinner (Loading Indicator) Styles --- */
 .spinner {
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid var(--primary-color);
+    border: 4px solid #f3f3f3; /* Reverted to 4px */
+    border-top: 4px solid var(--primary-color); /* Reverted to 4px and primary-color */
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    width: 40px; /* Reverted to 40px */
+    height: 40px; /* Reverted to 40px */
     animation: spin 1s linear infinite;
-    margin: 20px auto;
+    margin: 20px auto; /* Reverted to 20px */
 }
 
 @keyframes spin {
@@ -324,17 +370,19 @@
 /* --- Info/Error Messages --- */
 .info-message {
     text-align: center;
-    padding: 20px;
-    background-color: #e9ecef;
-    border-radius: 8px;
+    padding: 20px; /* Reverted to 20px */
+    background-color: #e9ecef; /* Reverted to #e9ecef */
+    border-radius: 8px; /* Reverted to 8px */
     color: var(--text-dark);
     margin-top: 20px;
-    font-size: 1.1rem;
+    font-size: 1.1rem; /* Reverted to 1.1rem */
+    font-weight: 500;
+    box-shadow: unset; /* Removed shadow */
 }
 
 .info-message.error {
-    background-color: #f8d7da; /* Light red for errors */
-    color: #721c24; /* Dark red text */
+    background-color: #f8d7da; /* Reverted to #f8d7da */
+    color: #721c24; /* Reverted to #721c24 */
     border: 1px solid #f5c6cb;
 }
 
@@ -344,7 +392,26 @@
         padding: 25px;
     }
     .patient-table {
-        min-width: 750px; /* Adjust min-width if necessary */
+        min-width: 850px; /* Adjusted min-width for new column and buttons */
+    }
+    .patient-list-header h1 {
+        font-size: 2.2rem;
+    }
+    .back-to-dashboard-button,
+    .add-patient-button {
+        padding: 10px 18px;
+        font-size: 0.9rem;
+    }
+    .back-to-dashboard-button i,
+    .add-patient-button i {
+        font-size: 1.1rem;
+    }
+    .search-input,
+    .date-input {
+        min-width: 200px; /* Reverted to 200px */
+    }
+    .patient-table .table-actions-cell {
+        min-width: 220px; /* Adjusted for smaller screens */
     }
 }
 
@@ -359,6 +426,7 @@
         flex-direction: column;
         width: 100%;
         gap: 10px;
+        justify-content: flex-start;
     }
 
     .back-to-dashboard-button,
@@ -378,41 +446,50 @@
     }
 
     .search-filter-section {
-        flex-direction: column; /* Stack search and date inputs vertically */
-        gap: 10px; /* Adjust gap for stacking */
-        align-items: stretch; /* Stretch items to full width */
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
     }
 
     .search-input,
     .date-input {
-        width: 100%; /* Make them take full width when stacked */
-        min-width: unset; /* Remove min-width constraint */
+        width: 100%;
+        min-width: unset;
+        padding: 12px 15px;
     }
 
     .patient-table {
-        /* min-width is crucial for horizontal scroll */
-        min-width: 650px; /* Adjusted min-width for more buttons */
+        min-width: 700px; /* Increased min-width to accommodate new column and buttons */
     }
 
     .patient-table th,
     .patient-table td {
-        padding: 10px 15px;
-        font-size: 0.9rem;
+        padding: 10px 15px; /* Reverted to 10px 15px */
+        font-size: 0.9rem; /* Reverted to 0.9rem */
     }
 
     /* Ensure table action buttons stack on smaller screens */
     .patient-table .table-actions-cell {
         flex-direction: column;
-        align-items: stretch; /* Stretch buttons to fill width */
-        gap: 6px; /* Slightly reduced gap */
+        align-items: stretch;
+        gap: 6px;
+        min-width: unset; /* Remove min-width to allow stacking */
     }
     .table-view-details-button,
     .table-invoice-button,
-    .table-receipts-button {
-        width: 100%; /* Make buttons fill the cell width */
+    .table-receipts-button,
+    .table-edit-bio-button {
+        width: 100%;
         justify-content: center;
-        padding: 8px 10px; /* Adjust padding for smaller width */
+        padding: 8px 10px;
         font-size: 0.8rem;
+    }
+    .table-view-details-button i,
+    .table-invoice-button i,
+    .table-receipts-button i,
+    .table-edit-bio-button i {
+        margin-right: 5px;
+        font-size: 0.9rem;
     }
 }
 
@@ -425,5 +502,9 @@
     .patient-table td {
         padding: 8px 10px;
         font-size: 0.8rem;
+    }
+    .search-input,
+    .date-input {
+        padding: 8px 10px; /* Reverted to 8px 10px */
     }
 }

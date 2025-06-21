@@ -28,8 +28,10 @@ const RecordTransaction = lazy(() => import("./pages/RecordTransaction"));
 const AllTransactions = lazy(() => import("./pages/AllTransactions"));
 const PatientReceiptsPage = lazy(() => import("./pages/PatientReceiptsPage"));
 const InvoicePage = lazy(() => import("./pages/InvoicePage"));
-// NEW: Lazy-load RevenueReportPage component
 const RevenueReportPage = lazy(() => import("./pages/RevenueReportPage"));
+
+// NEW: Lazy-load EditPatientBio component
+const EditPatientBio = lazy(() => import("./pages/EditPatientBio"));
 
 
 function App() {
@@ -75,6 +77,8 @@ function App() {
             <Route path="/patients/:patientId/receipts" element={<PatientReceiptsPage />} />
             {/* Patient Invoice Route */}
             <Route path="/patients/:patientId/invoice" element={<InvoicePage />} />
+            {/* NEW ROUTE: Edit Patient Bio */}
+            <Route path="/patients/:patientId/edit" element={<EditPatientBio />} />
 
 
             {/* Inventory Management Routes */}

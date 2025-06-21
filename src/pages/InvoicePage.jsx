@@ -17,8 +17,8 @@ const serviceOptions = [
     { name: "Surgical Extraction (Impacted 3rd Molar)", price: 100000 },
     { name: "Temporary Dressing", price: 20000 },
     { name: "Amalgam Filling", price: 30000 },
-    // CORRECTED: Naming to EXACTLY match the reported string from treatmentPlan for "Fuji 9"
-    { name: "Fuji 9 (Posterior GIC (per Filling)", price: 50000 },
+    // CORRECTED: Naming to EXACTLY match the reported string from treatmentPlan
+    { name: "FUJI 9(POSTERIOR GIC (PER FILLING)", price: 50000 },
     { name: "Tooth Whitening (3 Sessions)", price: 100000 },
     { name: "Curretage/Subgingival (per tooth)", price: 30000 },
     { name: "Composite Buildup", price: 50000 },
@@ -59,52 +59,50 @@ const serviceOptions = [
     { name: "E-Max Crown", price: 300000 }
 ];
 
-// All HMOs now have status: "ONBOARD"
+// All HMOs now have status: "ONBOARD" with a dummy coverage rate for internal calculation
 const hmoOptions = [
-    { name: "IHMS", status: "ONBOARD" },
-    { name: "HEALTH PARTNERS", status: "ONBOARD" },
-    { name: "ZENOR", status: "ONBOARD" },
-    { name: "PHILIPS", "status": "ONBOARD" },
-    { name: "PRO HEALTH", status: "ONBOARD" },
-    { name: "FOUNTAIN HEALTH", status: "ONBOARD" },
-    { name: "DOT HMO", status: "ONBOARD" },
-    { name: "CLEARLINE", status: "ONBOARD" },
-    { name: "STERLING HEALTH", status: "ONBOARD" },
-    { name: "OCEANIC", status: "ONBOARD" },
-    { name: "SUNU", status: "ONBOARD" },
-    { name: "LIFEWORTH", status: "ONBOARD" },
-    { name: "CKLINE", status: "ONBOARD" },
-    { name: "WELLNESS", status: "ONBOARD" },
-    { name: "RELIANCE", status: "ONBOARD" },
-    { name: "FIRST GUARANTEE", status: "ONBOARD" },
-    { name: "THT", status: "ONBOARD" },
-    { name: "DOHEEC", status: "ONBOARD" },
-    { name: "GNI", status: "ONBOARD" },
-    { name: "MH", status: "ONBOARD" },
-    { name: "AIICO MULTISHIELD", status: "ONBOARD" },
-    { name: "GREENBAY", status: "ONBOARD" },
-    { name: "MARINA", status: "ONBOARD" },
-    { name: "EAGLE", status: "ONBOARD" },
-    { name: "MEDIPLAN", status: "ONBOARD" },
-    { name: "METROHEALTH", status: "ONBOARD" },
-    { name: "RONSBERGER", status: "ONBOARD" },
-    { name: "WELPRO", status: "ONBOARD" },
-    { name: "GORAH", status: "ONBOARD" },
-    { name: "SMATHEALTH", status: "ONBOARD" },
-    { name: "AXA MANSARD", status: "ONBOARD" },
-    { name: "BASTION", status: "ONBOARD" },
-    { name: "REDCARE", status: "ONBOARD" },
-    { name: "AVON", status: "ONBOARD" },
-    { name: "ANCHOR", status: "ONBOARD" },
-    { name: "LEADWAY", status: "ONBOARD" },
-    { name: "NOOR", status: "ONBOARD" },
-    { name: "ALLENZA", status: "ONBOARD" },
-    { name: "UNITED HEALTH CARE", status: "ONBOARD" },
-    { name: "LEADWAY", status: "ONBOARD" },
-    { name: "QUEST", status: "ONBOARD" },
-    { name: "AVON", status: "ONBOARD" },
-    { name: "CLEARLINE", status: "ONBOARD" }
+    { name: "IHMS", status: "ONBOARD", coverage: 0.8 },
+    { name: "HEALTH PARTNERS", status: "ONBOARD", coverage: 0.75 },
+    { name: "ZENOR", status: "ONBOARD", coverage: 0.9 },
+    { name: "PHILIPS", status: "ONBOARD", coverage: 0.6 },
+    { name: "PRO HEALTH", status: "ONBOARD", coverage: 0.85 },
+    { name: "FOUNTAIN HEALTH", status: "ONBOARD", coverage: 0.7 },
+    { name: "DOT HMO", status: "ONBOARD", coverage: 0.95 },
+    { name: "CLEARLINE", status: "ONBOARD", coverage: 0.8 },
+    { name: "STERLING HEALTH", status: "ONBOARD", coverage: 0.75 },
+    { name: "OCEANIC", status: "ONBOARD", coverage: 0.88 },
+    { name: "SUNU", status: "ONBOARD", coverage: 0.7 },
+    { name: "LIFEWORTH", status: "ONBOARD", coverage: 0.82 },
+    { name: "CKLINE", status: "ONBOARD", coverage: 0.65 },
+    { name: "WELLNESS", status: "ONBOARD", coverage: 0.9 },
+    { name: "RELIANCE", status: "ONBOARD", coverage: 0.78 },
+    { name: "FIRST GUARANTEE", status: "ONBOARD", coverage: 0.83 },
+    { name: "THT", status: "ONBOARD", coverage: 0.72 },
+    { name: "DOHEEC", status: "ONBOARD", coverage: 0.87 },
+    { name: "GNI", status: "ONBOARD", coverage: 0.73 },
+    { name: "MH", status: "ONBOARD", coverage: 0.8 },
+    { name: "AIICO MULTISHIELD", status: "ONBOARD", coverage: 0.92 },
+    { name: "GREENBAY", status: "ONBOARD", coverage: 0.68 },
+    { name: "MARINA", status: "ONBOARD", coverage: 0.85 },
+    { name: "EAGLE", status: "ONBOARD", coverage: 0.79 },
+    { name: "MEDIPLAN", status: "ONBOARD", coverage: 0.8 },
+    { name: "METROHEALTH", status: "ONBOARD", coverage: 0.86 },
+    { name: "RONSBERGER", status: "ONBOARD", coverage: 0.7 },
+    { name: "WELPRO", status: "ONBOARD", coverage: 0.91 },
+    { name: "GORAH", status: "ONBOARD", coverage: 0.76 },
+    { name: "SMATHEALTH", status: "ONBOARD", coverage: 0.84 },
+    { name: "AXA MANSARD", status: "ONBOARD", coverage: 0.93 },
+    { name: "BASTION", status: "ONBOARD", coverage: 0.77 },
+    { name: "REDCARE", status: "ONBOARD", coverage: 0.89 },
+    { name: "AVON", status: "ONBOARD", coverage: 0.9 },
+    { name: "ANCHOR", status: "ONBOARD", coverage: 0.71 },
+    { name: "LEADWAY", status: "ONBOARD", coverage: 0.88 },
+    { name: "NOOR", status: "ONBOARD", coverage: 0.74 },
+    { name: "ALLENZA", status: "ONBOARD", coverage: 0.81 },
+    { name: "UNITED HEALTH CARE", status: "ONBOARD", coverage: 0.94 },
+    { name: "QUEST", status: "ONBOARD", coverage: 0.8 },
 ];
+
 
 export default function InvoicePage() {
     const { patientId } = useParams();
@@ -121,7 +119,15 @@ export default function InvoicePage() {
     const [selectedHMO, setSelectedHMO] = useState('');
     const [hmoCoveredAmount, setHmoCoveredAmount] = useState('');
     const [showInvoice, setShowInvoice] = useState(false);
+    // Invoice number needs to be consistent, initialize once and keep
     const [invoiceNumber] = useState(`INV-${Date.now().toString().slice(-6)}`);
+
+    // Determine if the patient has an HMO registered in their profile
+    const patientHasHMO = !!patient?.hmo?.name;
+    const patientHMOName = patientHasHMO ? patient.hmo.name : '';
+    const patientHmoCoverageRate = patientHasHMO ?
+        (hmoOptions.find(hmo => hmo.name === patientHMOName)?.coverage || 0) : 0;
+
 
     useEffect(() => {
         const fetchInvoiceDetails = async () => {
@@ -157,6 +163,10 @@ export default function InvoicePage() {
                 if (patientResponse.ok) {
                     const patientData = await patientResponse.json();
                     setPatient(patientData);
+                    // Pre-select patient's HMO if they have one
+                    if (patientData.hmo && patientData.hmo.name) {
+                        setSelectedHMO(patientData.hmo.name);
+                    }
                 } else if (patientResponse.status === 404) {
                     setError('Patient not found.');
                     setLoading(false);
@@ -267,11 +277,21 @@ export default function InvoicePage() {
     };
 
     const subtotal = invoiceItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const coveredAmount = parseFloat(hmoCoveredAmount) || 0;
-    const totalDue = subtotal - coveredAmount;
+    
+    let calculatedCoveredAmount = 0;
+    if (patientHasHMO && selectedHMO === patientHMOName) {
+        calculatedCoveredAmount = subtotal * patientHmoCoverageRate;
+    }
 
-    // This check is now effectively always true if an HMO is selected
-    const isHmoOnboard = selectedHMO && hmoOptions.find(h => h.name === selectedHMO)?.status === "ONBOARD";
+    // Prioritize manually entered HMO Covered Amount if it's a valid number and greater than 0
+    const manualHmoCovered = parseFloat(hmoCoveredAmount);
+    const finalCoveredAmount = (manualHmoCovered > 0) ? manualHmoCovered : calculatedCoveredAmount;
+
+    const totalDue = subtotal - finalCoveredAmount;
+
+    // This check determines if the invoice should behave like an HMO invoice (hide prices, show only balance/fully covered)
+    const isInvoiceForHmoPatient = patientHasHMO && selectedHMO === patientHMOName;
+
 
     const handleGenerateInvoice = () => {
         if (invoiceItems.length === 0) {
@@ -301,6 +321,61 @@ export default function InvoicePage() {
             return;
         }
 
+        // --- ENHANCED LOGGING BEFORE SENDING PAYLOAD ---
+        console.log("--- Frontend Payload Debugging ---");
+        console.log("Frontend - invoiceItems raw:", invoiceItems);
+        // Log each item's calculated totalPrice
+        invoiceItems.forEach((item, index) => {
+            console.log(`Frontend - invoiceItems[${index}] - name: ${item.name}, price: ${item.price}, quantity: ${item.quantity}, calculated totalPrice: ${item.price * item.quantity}`);
+        });
+
+        console.log("Frontend - subtotal (calculated):", subtotal);
+        console.log("Frontend - coveredAmount (final after logic):", finalCoveredAmount); // Use finalCoveredAmount
+        console.log("Frontend - totalDue (calculated):", totalDue);
+        console.log("Frontend - isInvoiceForHmoPatient:", isInvoiceForHmoPatient);
+        console.log("Frontend - selectedHMO:", selectedHMO);
+        console.log("Frontend - hmoCoveredAmount (input):", hmoCoveredAmount);
+        console.log("Frontend - patientHasHMO:", patientHasHMO);
+        console.log("Frontend - patientHMOName:", patientHMOName);
+        console.log("Frontend - patientHmoCoverageRate:", patientHmoCoverageRate);
+
+
+        const payload = {
+            patientId: patient.id,
+            patientName: patient.name,
+            patientEmail: patient.email,
+            invoiceNumber: invoiceNumber,
+            invoiceDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+            // Only send 'items' array, structured as the backend validation expects.
+            // The backend's EmailService will be responsible for transforming this
+            // into the 'services' format for the email template.
+            items: invoiceItems.map(item => ({
+                description: item.name,    // Map item.name to description
+                quantity: item.quantity,
+                unitPrice: item.price,     // Map item.price to unitPrice
+                totalPrice: item.price * item.quantity // Calculate totalPrice for each item here
+            })),
+            isHmoCovered: isInvoiceForHmoPatient,
+            hmoName: isInvoiceForHmoPatient ? selectedHMO : null,
+            coveredAmount: isInvoiceForHmoPatient ? finalCoveredAmount : 0, // Use finalCoveredAmount here
+            totalAmount: totalDue, // This is the total amount due from the patient (totalDue from frontend)
+            notes: "Please make payment within 7 days of invoice date.",
+            clinicName: process.env.REACT_APP_CLINIC_NAME || "Prime Dental Clinic",
+            clinicAddress: process.env.REACT_APP_CLINIC_ADDRESS || "local government, 104, New Ipaja/Egbeda Road, opposite prestige super-market, Alimosho, Ipaja Rd, Ipaja, Lagos 100006, Lagos",
+            clinicPhone: process.env.REACT_APP_CLINIC_PHONE || "0703 070 8877",
+            // Include latestDentalRecord for the template
+            latestDentalRecord: latestDentalRecord ? {
+                provisionalDiagnosis: Array.isArray(latestDentalRecord.provisionalDiagnosis) ? latestDentalRecord.provisionalDiagnosis.join(', ') : latestDentalRecord.provisionalDiagnosis || 'N/A',
+                treatmentPlan: Array.isArray(latestDentalRecord.treatmentPlan) ? latestDentalRecord.treatmentPlan.join(', ') : latestDentalRecord.treatmentPlan || 'N/A'
+            } : null,
+            // Pass subtotal and totalDue explicitly for non-HMO display in template
+            subtotal: subtotal, // Raw subtotal
+            totalDueFromPatient: totalDue // Renamed to clearly reflect patient's responsibility
+        };
+
+        // Log the final payload to the console for debugging
+        console.log('Final payload sent to backend:', payload);
+
         try {
             const response = await fetch(`${API_BASE_URL}/api/invoices/send`, {
                 method: 'POST',
@@ -308,29 +383,7 @@ export default function InvoicePage() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({
-                    patientId: patient.id,
-                    patientName: patient.name,
-                    patientEmail: patient.email,
-                    invoiceNumber: invoiceNumber,
-                    invoiceDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-                    // Mapped invoiceItems to 'items' as expected by backend,
-                    // and adjusted item properties (name -> description, price -> unitPrice)
-                    items: invoiceItems.map(item => ({
-                        description: item.name,
-                        quantity: item.quantity,
-                        unitPrice: item.price
-                    })),
-                    // Mapped totalDue to 'totalAmount' as expected by backend
-                    totalAmount: totalDue,
-                    hmo: selectedHMO,
-                    hmoCoveredAmount: coveredAmount,
-                    notes: "Thank you for your patronage.",
-                    clinicName: "PRIME DENTAL CLINIC", // Replace with actual clinic name from config if available
-                    clinicAddress: " local government, 104, New Ipaja/Egbeda Road, opposite prestige super-market, Alimosho, Ipaja Rd, Ipaja, Lagos 100006, Lagos", // Replace with actual clinic address
-                    clinicPhone: "0703 070 8877", // Replace with actual clinic phone
-                    clinicEmail: "info@dentalclinic.com" // Replace with actual clinic email
-                })
+                body: JSON.stringify(payload)
             });
 
             if (response.ok) {
@@ -338,9 +391,10 @@ export default function InvoicePage() {
             } else {
                 const errorData = await response.json();
                 toast.error(`Failed to send invoice email: ${errorData.error || response.statusText}`);
+                console.error('Backend error response:', errorData);
             }
         } catch (error) {
-            console.error('Error sending invoice email:', error);
+            console.error('Network error or unexpected issue during invoice email send:', error);
             toast.error('Network error. Could not send invoice email.');
         }
     };
@@ -426,6 +480,10 @@ export default function InvoicePage() {
                                 <p><strong>Email:</strong> {patient.email || 'N/A'}</p>
                             </>
                         )}
+                        {/* Display Patient's Registered HMO here */}
+                        {patientHasHMO && (
+                            <p><strong>Registered HMO:</strong> {patientHMOName}</p>
+                        )}
                     </div>
 
                     {latestDentalRecord && (
@@ -460,8 +518,9 @@ export default function InvoicePage() {
                                     <tr>
                                         <th>Service</th>
                                         <th>Quantity</th>
-                                        <th>Unit Price (₦)</th>
-                                        <th>Total (₦)</th>
+                                        {/* Conditionally hide Unit Price and Total columns based on HMO status */}
+                                        {!isInvoiceForHmoPatient && <th>Unit Price (₦)</th>}
+                                        {!isInvoiceForHmoPatient && <th>Total (₦)</th>}
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -478,16 +537,19 @@ export default function InvoicePage() {
                                                     min="1"
                                                 />
                                             </td>
-                                            <td>
-                                                <input
-                                                    type="number"
-                                                    value={item.price}
-                                                    onChange={(e) => handlePriceChange(item.id, e.target.value)}
-                                                    className="price-input"
-                                                    min="0"
-                                                />
-                                            </td>
-                                            <td>₦{(item.price * item.quantity).toLocaleString()}</td>
+                                            {/* Conditionally hide Unit Price and Total columns based on HMO status */}
+                                            {!isInvoiceForHmoPatient && (
+                                                <td>
+                                                    <input
+                                                        type="number"
+                                                        value={item.price}
+                                                        onChange={(e) => handlePriceChange(item.id, e.target.value)}
+                                                        className="price-input"
+                                                        min="0"
+                                                    />
+                                                </td>
+                                            )}
+                                            {!isInvoiceForHmoPatient && <td>₦{(item.price * item.quantity).toLocaleString()}</td>}
                                             <td>
                                                 <button onClick={() => handleRemoveService(item.id)} className="remove-service-button">
                                                     <i className="fas fa-trash"></i>
@@ -513,7 +575,8 @@ export default function InvoicePage() {
                                 </option>
                             ))}
                         </select>
-                        {selectedHMO && (
+                        {/* Only show HMO Covered Amount input if the patient has an HMO AND the selected HMO matches the patient's registered HMO */}
+                        {isInvoiceForHmoPatient && (
                             <div className="hmo-covered-input">
                                 <label htmlFor="hmoCoveredAmount">HMO Covered Amount (₦)</label>
                                 <input
@@ -532,9 +595,9 @@ export default function InvoicePage() {
             ) : (
                 <div className="invoice-display-area printable-content">
                     <div className="invoice-company-info">
-                        <h2>Prime Dental Clinic</h2> {/* Replace with actual clinic name */}
-                        <p>local government, 104, New Ipaja/Egbeda Road, opposite prestige super-market, Alimosho, Ipaja Rd, Ipaja, Lagos 100006, Lagos</p>
-                        <p>Phone: 0703 070 8877 </p>
+                        <h2>{process.env.REACT_APP_CLINIC_NAME || "Your Dental Clinic Name"}</h2>
+                        <p>{process.env.REACT_APP_CLINIC_ADDRESS || "123 Dental Lane, City, Country"}</p>
+                        <p>Phone: {process.env.REACT_APP_CLINIC_PHONE || "(123) 456-7890"} | Email: {process.env.REACT_APP_EMAIL_FROM || "info@dentalclinic.com"}</p>
                     </div>
                     <div className="invoice-header-display">
                         <h2>INVOICE</h2>
@@ -544,16 +607,26 @@ export default function InvoicePage() {
                     <div className="invoice-patient-info">
                         <h3>Bill To:</h3>
                         <p><strong>Patient Name:</strong> {patient.name}</p>
-                        {userRole === 'nurse' ? (
-                            <>
-                                <p><strong>Phone:</strong> <span className="restricted-info">Restricted</span></p>
-                                <p><strong>Email:</strong> <span className="restricted-info">Restricted</span></p>
-                            </>
-                        ) : (
+                        {/* Conditional display of patient contact info based on user role and HMO status */}
+                        {(userRole === 'owner' || userRole === 'staff') ? (
                             <>
                                 <p><strong>Phone:</strong> {patient.phoneNumber}</p>
                                 <p><strong>Email:</strong> {patient.email || 'N/A'}</p>
                             </>
+                        ) : (userRole === 'nurse' && isInvoiceForHmoPatient) ? ( // Nurse and HMO patient
+                            <>
+                                <p><strong>Phone:</strong> <span className="restricted-info">Restricted</span></p>
+                                <p><strong>Email:</strong> <span className="restricted-info">Restricted</span></p>
+                            </>
+                        ) : ( // Nurse and non-HMO patient (default restricted)
+                            <>
+                                <p><strong>Phone:</strong> <span className="restricted-info">Restricted</span></p>
+                                <p><strong>Email:</strong> <span className="restricted-info">Restricted</span></p>
+                            </>
+                        )}
+                        {/* Display HMO on invoice if it's an HMO patient and HMO is selected */}
+                        {isInvoiceForHmoPatient && (
+                            <p><strong>HMO:</strong> {selectedHMO}</p>
                         )}
                     </div>
                     <div className="invoice-services-rendered">
@@ -563,8 +636,9 @@ export default function InvoicePage() {
                                 <tr>
                                     <th>Service</th>
                                     <th>Quantity</th>
-                                    <th>Unit Price (₦)</th>
-                                    <th>Total (₦)</th>
+                                    {/* Conditionally hide Unit Price and Total columns for HMO patients */}
+                                    {!isInvoiceForHmoPatient && <th>Unit Price (₦)</th>}
+                                    {!isInvoiceForHmoPatient && <th>Total (₦)</th>}
                                 </tr>
                             </thead>
                             <tbody>
@@ -572,23 +646,37 @@ export default function InvoicePage() {
                                     <tr key={item.id}>
                                         <td>{item.name}</td>
                                         <td>{item.quantity}</td>
-                                        <td>₦{item.price.toLocaleString()}</td>
-                                        <td>₦{(item.price * item.quantity).toLocaleString()}</td>
+                                        {/* Conditionally hide Unit Price and Total columns for HMO patients */}
+                                        {!isInvoiceForHmoPatient && <td>₦{item.price.toLocaleString()}</td>}
+                                        {!isInvoiceForHmoPatient && <td>₦{(item.price * item.quantity).toLocaleString()}</td>}
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
                     <div className="invoice-summary">
-                        <p><strong>Subtotal:</strong> ₦{subtotal.toLocaleString()}</p>
-                        {selectedHMO && (
-                            <p>
-                                <strong>HMO ({selectedHMO}):</strong> ₦{coveredAmount.toLocaleString()} Covered
-                            </p>
+                        {/* Display simplified summary for HMO patients */}
+                        {isInvoiceForHmoPatient ? (
+                            <>
+                                {totalDue > 0 ? (
+                                    <p className="total-due due-balance">
+                                        <strong>Balance Due from Patient:</strong> ₦{totalDue.toLocaleString()}
+                                    </p>
+                                ) : (
+                                    <p className="total-due fully-covered">
+                                        <strong>Status: Fully Covered by HMO</strong>
+                                    </p>
+                                )}
+                            </>
+                        ) : (
+                            // Display full summary for non-HMO patients
+                            <>
+                                <p><strong>Subtotal:</strong> ₦{subtotal.toLocaleString()}</p>
+                                <p className="total-due">
+                                    <strong>Total Amount Due from Patient:</strong> ₦{subtotal.toLocaleString()}
+                                </p>
+                            </>
                         )}
-                        <p className="total-due">
-                            <strong>Total Amount Due from Patient:</strong> ₦{totalDue.toLocaleString()}
-                        </p>
                     </div>
                     <div className="invoice-notes">
                         <h3>Notes:</h3>

@@ -215,7 +215,7 @@ body {
   border-bottom: 1px solid var(--border-color);
 }
 
-/* NEW: Flexbox Grid for Detail Items in sections (for Demographic Information) */
+/* Flexbox Grid for Detail Items in sections (for Demographic Information) */
 .detail-grid {
     display: flex;
     flex-wrap: wrap;
@@ -227,7 +227,6 @@ body {
   /* Adjusted flex basis to properly create two columns when wrapped */
   flex: 1 1 calc(50% - (var(--spacing-md) / 2)); /* Two columns, considering gap */
   display: flex;
-  /* Removed flex-direction: column to allow strong/span to be inline */
   align-items: baseline; /* Align label and value nicely */
   margin-bottom: var(--spacing-sm); /* Adjusted for grid layout */
   font-size: 1em;
@@ -251,6 +250,17 @@ body {
   color: var(--text-medium);
   flex-grow: 1;
   word-break: break-word; /* Allow long text to break */
+}
+
+/* NEW: Specific styling for the HMO Covered detail item's text */
+.detail-item span strong.hmo-covered-yes {
+    color: var(--accent-color); /* Green for "Yes" */
+    font-weight: 700;
+}
+
+.detail-item span strong.hmo-covered-no {
+    color: var(--danger-color); /* Red for "No" */
+    font-weight: 700;
 }
 
 .restricted-info {

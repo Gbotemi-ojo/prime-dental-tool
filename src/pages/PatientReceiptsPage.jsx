@@ -14,15 +14,16 @@ export default function PatientReceiptsPage() {
     const [error, setError] = useState(null);
     const [userRole, setUserRole] = useState(null);
 
-    const [receiptItems, setReceiptItems] = useState([]); // [{ id: unique, name: 'Service Name', price: number }]
+    // receiptItems now includes 'quantity'
+    const [receiptItems, setReceiptItems] = useState([]); // [{ id: unique, name: 'Service Name', price: number, quantity: number }]
     const [selectedService, setSelectedService] = useState('');
-    const [selectedHMO, setSelectedHMO] = useState('');
-    const [hmoCoveredAmount, setHmoCoveredAmount] = useState('');
+    const [selectedHMO, setSelectedHMO] = useState(''); // State for HMO selection
+    const [hmoCoveredAmount, setHmoCoveredAmount] = useState(''); // State for manual HMO covered amount input
     const [paymentMethod, setPaymentMethod] = useState('');
     const [showReceipt, setShowReceipt] = useState(false);
     const [isSendingEmail, setIsSendingEmail] = useState(false);
-    
-    // Hardcoded list of services with base prices
+
+    // Hardcoded list of services with base prices (consistent with InvoicePage)
     const serviceOptions = [
         { name: "Registration & Consultation", price: 5000 },
         { name: "Registration & Consultation (family)", price: 10000 },
@@ -34,7 +35,7 @@ export default function PatientReceiptsPage() {
         { name: "Surgical Extraction (Impacted 3rd Molar)", price: 100000 },
         { name: "Temporary Dressing", price: 20000 },
         { name: "Amalgam Filling", price: 30000 },
-        { name: "Fuji 9 (Posterior GIC per Filling)", price: 50000 },
+        { name: "FUJI 9(POSTERIOR GIC (PER FILLING)", price: 50000 },
         { name: "Tooth Whitening (3 Sessions)", price: 100000 },
         { name: "Curretage/Subgingival (per tooth)", price: 30000 },
         { name: "Composite Buildup", price: 50000 },
@@ -75,31 +76,61 @@ export default function PatientReceiptsPage() {
         { name: "E-Max Crown", price: 300000 }
     ];
 
-    // Filtered list of HMOs to only include "ONBOARD" ones
+    // HMO Options with coverage rates for internal calculation (consistent with InvoicePage)
     const hmoOptions = [
-        { name: "IHMS", status: "ONBOARD" },
-        { name: "HEALTH PARTNERS", status: "ONBOARD" },
-        { name: "PHILIPS", status: "ONBOARD" },
-        { name: "CLEARLINE", status: "ONBOARD" },
-        { name: "WELLNESS", status: "ONBOARD" },
-        { name: "RELIANCE", status: "ONBOARD" },
-        { name: "METROHEALTH", status: "ONBOARD" },
-        { name: "BASTION", status: "ONBOARD" },
-        { name: "REDCARE", status: "ONBOARD" },
-        { name: "AVON", status: "ONBOARD" },
-        { name: "ANCHOR", status: "ONBOARD" },
-        { name: "LEADWAY", status: "ONBOARD" },
-        { name: "NOOR", status: "ONBOARD" },
-        { name: "ALLENZA", status: "ONBOARD" },
-        { name: "UNITED HEALTH CARE", status: "ONBOARD" },
-        { name: "LEADWAY", status: "ONBOARD" },
-        { name: "QUEST", status: "ONBOARD" },
-        { name: "AVON", status: "ONBOARD" },
-        { name: "CLEARLINE", status: "ONBOARD" }
+        { name: "IHMS", status: "ONBOARD", coverage: 0.8 },
+        { name: "HEALTH PARTNERS", status: "ONBOARD", coverage: 0.75 },
+        { name: "ZENOR", status: "ONBOARD", coverage: 0.9 },
+        { name: "PHILIPS", status: "ONBOARD", coverage: 0.6 },
+        { name: "PRO HEALTH", status: "ONBOARD", coverage: 0.85 },
+        { name: "FOUNTAIN HEALTH", status: "ONBOARD", coverage: 0.7 },
+        { name: "DOT HMO", status: "ONBOARD", coverage: 0.95 },
+        { name: "CLEARLINE", status: "ONBOARD", coverage: 0.8 },
+        { name: "STERLING HEALTH", status: "ONBOARD", coverage: 0.75 },
+        { name: "OCEANIC", status: "ONBOARD", coverage: 0.88 },
+        { name: "SUNU", status: "ONBOARD", coverage: 0.7 },
+        { name: "LIFEWORTH", status: "ONBOARD", coverage: 0.82 },
+        { name: "CKLINE", status: "ONBOARD", coverage: 0.65 },
+        { name: "WELLNESS", status: "ONBOARD", coverage: 0.9 },
+        { name: "RELIANCE", status: "ONBOARD", coverage: 0.78 },
+        { name: "FIRST GUARANTEE", status: "ONBOARD", coverage: 0.83 },
+        { name: "THT", status: "ONBOARD", coverage: 0.72 },
+        { name: "DOHEEC", status: "ONBOARD", coverage: 0.87 },
+        { name: "GNI", status: "ONBOARD", coverage: 0.73 },
+        { name: "MH", status: "ONBOARD", coverage: 0.8 },
+        { name: "AIICO MULTISHIELD", status: "ONBOARD", coverage: 0.92 },
+        { name: "GREENBAY", status: "ONBOARD", coverage: 0.68 },
+        { name: "MARINA", status: "ONBOARD", coverage: 0.85 },
+        { name: "EAGLE", status: "ONBOARD", coverage: 0.79 },
+        { name: "MEDIPLAN", status: "ONBOARD", coverage: 0.8 },
+        { name: "METROHEALTH", status: "ONBOARD", coverage: 0.86 },
+        { name: "RONSBERGER", status: "ONBOARD", coverage: 0.7 },
+        { name: "WELPRO", status: "ONBOARD", coverage: 0.91 },
+        { name: "GORAH", status: "ONBOARD", coverage: 0.76 },
+        { name: "SMATHEALTH", status: "ONBOARD", coverage: 0.84 },
+        { name: "AXA MANSARD", status: "ONBOARD", coverage: 0.93 },
+        { name: "BASTION", status: "ONBOARD", coverage: 0.77 },
+        { name: "REDCARE", status: "ONBOARD", coverage: 0.89 },
+        { name: "AVON", status: "ONBOARD", coverage: 0.9 },
+        { name: "ANCHOR", status: "ONBOARD", coverage: 0.71 },
+        { name: "LEADWAY", status: "ONBOARD", coverage: 0.88 },
+        { name: "NOOR", status: "ONBOARD", coverage: 0.74 },
+        { name: "ALLENZA", status: "ONBOARD", coverage: 0.81 },
+        { name: "UNITED HEALTH CARE", status: "ONBOARD", coverage: 0.94 },
+        { name: "QUEST", status: "ONBOARD", coverage: 0.8 }
     ];
 
+    // Determine if the patient has an HMO registered in their profile
+    const patientHasHMO = !!patient?.hmo?.name;
+    const patientHMOName = patientHasHMO ? patient.hmo.name : '';
+    const patientHmoCoverageRate = patientHasHMO ?
+        (hmoOptions.find(hmo => hmo.name === patientHMOName)?.coverage || 0) : 0;
+
+    // Receipt number needs to be consistent, initialize once and keep
+    const [receiptNumber] = useState(`RCPT-${Date.now().toString().slice(-6)}`);
+
     useEffect(() => {
-        const fetchPatientAndRecordDetails = async () => {
+        const fetchReceiptDetails = async () => {
             const token = localStorage.getItem('jwtToken');
             const role = localStorage.getItem('role');
             setUserRole(role);
@@ -110,9 +141,10 @@ export default function PatientReceiptsPage() {
                 return;
             }
 
-            if (role !== 'owner' && role !== 'staff') {
-                toast.error('Access denied. Only Staff and Owners can access this page.');
-                navigate('/patient-management');
+            // Nurse can also access now for sending receipts
+            if (role !== 'owner' && role !== 'staff' && role !== 'nurse') {
+                toast.error('Access denied. Only Staff, Nurses, and Owners can access this page.');
+                navigate(`/patients/${patientId}`);
                 return;
             }
 
@@ -124,7 +156,6 @@ export default function PatientReceiptsPage() {
             }
 
             try {
-                // Fetch Patient Details
                 const patientResponse = await fetch(`${API_BASE_URL}/api/patients/${parsedPatientId}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -132,45 +163,55 @@ export default function PatientReceiptsPage() {
                 if (patientResponse.ok) {
                     const patientData = await patientResponse.json();
                     setPatient(patientData);
-
-                    // Fetch Patient's Latest Dental Record
-                    const dentalRecordsResponse = await fetch(`${API_BASE_URL}/api/patients/${parsedPatientId}/dental-records`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-
-                    if (dentalRecordsResponse.ok) {
-                        const dentalRecords = await dentalRecordsResponse.json();
-                        // Assuming the backend returns records sorted by date descending, take the first one
-                        if (dentalRecords && dentalRecords.length > 0) {
-                            const latestRecord = dentalRecords[0];
-                            setLatestDentalRecord(latestRecord);
-
-                            // Pre-populate receipt items with treatment plan from the latest record
-                            if (latestRecord.treatmentPlan && Array.isArray(latestRecord.treatmentPlan)) {
-                                const prefilledItems = latestRecord.treatmentPlan.map((plan, index) => {
-                                    // Try to find a matching service and use its price, otherwise default to 0
-                                    const matchedService = serviceOptions.find(s => s.name.toLowerCase() === plan.toLowerCase());
-                                    return {
-                                        id: `plan-${index}-${Date.now()}`, // Unique ID
-                                        name: plan,
-                                        price: matchedService ? matchedService.price : 0, // Default to 0 if not found
-                                    };
-                                });
-                                setReceiptItems(prefilledItems);
-                            }
-                        } else {
-                            console.log('No dental records found for this patient.');
-                        }
-                    } else {
-                        console.warn('Failed to fetch dental records for pre-populating receipt.');
+                    // Pre-select patient's HMO if they have one
+                    if (patientData.hmo && patientData.hmo.name) {
+                        setSelectedHMO(patientData.hmo.name);
                     }
-
                 } else if (patientResponse.status === 404) {
                     setError('Patient not found.');
+                    setLoading(false);
+                    return;
                 } else {
                     const errorData = await patientResponse.json();
                     setError(errorData.error || `Failed to fetch patient details. Status: ${patientResponse.status}`);
+                    setLoading(false);
+                    return;
                 }
+
+                const recordsResponse = await fetch(`${API_BASE_URL}/api/patients/${parsedPatientId}/dental-records`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (recordsResponse.ok) {
+                    const recordsData = await recordsResponse.json();
+                    if (recordsData && recordsData.length > 0) {
+                        const sortedRecords = recordsData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+                        const latestRecord = sortedRecords[0];
+                        setLatestDentalRecord(latestRecord);
+
+                        // Pre-add items from latest treatmentPlan to receiptItems
+                        if (latestRecord.treatmentPlan && Array.isArray(latestRecord.treatmentPlan)) {
+                            const preAddedItems = latestRecord.treatmentPlan.map((plan, index) => {
+                                const serviceInfo = serviceOptions.find(s => s.name.toLowerCase() === plan.toLowerCase().trim());
+                                return {
+                                    id: `plan-${index}-${Date.now()}`, // Unique ID
+                                    name: plan.trim(),
+                                    price: serviceInfo ? serviceInfo.price : 0, // Use price from serviceOptions, default to 0
+                                    quantity: 1 // Default quantity to 1 for pre-added items
+                                };
+                            });
+                            if (preAddedItems.length > 0) {
+                                setReceiptItems(preAddedItems);
+                                toast.info('Treatment plan items pre-added to receipt. Please review prices and quantities.');
+                            }
+                        }
+                    } else {
+                        console.warn('No dental records found for this patient.');
+                    }
+                } else {
+                    console.warn(`Failed to fetch dental records for pre-populating receipt. Status: ${recordsResponse.status}`);
+                }
+
             } catch (err) {
                 setError('Network error. Could not connect to the server.');
                 console.error('Network Error:', err);
@@ -179,21 +220,29 @@ export default function PatientReceiptsPage() {
             }
         };
 
-        fetchPatientAndRecordDetails();
+        fetchReceiptDetails();
     }, [patientId, navigate]);
 
     const handleAddService = () => {
         if (selectedService) {
             const serviceInfo = serviceOptions.find(s => s.name === selectedService);
             if (serviceInfo) {
-                setReceiptItems(prevItems => [
-                    ...prevItems,
-                    {
-                        id: Date.now(), // Unique ID for key
-                        name: serviceInfo.name,
-                        price: serviceInfo.price,
+                setReceiptItems(prevItems => {
+                    const existingItem = prevItems.find(item => item.name === serviceInfo.name);
+                    if (existingItem) {
+                        toast.warn(`"${serviceInfo.name}" is already in the receipt. Adjust quantity if needed.`);
+                        return prevItems;
                     }
-                ]);
+                    return [
+                        ...prevItems,
+                        {
+                            id: Date.now(), // Unique ID for key
+                            name: serviceInfo.name,
+                            price: serviceInfo.price,
+                            quantity: 1 // Default quantity to 1 when adding
+                        }
+                    ];
+                });
                 setSelectedService(''); // Reset dropdown
             }
         } else {
@@ -213,19 +262,50 @@ export default function PatientReceiptsPage() {
         );
     };
 
+    // New handler for quantity changes
+    const handleQuantityChange = (id, newQuantity) => {
+        setReceiptItems(prevItems =>
+            prevItems.map(item =>
+                item.id === id ? { ...item, quantity: parseInt(newQuantity) || 1 } : item
+            )
+        );
+    };
+
     const handleHmoChange = (e) => {
         const selectedHmoName = e.target.value;
         setSelectedHMO(selectedHmoName);
-        setHmoCoveredAmount(''); // Reset amount when HMO changes
+        setHmoCoveredAmount(''); // Reset covered amount on HMO change
     };
 
-    const subtotal = receiptItems.reduce((sum, item) => sum + item.price, 0);
-    const coveredAmount = parseFloat(hmoCoveredAmount) || 0;
-    const totalDue = subtotal - coveredAmount;
+    // Calculate subtotal using price * quantity
+    const subtotal = receiptItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+    let calculatedCoveredAmount = 0;
+    // Calculate based on HMO coverage rate IF patient has HMO and selected HMO matches
+    // Only apply if the selected HMO in the form is the patient's registered HMO
+    if (patientHasHMO && selectedHMO === patientHMOName) {
+        calculatedCoveredAmount = subtotal * patientHmoCoverageRate;
+    }
+
+    // Prioritize manually entered HMO Covered Amount if it's a valid positive number
+    const manualHmoCovered = parseFloat(hmoCoveredAmount);
+    const finalCoveredAmount = (manualHmoCovered > 0) ? manualHmoCovered : calculatedCoveredAmount;
+
+    // totalDue for receipt means "Total Amount Paid by Patient" or "Balance Due from Patient"
+    const totalDue = subtotal - finalCoveredAmount;
+
+    // This checks if the receipt should behave like an HMO receipt (affecting display, not calculation origin)
+    // It's true if a specific HMO is selected AND it matches the patient's registered HMO.
+    const isHmoCovered = patientHasHMO && selectedHMO === patientHMOName;
+
 
     const handleGenerateReceipt = () => {
         if (receiptItems.length === 0) {
             toast.error('Please add at least one service to generate a receipt.');
+            return;
+        }
+        if (!paymentMethod) {
+            toast.error('Please select a payment method.');
             return;
         }
         setShowReceipt(true);
@@ -235,48 +315,70 @@ export default function PatientReceiptsPage() {
         window.print();
     };
 
-    const handleSendReceipt = async () => {
-        if (!patient?.email) {
-            toast.error('Patient email address is missing. Cannot send receipt.');
+    const handleSendEmail = async () => {
+        if (!patient || !patient.email) {
+            toast.error('Patient email is missing. Cannot send receipt.');
             return;
         }
         if (receiptItems.length === 0) {
-            toast.error('Please add at least one service to generate a receipt.');
+            toast.error('No services added to the receipt to send.');
             return;
         }
         if (!paymentMethod) {
-            toast.error('Please select a payment method.');
+            toast.error('Please select a payment method before sending email.');
+            return;
+        }
+
+        const token = localStorage.getItem('jwtToken');
+        const senderUserId = localStorage.getItem('userId');
+        if (!token || !senderUserId) {
+            toast.error('Authentication token or sender ID missing. Please log in.');
             return;
         }
 
         setIsSendingEmail(true);
-        const token = localStorage.getItem('jwtToken');
-        const currentUser = JSON.parse(localStorage.getItem('user'));
 
-        const currentReceiptNumber = `PR-${Date.now()}`; // Generate here for consistency
-        const currentReceiptDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        // --- ENHANCED LOGGING BEFORE SENDING PAYLOAD ---
+        console.log("--- Frontend Receipt Payload Debugging ---");
+        console.log("Frontend - receiptItems raw:", receiptItems);
+        // Log each item's calculated totalPrice
+        receiptItems.forEach((item, index) => {
+            console.log(`Frontend - receiptItems[${index}] - name: ${item.name}, price: ${item.price}, quantity: ${item.quantity}, calculated totalPrice: ${item.price * item.quantity}`);
+        });
 
-        const receiptData = {
-            // These fields are required at the root level by your backend's validation
+        console.log("Frontend - subtotal (calculated):", subtotal);
+        console.log("Frontend - coveredAmount (final after logic):", finalCoveredAmount);
+        console.log("Frontend - totalDue (calculated - amount patient pays):", totalDue);
+        console.log("Frontend - isHmoCovered (status for template):", isHmoCovered);
+        console.log("Frontend - selectedHMO:", selectedHMO);
+        console.log("Frontend - hmoCoveredAmount (input):", hmoCoveredAmount);
+        console.log("Frontend - paymentMethod:", paymentMethod);
+        console.log("--- End Frontend Receipt Payload Debugging ---");
+
+        const payload = {
             patientId: patient.id,
-            receiptNumber: currentReceiptNumber,
-            receiptDate: currentReceiptDate,
-            amountPaid: totalDue,
-            paymentMethod: paymentMethod,
-
-            // Other necessary receipt details
-            patientEmail: patient.email,
             patientName: patient.name,
+            patientEmail: patient.email,
+            receiptNumber: receiptNumber, // Use the state-managed receiptNumber
+            receiptDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+            // Map items for the backend template, ensuring totalPrice is correct (price * quantity)
             items: receiptItems.map(item => ({
                 description: item.name,
-                amount: item.price
+                quantity: item.quantity,
+                unitPrice: item.price,
+                totalPrice: item.price * item.quantity // Correctly calculate totalPrice for each item
             })),
-            hmoProvider: selectedHMO || 'N/A',
-            hmoCoveredAmount: selectedHMO ? coveredAmount : 0,
-            clinicName: process.env.REACT_APP_CLINIC_NAME || 'Prime Dental Clinic',
-            clinicAddress: process.env.REACT_APP_CLINIC_ADDRESS || '123 Dental St, Smile City',
-            clinicPhone: process.env.REACT_APP_CLINIC_PHONE || '+1234567890',
-            clinicEmail: process.env.REACT_APP_EMAIL_FROM || 'info@yourclinic.com',
+            // Removed subtotal from payload as per user request to remove from template
+            isHmoCovered: isHmoCovered,
+            hmoName: isHmoCovered ? selectedHMO : null,
+            coveredAmount: isHmoCovered ? finalCoveredAmount : 0, // Use finalCoveredAmount here
+            amountPaid: totalDue, // This is the total amount paid by the patient
+            paymentMethod: paymentMethod,
+            latestDentalRecord: latestDentalRecord ? {
+                provisionalDiagnosis: Array.isArray(latestDentalRecord.provisionalDiagnosis) ? latestDentalRecord.provisionalDiagnosis.join(', ') : latestDentalRecord.provisionalDiagnosis || 'N/A',
+                treatmentPlan: Array.isArray(latestDentalRecord.treatmentPlan) ? latestDentalRecord.treatmentPlan.join(', ') : latestDentalRecord.treatmentPlan || 'N/A'
+            } : null,
+            totalDueFromPatient: totalDue // Also pass this as `totalDueFromPatient` for template clarity
         };
 
         try {
@@ -286,33 +388,30 @@ export default function PatientReceiptsPage() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({
-                    patientEmail: patient.email, // This is explicitly for the email service
-                    receiptData: receiptData, // The main data object
-                    senderUserId: currentUser ? currentUser.id : null
-                })
+                body: JSON.stringify({ receiptData: payload, senderUserId: parseInt(senderUserId) }) // Send payload inside receiptData
             });
 
             if (response.ok) {
                 toast.success('Receipt email sent successfully!');
             } else {
                 const errorData = await response.json();
-                toast.error(`Failed to send receipt email: ${errorData.error || 'Unknown error'}`);
-                console.error('Failed to send receipt email:', errorData);
+                toast.error(`Failed to send receipt email: ${errorData.error || response.statusText}`);
+                console.error('Backend error response:', errorData);
             }
-        } catch (err) {
+        } catch (error) {
+            console.error('Network error or unexpected issue during receipt email send:', error);
             toast.error('Network error. Could not send receipt email.');
-            console.error('Network Error during receipt email send:', err);
         } finally {
             setIsSendingEmail(false);
         }
     };
 
+
     if (loading) {
         return (
             <div className="app-container">
                 <div className="receipts-container" style={{ textAlign: 'center', padding: '50px' }}>
-                    <p className="info-message">Loading patient details...</p>
+                    <p className="info-message">Loading patient details and dental records...</p>
                     <div className="spinner"></div>
                 </div>
             </div>
@@ -350,31 +449,21 @@ export default function PatientReceiptsPage() {
             <header className="receipts-header">
                 <h1>Generate Receipt for {patient.name}</h1>
                 <div className="actions">
-                    <button onClick={() => navigate(`/patients/${patient.id}`)} className="back-button">
+                    <button onClick={() => navigate(`/patients/${patientId}`)} className="back-button">
                         <i className="fas fa-arrow-left"></i> Back to Patient Details
                     </button>
-                    <button onClick={handleGenerateReceipt} className="generate-receipt-button" disabled={receiptItems.length === 0}>
-                        <i className="fas fa-file-invoice"></i> Generate Receipt Display
-                    </button>
+                    {!showReceipt && (
+                        <button onClick={handleGenerateReceipt} className="generate-receipt-button">
+                            <i className="fas fa-receipt"></i> Generate Receipt
+                        </button>
+                    )}
                     {showReceipt && (
                         <>
                             <button onClick={handlePrint} className="print-receipt-button">
                                 <i className="fas fa-print"></i> Print Receipt
                             </button>
-                            <button
-                                onClick={handleSendReceipt}
-                                className="send-receipt-button"
-                                disabled={isSendingEmail || !patient?.email || receiptItems.length === 0 || !paymentMethod}
-                            >
-                                {isSendingEmail ? (
-                                    <>
-                                        <i className="fas fa-spinner fa-spin"></i> Sending...
-                                    </>
-                                ) : (
-                                    <>
-                                        <i className="fas fa-envelope"></i> Send Receipt Email
-                                    </>
-                                )}
+                            <button onClick={handleSendEmail} className="send-email-button" disabled={isSendingEmail}>
+                                {isSendingEmail ? 'Sending...' : <><i className="fas fa-envelope"></i> Send Email</>}
                             </button>
                         </>
                     )}
@@ -388,8 +477,8 @@ export default function PatientReceiptsPage() {
                         <p><strong>Name:</strong> {patient.name}</p>
                         {userRole === 'nurse' ? (
                             <>
-                                <p><strong>Phone:</strong> <span className="restricted-info"></span></p>
-                                <p><strong>Email:</strong> <span className="restricted-info"></span></p>
+                                <p><strong>Phone:</strong> <span className="restricted-info">Restricted</span></p>
+                                <p><strong>Email:</strong> <span className="restricted-info">Restricted</span></p>
                             </>
                         ) : (
                             <>
@@ -397,9 +486,22 @@ export default function PatientReceiptsPage() {
                                 <p><strong>Email:</strong> {patient.email || 'N/A'}</p>
                             </>
                         )}
+                        {/* Display Patient's Registered HMO here */}
+                        {patientHasHMO && (
+                            <p><strong>Registered HMO:</strong> {patientHMOName}</p>
+                        )}
                     </div>
 
-                    <h2>Services Rendered</h2>
+                    {latestDentalRecord && (
+                        <div className="dental-record-context">
+                            <h3>Latest Dental Record Context:</h3>
+                            <p><strong>Date:</strong> {new Date(latestDentalRecord.createdAt).toLocaleDateString()}</p>
+                            <p><strong>Provisional Diagnosis:</strong> {Array.isArray(latestDentalRecord.provisionalDiagnosis) ? latestDentalRecord.provisionalDiagnosis.join(', ') : latestDentalRecord.provisionalDiagnosis || 'N/A'}</p>
+                            <p><strong>Treatment Plan (for context):</strong> {Array.isArray(latestDentalRecord.treatmentPlan) ? latestDentalRecord.treatmentPlan.join(', ') : latestDentalRecord.treatmentPlan || 'N/A'}</p>
+                        </div>
+                    )}
+
+                    <h2>Services Billed</h2>
                     <div className="service-selection">
                         <select value={selectedService} onChange={(e) => setSelectedService(e.target.value)} className="form-select">
                             <option value="">Select a service</option>
@@ -421,7 +523,10 @@ export default function PatientReceiptsPage() {
                                 <thead>
                                     <tr>
                                         <th>Service</th>
-                                        <th>Price (₦)</th>
+                                        <th>Quantity</th> {/* Added Quantity column */}
+                                        {/* Conditionally hide Unit Price and Total for HMO covered patients */}
+                                        {!isHmoCovered && <th>Unit Price (₦)</th>}
+                                        {!isHmoCovered && <th>Total (₦)</th>}
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -432,12 +537,26 @@ export default function PatientReceiptsPage() {
                                             <td>
                                                 <input
                                                     type="number"
-                                                    value={item.price}
-                                                    onChange={(e) => handlePriceChange(item.id, e.target.value)}
-                                                    className="price-input"
-                                                    min="0"
+                                                    value={item.quantity}
+                                                    onChange={(e) => handleQuantityChange(item.id, e.target.value)}
+                                                    className="quantity-input"
+                                                    min="1"
                                                 />
                                             </td>
+                                            {/* Conditionally hide Unit Price and Total for HMO covered patients */}
+                                            {!isHmoCovered && (
+                                                <td>
+                                                    <input
+                                                        type="number"
+                                                        value={item.price}
+                                                        onChange={(e) => handlePriceChange(item.id, e.target.value)}
+                                                        className="price-input"
+                                                        min="0"
+                                                    />
+                                                </td>
+                                            )}
+                                            {/* Display calculated total for the row */}
+                                            {!isHmoCovered && <td>₦{(item.price * item.quantity).toLocaleString()}</td>}
                                             <td>
                                                 <button onClick={() => handleRemoveService(item.id)} className="remove-service-button">
                                                     <i className="fas fa-trash"></i>
@@ -447,23 +566,21 @@ export default function PatientReceiptsPage() {
                                     ))}
                                 </tbody>
                             </table>
-                            <div className="subtotal-display">
-                                <strong>Subtotal:</strong> ₦{subtotal.toLocaleString()}
-                            </div>
+                            {/* Removed Subtotal from this section as per user request */}
                         </div>
                     )}
 
-                    <h2>HMO / Insurance Details</h2>
+                    <h2>HMO / Payment Details</h2>
                     <div className="hmo-selection">
                         <select value={selectedHMO} onChange={handleHmoChange} className="form-select">
                             <option value="">Select HMO Provider</option>
                             {hmoOptions.map((hmo, index) => (
                                 <option key={index} value={hmo.name}>
-                                    {hmo.name} ({hmo.status})
+                                    {hmo.name}
                                 </option>
                             ))}
                         </select>
-                        {selectedHMO && (
+                        {isHmoCovered && ( // Only show input if HMO is selected AND patient has this HMO
                             <div className="hmo-covered-input">
                                 <label htmlFor="hmoCoveredAmount">HMO Covered Amount (₦)</label>
                                 <input
@@ -471,87 +588,112 @@ export default function PatientReceiptsPage() {
                                     id="hmoCoveredAmount"
                                     value={hmoCoveredAmount}
                                     onChange={(e) => setHmoCoveredAmount(e.target.value)}
-                                    placeholder="e.g., 50000"
+                                    placeholder="e.g., 30000"
                                     min="0"
                                     className="form-control"
                                 />
                             </div>
                         )}
                     </div>
-
-                    <h2>Payment Method</h2>
                     <div className="payment-method-selection">
-                        <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="form-select">
+                        <label htmlFor="paymentMethod">Payment Method *</label>
+                        <select
+                            id="paymentMethod"
+                            value={paymentMethod}
+                            onChange={(e) => setPaymentMethod(e.target.value)}
+                            className="form-select"
+                            required
+                        >
                             <option value="">Select Payment Method</option>
                             <option value="Cash">Cash</option>
-                            <option value="Card">Card</option>
-                            <option value="Transfer">Bank Transfer</option>
-                            <option value="HMO">HMO Payment</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                            <option value="POS">POS</option>
+                            <option value="HMO Payment">HMO Payment</option>
+                            <option value="Other">Other</option>
                         </select>
                     </div>
-
                 </section>
             ) : (
                 <div className="receipt-display-area printable-content">
+                    <div className="receipt-company-info">
+                        <h2>{process.env.REACT_APP_CLINIC_NAME || 'Prime Dental Clinic'}</h2>
+                        <p>{process.env.REACT_APP_CLINIC_ADDRESS || 'local government, 104, New Ipaja/Egbeda Road, opposite prestige super-market, Alimosho, Ipaja Rd, Ipaja, Lagos 100006, Lagos'}</p>
+                        <p>Phone: {process.env.REACT_APP_CLINIC_PHONE || '0703 070 8877'}</p>
+                    </div>
                     <div className="receipt-header-display">
-                        <h2>Official Receipt</h2>
-                        <p>Receipt Number: PR-{Date.now()}</p>
-                        <p>Date: {new Date().toLocaleDateString()}</p>
+                        <h2>Payment Receipt</h2>
+                        <p><strong>Receipt #:</strong> {receiptNumber}</p>
+                        <p><strong>Date:</strong> {new Date().toLocaleDateString()}</p>
                     </div>
                     <div className="receipt-patient-info">
-                        <h3>Patient Details:</h3>
-                        <p><strong>Name:</strong> {patient.name}</p>
-                        {userRole === 'nurse' ? (
-                            <>
-                                <p><strong>Phone:</strong> <span className="restricted-info"></span></p>
-                                <p><strong>Email:</strong> <span className="restricted-info"></span></p>
-                            </>
-                        ) : (
+                        <h3>Received From:</h3>
+                        <p><strong>Patient Name:</strong> {patient.name}</p>
+                        {userRole === 'owner' || userRole === 'staff' ? (
                             <>
                                 <p><strong>Phone:</strong> {patient.phoneNumber}</p>
                                 <p><strong>Email:</strong> {patient.email || 'N/A'}</p>
                             </>
+                        ) : (
+                            <>
+                                <p><strong>Phone:</strong> <span className="restricted-info">Restricted</span></p>
+                                <p><strong>Email:</strong> <span className="restricted-info">Restricted</span></p>
+                            </>
+                        )}
+                        {isHmoCovered && (
+                            <p><strong>HMO:</strong> {selectedHMO}</p>
                         )}
                     </div>
                     <div className="receipt-services-rendered">
-                        <h3>Services:</h3>
+                        <h3>Services Rendered:</h3>
                         <table className="receipt-services-table">
                             <thead>
                                 <tr>
-                                    <th>Service</th>
-                                    <th>Price (₦)</th>
+                                    <th>Description</th>
+                                    <th>Quantity</th> {/* Added Quantity column */}
+                                    {/* Conditionally hide Unit Price and Total for HMO covered patients */}
+                                    {!isHmoCovered && <th>Unit Price (₦)</th>}
+                                    {!isHmoCovered && <th>Amount (₦)</th>}
                                 </tr>
                             </thead>
                             <tbody>
                                 {receiptItems.map(item => (
                                     <tr key={item.id}>
                                         <td>{item.name}</td>
-                                        <td>₦{item.price.toLocaleString()}</td>
+                                        <td>{item.quantity}</td> {/* Display quantity */}
+                                        {/* Conditionally hide Unit Price and Total for HMO covered patients */}
+                                        {!isHmoCovered && <td>₦{item.price.toLocaleString()}</td>}
+                                        {!isHmoCovered && <td>₦{(item.price * item.quantity).toLocaleString()}</td>}
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
                     <div className="receipt-summary">
-                        <p><strong>Subtotal:</strong> ₦{subtotal.toLocaleString()}</p>
-                        {selectedHMO && (
-                            <p>
-                                <strong>HMO ({selectedHMO}):</strong> ₦{coveredAmount.toLocaleString()} Covered
+                        {/* Removed Subtotal from here as per user request */}
+                        <p><strong>Payment Method:</strong> {paymentMethod || 'N/A'}</p>
+                        {isHmoCovered ? (
+                            totalDue > 0 ? (
+                                <p className="total-due">
+                                    <strong>HMO Partially Covered: Balance Due From Patient:</strong> ₦{totalDue.toLocaleString()}
+                                </p>
+                            ) : (
+                                <p className="total-due">
+                                    <strong>Status:</strong> Fully Covered by HMO
+                                </p>
+                            )
+                        ) : (
+                            <p className="total-due">
+                                <strong>Total Amount Paid by the Patient:</strong> ₦{totalDue.toLocaleString()}
                             </p>
                         )}
-                        <p><strong>Payment Method:</strong> {paymentMethod || 'N/A'}</p>
-                        <p className="total-due">
-                            <strong>Total Amount Paid by the Patient:</strong> ₦{totalDue.toLocaleString()}
-                        </p>
                     </div>
                     <div className="receipt-footer">
                         <p>Thank you for your patronage!</p>
                         <p>Signature: _________________________</p>
                         <p className="clinic-contact">
                             {process.env.REACT_APP_CLINIC_NAME || 'Prime Dental Clinic'} |
-                            {process.env.REACT_APP_CLINIC_ADDRESS || '123 Dental St, Smile City'} |
-                            {process.env.REACT_APP_CLINIC_PHONE || '+1234567890'} |
-                            {process.env.REACT_APP_EMAIL_FROM || 'info@yourclinic.com'}
+                            {process.env.REACT_APP_CLINIC_ADDRESS || ' local government, 104, New Ipaja/Egbeda Road, opposite prestige super-market, Alimosho, Ipaja Rd, Ipaja, Lagos 100006, Lagos'} |
+                            {process.env.REACT_APP_CLINIC_PHONE || '0703 070 8877'}
                         </p>
                     </div>
                 </div>

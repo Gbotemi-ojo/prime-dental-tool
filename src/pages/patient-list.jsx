@@ -193,6 +193,7 @@ function PatientList() {
                 <th>Email</th>
                 <th>Date of Birth</th>
                 <th>Sex</th>
+                <th>HMO Covered</th> {/* NEW: HMO Covered column header */}
                 <th>Actions</th>
               </tr>
             </thead>
@@ -216,6 +217,7 @@ function PatientList() {
                   </td>
                   <td>{patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
                   <td>{patient.sex}</td>
+                  <td>{patient.hmo ? 'Yes' : 'No'}</td> {/* NEW: HMO Covered status */}
                   <td className="table-actions-cell">
                     {/* Hide "View Details" button from nurses and doctors */}
                     {(userRole === 'owner' || userRole === 'staff') && ( // Doctor role explicitly removed here
@@ -233,6 +235,12 @@ function PatientList() {
                           <i className="fas fa-receipt"></i> Receipts
                         </button>
                       </>
+                    )}
+                    {/* NEW: Edit Bio Button - Visible to owner and staff */}
+                    {(userRole === 'owner' || userRole === 'staff') && (
+                      <button onClick={() => navigate(`/patients/${patient.id}/edit`)} className="table-edit-bio-button">
+                        <i className="fas fa-user-edit"></i> Edit Bio
+                      </button>
                     )}
                   </td>
                 </tr>

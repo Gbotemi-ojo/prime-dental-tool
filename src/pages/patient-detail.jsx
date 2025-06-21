@@ -197,6 +197,13 @@ export default function PatientDetail() {
           <div className="detail-item">
             <strong>Sex:</strong> <span>{patient.sex}</span>
           </div>
+          {/* NEW: HMO Covered status display */}
+          <div className="detail-item">
+            <strong>HMO Covered:</strong>{' '}
+            <span>
+              {patient.hmo && patient.hmo.name ? `Yes (${patient.hmo.name})` : 'No'}
+            </span>
+          </div>
           {/* Add more patient details as needed */}
         </div>
       </section>

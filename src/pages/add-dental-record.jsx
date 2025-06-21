@@ -449,7 +449,7 @@ export default function AddDentalRecord() {
           <div className="checkbox-group">
             <div className="checkbox-item">
               <input type="checkbox" id="medicationS" name="medicationS" checked={formData.medicationS} onChange={handleChange} />
-              <label htmlFor="medicationS">S (Steroids)</label>
+              <label htmlFor="medicationS">S (Sickle cell)</label>
             </div>
             <div className="checkbox-item">
               <input type="checkbox" id="medicationH" name="medicationH" checked={formData.medicationH} onChange={handleChange} />
