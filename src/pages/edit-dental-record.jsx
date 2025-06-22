@@ -45,6 +45,7 @@ export default function EditDentalRecord() {
     xrayFindings: '',
     provisionalDiagnosis: [], // This will store the ADDED diagnoses
     treatmentPlan: [],       // This will store the ADDED treatment plans
+    treatmentDone: '',       // NEW: Add treatmentDone field
     calculus: '',
     recordDate: '', // Will be populated from fetched data
   });
@@ -57,7 +58,7 @@ export default function EditDentalRecord() {
   const provisionalDiagnosisOptions = [
     "Dental Caries (Tooth Decay)", "Reversible pulpitis", "Irreversible pulpitis (symptomatic/asymptomatic)",
     "Pulp necrosis", "Pulp calcification (pulp stones)", "Internal resorption", "Acute apical periodontitis",
-    "Chronic apical periodonti", "Periapical abscess (acute/chronic)", "Periapical cyst (radicular cyst)",
+    "Chronic apical periodontitis", "Periapical abscess (acute/chronic)", "Periapical cyst (radicular cyst)",
     "Condensing osteitis (focal sclerosing osteomyelitis)", "Gingivitis (plaque-induced or non-plaque-induced)",
     "Necrotizing ulcerative gingivitis (NUG)", "Gingival hyperplasia/hypertrophy (drug-induced, hormonal, or hereditary)",
     "Chronic periodontitis (localized/generalized)", "Aggressive periodontitis", "Necrotizing periodontitis",
@@ -84,20 +85,55 @@ export default function EditDentalRecord() {
 
   // Options for Treatment Plan dropdown (same as AddDentalRecord)
   const treatmentPlanOptions = [
-    "Registration & Consultation", "Registration & Consultation (family)", "SCALING AND POLISHING",
-    "SCALING AND POLISHING WITH GROSS STAIN", "SIMPLE EXTRACTION ANTERIOR", "SIMPLE EXTRACTION POSTERIOR",
-    "EXTRACTION OF RETAINED ROOT", "SURGICAL EXTRACTION (IMPACTED 3RD MOLAR)", "TEMPORARY DRESSING",
-    "AMALGAM FILLING", "FUJI 9(POSTERIOR GIC (PER FILLING)", "TOOTH WHITENING 3 SESSIONS",
-    "CURRETAGE/SUBGINGIVAL (PER TOOTH)", "COMPOSITE BUILDUP", "REMOVABLE DENTURE(ADDITIONAL TOOTH)",
-    "PFM CROWN", "TOPICAL FLOURIDATION/DESENSITIZATION", "X-RAY", "ROOT CANAL TREATMENT ANTERIOR",
-    "ROOT CANAL TREATMENT POSTERIOR", "GINGIVECTOMY/OPERCULECTOMY", "SPLINTING WITH WIRES",
-    "SPLINTING WITH GIC COMPOSITE", "INCISION & DRAINAGE/SUTURING WITH DEBRIDMENT", "FISSURE SEALANT",
-    "PULPOTOMY/PULPECTOMY", "STAINLESS STEEL CROWN", "BAND & LOOP SPACE MAINTAINERS",
-    "LLA & TPA SPACE MAINTAINERS", "ESSIX RETAINER", "CROWN CEMENTATION", "ESTETIC TOOTH FILLING",
-    "ZIRCONIUM CROWN", "GOLD CROWN", "FLEXIBLE DENTURE PER TEETH", "FLEXIBLE DENTURS 2ND TEETH",
-    "METALLIC CROWN", "DENTAL IMPLANT-ONE TEETH", "DENTAL IMPLANT - TWO TEETH", "ORTHODONTIST CONSULT",
-    "PARTIAL DENTURE", "DENTURE REPAIR", "GIC FILLING", "BRACES CONSULTATION", "BRACES",
-    "FLUORIDE TREATMENT", "INTERMAXILLARY FIXATION", "ALIGNERS", "E-MAX CROWN"
+    "Registration & Consultation",
+    "Registration & Consultation (family)",
+    "Scaling and Polishing", // Changed from SCALING AND POLISHING
+    "Scaling and Polishing with Gross Stain", // Changed from SCALING AND POLISHING WITH GROSS STAIN
+    "Simple Extraction Anterior",
+    "Simple Extraction Posterior",
+    "Extraction of Retained Root",
+    "Surgical Extraction (Impacted 3rd Molar)",
+    "Temporary Dressing",
+    "Amalgam Filling",
+    "Fuji 9 (Posterior GIC (per Filling)", // Adjusted casing and parentheses
+    "Tooth Whitening (3 Sessions)", // Adjusted casing and parentheses
+    "Curretage/Subgingival (per tooth)", // Adjusted casing and parentheses
+    "Composite Buildup",
+    "Removable Denture (Additional Tooth)", // Adjusted casing and parentheses
+    "PFM Crown",
+    "Topical Flouridation/Desensitization",
+    "X-Ray", // Changed from X-RAY
+    "Root Canal Treatment Anterior",
+    "Root Canal Treatment Posterior",
+    "Gingivectomy/Operculectomy",
+    "Splinting with Wires",
+    "Splinting with GIC Composite",
+    "Incision & Drainage/Suturing with Debridement", // Adjusted casing and ampersand
+    "Fissure Sealant",
+    "Pulpotomy/Pulpectomy",
+    "Stainless Steel Crown",
+    "Band & Loop Space Maintainers",
+    "LLA & TPA Space Maintainers",
+    "Essix Retainer",
+    "Crown Cementation",
+    "Esthetic Tooth Filling", // Changed from ESTETIC TOOTH FILLING
+    "Zirconium Crown",
+    "Gold Crown",
+    "Flexible Denture (per tooth)", // Changed from FLEXIBLE DENTURE PER TEETH
+    "Flexible Denture (2nd tooth)", // Changed from FLEXIBLE DENTURS 2ND TEETH
+    "Metallic Crown",
+    "Dental Implant – One Tooth", // Changed from DENTAL IMPLANT-ONE TEETH
+    "Dental Implant – Two Teeth", // Changed from DENTAL IMPLANT - TWO TEETH
+    "Orthodontist Consult",
+    "Partial Denture",
+    "Denture Repair",
+    "GIC Filling",
+    "Braces Consultation",
+    "Braces",
+    "Fluoride Treatment", // Changed from FLUORIDE TREATMENT
+    "Intermaxillary Fixation",
+    "Aligners",
+    "E-Max Crown"
   ];
 
   useEffect(() => {
@@ -165,6 +201,7 @@ export default function EditDentalRecord() {
             // Initialize provisionalDiagnosis and treatmentPlan with fetched arrays
             provisionalDiagnosis: Array.isArray(recordData.provisionalDiagnosis) ? recordData.provisionalDiagnosis : [],
             treatmentPlan: Array.isArray(recordData.treatmentPlan) ? recordData.treatmentPlan : [],
+            treatmentDone: recordData.treatmentDone || '', // NEW: Populate treatmentDone
             calculus: recordData.calculus || '',
             // Format date for input type="date"
             recordDate: recordData.recordDate ? new Date(recordData.recordDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
@@ -295,6 +332,9 @@ export default function EditDentalRecord() {
         // provisionalDiagnosis and treatmentPlan are already arrays, send them as is
         provisionalDiagnosis: formData.provisionalDiagnosis.length > 0 ? formData.provisionalDiagnosis : [], // Keep as empty array if empty
         treatmentPlan: formData.treatmentPlan.length > 0 ? formData.treatmentPlan : [], // Keep as empty array if empty
+        // NEW: Include treatmentDone in the payload
+        treatmentDone: formData.treatmentDone || null,
+
 
         updatedAt: new Date(), // Set update timestamp
       };
@@ -744,6 +784,18 @@ export default function EditDentalRecord() {
                   ))}
                 </ul>
               )}
+            </div>
+
+            {/* NEW: Treatment Done Input */}
+            <div className="form-group full-width-grid-item">
+              <label htmlFor="treatmentDone">Treatment Done</label>
+              <textarea
+                id="treatmentDone"
+                name="treatmentDone"
+                value={formData.treatmentDone}
+                onChange={handleChange}
+                placeholder="e.g., Composite filling on #16, scaling and polishing completed."
+              ></textarea>
             </div>
 
             <div className="form-group">

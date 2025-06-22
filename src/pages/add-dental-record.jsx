@@ -50,6 +50,7 @@ export default function AddDentalRecord() {
     xrayFindings: '',
     provisionalDiagnosis: [], // This will store the selected diagnosis items
     treatmentPlan: [],       // This will store the selected treatment plan items
+    treatmentDone: '',       // NEW: Add treatmentDone field
     calculus: '',
     recordDate: new Date().toISOString().split('T')[0],
   });
@@ -323,6 +324,7 @@ export default function AddDentalRecord() {
           investigations: '', xrayFindings: '',
           provisionalDiagnosis: [], // Reset to empty array
           treatmentPlan: [],       // Reset to empty array
+          treatmentDone: '',       // NEW: Reset treatmentDone
           calculus: '',
           recordDate: new Date().toISOString().split('T')[0],
         });
@@ -776,6 +778,18 @@ export default function AddDentalRecord() {
                   ))}
                 </ul>
               )}
+            </div>
+
+            {/* NEW: Treatment Done Input */}
+            <div className="form-group full-width-grid-item">
+              <label htmlFor="treatmentDone">Treatment Done</label>
+              <textarea
+                id="treatmentDone"
+                name="treatmentDone"
+                value={formData.treatmentDone}
+                onChange={handleChange}
+                placeholder="e.g., Composite filling on #16, scaling and polishing completed."
+              ></textarea>
             </div>
 
             <div className="form-group">
