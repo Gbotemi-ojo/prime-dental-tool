@@ -20,6 +20,7 @@ function PatientList() {
   // State for search term
   const [searchTerm, setSearchTerm] = useState('');
   // State for the selected date filter, initialized to today's date
+  // This state is now used for filtering again, along with the search term.
   const [selectedDate, setSelectedDate] = useState(new Date());
   // State for loading indicator
   const [loading, setLoading] = useState(true);
@@ -98,27 +99,30 @@ function PatientList() {
     fetchPatients();
   }, [navigate]); // navigate is a dependency as it's used inside the effect
 
-  // Memoized filtering logic for patients based on search term and selected date
+  // Memoized filtering logic for patients based on search term AND selected date
   const filteredPatients = useMemo(() => {
     let tempPatients = allPatients;
 
-    // 1. Filter by selected date
+    // 1. Filter by search term (name, phone, email) from ALL patients
+    if (searchTerm) {
+        const lowerCaseSearchTerm = searchTerm.toLowerCase();
+        tempPatients = tempPatients.filter(patient =>
+            patient.name.toLowerCase().includes(lowerCaseSearchTerm) ||
+            (userRole !== 'nurse' && patient.phoneNumber && patient.phoneNumber.includes(lowerCaseSearchTerm)) ||
+            (userRole !== 'nurse' && patient.email && patient.email.toLowerCase().includes(lowerCaseSearchTerm))
+        );
+    }
+
+    // 2. Then, filter the already-searched results by selected date (if a date is selected)
     if (selectedDate) {
       const formattedSelectedDate = formatDateForInput(selectedDate);
       tempPatients = tempPatients.filter(patient => {
         // Assuming 'createdAt' is the field that stores the patient's creation date (e.g., ISO string)
-        // If your API uses a different field name (e.g., 'addedDate'), update 'patient.createdAt' accordingly.
         return patient.createdAt && formatDateForInput(patient.createdAt) === formattedSelectedDate;
       });
     }
 
-    // 2. Filter by search term (applied after date filter)
-    return tempPatients.filter(patient =>
-      patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      // Conditional search by phone/email for non-nurse roles
-      (userRole !== 'nurse' && patient.phoneNumber && patient.phoneNumber.includes(searchTerm)) ||
-      (userRole !== 'nurse' && patient.email && patient.email.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
+    return tempPatients;
   }, [allPatients, searchTerm, selectedDate, userRole]); // Re-run when these dependencies change
 
   // Loading state rendering
@@ -167,22 +171,23 @@ function PatientList() {
       <section className="search-filter-section">
         <input
           type="text"
-          placeholder="Search patients by name..."
+          placeholder="Search patients by name, phone, or email..." // Updated placeholder
           className="search-input"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        {/* Date Picker Input */}
+        {/* Date Picker Input - Now functions as a secondary filter */}
         <input
           type="date"
           className="date-input" // New class for styling
           value={formatDateForInput(selectedDate)} // Display selected date
           onChange={(e) => setSelectedDate(new Date(e.target.value))} // Update selected date
+          // Removed 'disabled' and 'title' attributes as it's now an active filter
         />
       </section>
 
       {filteredPatients.length === 0 ? (
-        <p className="info-message">No patients found for the selected criteria. Try adjusting your search or date filter.</p>
+        <p className="info-message">No patients found for the current search and date criteria. Try adjusting your search or date filter.</p>
       ) : (
         <div className="table-responsive">
           <table className="patient-table">
@@ -193,7 +198,7 @@ function PatientList() {
                 <th>Email</th>
                 <th>Date of Birth</th>
                 <th>Sex</th>
-                <th>HMO Covered</th> {/* NEW: HMO Covered column header */}
+                <th>HMO Covered</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -217,16 +222,16 @@ function PatientList() {
                   </td>
                   <td>{patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
                   <td>{patient.sex}</td>
-                  <td>{patient.hmo ? 'Yes' : 'No'}</td> {/* NEW: HMO Covered status */}
+                  <td>{patient.hmo ? 'Yes' : 'No'}</td>
                   <td className="table-actions-cell">
                     {/* Hide "View Details" button from nurses and doctors */}
-                    {(userRole === 'owner' || userRole === 'staff') && ( // Doctor role explicitly removed here
+                    {(userRole === 'owner' || userRole === 'staff') && (
                       <button onClick={() => navigate(`/patients/${patient.id}`)} className="table-view-details-button">
                         View Details
                       </button>
                     )}
                     {/* Invoice and Receipts Buttons - Hidden from doctors */}
-                    {(userRole === 'owner' || userRole === 'staff' || userRole === 'nurse') && ( // Doctor role explicitly removed here
+                    {(userRole === 'owner' || userRole === 'staff' || userRole === 'nurse') && (
                       <>
                         <button onClick={() => navigate(`/patients/${patient.id}/invoice`)} className="table-invoice-button">
                           <i className="fas fa-file-invoice"></i> Invoice

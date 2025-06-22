@@ -119,6 +119,7 @@ export default function InvoicePage() {
     const [selectedHMO, setSelectedHMO] = useState('');
     const [hmoCoveredAmount, setHmoCoveredAmount] = useState('');
     const [showInvoice, setShowInvoice] = useState(false);
+    const [isSendingEmail, setIsSendingEmail] = useState(false); // NEW state for email sending loading
     // Invoice number needs to be consistent, initialize once and keep
     const [invoiceNumber] = useState(`INV-${Date.now().toString().slice(-6)}`);
 
@@ -277,7 +278,7 @@ export default function InvoicePage() {
     };
 
     const subtotal = invoiceItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    
+
     let calculatedCoveredAmount = 0;
     if (patientHasHMO && selectedHMO === patientHMOName) {
         calculatedCoveredAmount = subtotal * patientHmoCoverageRate;
@@ -321,6 +322,8 @@ export default function InvoicePage() {
             return;
         }
 
+        setIsSendingEmail(true); // Set loading to true
+
         // --- ENHANCED LOGGING BEFORE SENDING PAYLOAD ---
         console.log("--- Frontend Payload Debugging ---");
         console.log("Frontend - invoiceItems raw:", invoiceItems);
@@ -359,7 +362,7 @@ export default function InvoicePage() {
             hmoName: isInvoiceForHmoPatient ? selectedHMO : null,
             coveredAmount: isInvoiceForHmoPatient ? finalCoveredAmount : 0, // Use finalCoveredAmount here
             totalAmount: totalDue, // This is the total amount due from the patient (totalDue from frontend)
-            notes: "Please make payment within 7 days of invoice date.",
+            notes: "Thank you for your patronage",
             clinicName: process.env.REACT_APP_CLINIC_NAME || "Prime Dental Clinic",
             clinicAddress: process.env.REACT_APP_CLINIC_ADDRESS || "local government, 104, New Ipaja/Egbeda Road, opposite prestige super-market, Alimosho, Ipaja Rd, Ipaja, Lagos 100006, Lagos",
             clinicPhone: process.env.REACT_APP_CLINIC_PHONE || "0703 070 8877",
@@ -396,6 +399,8 @@ export default function InvoicePage() {
         } catch (error) {
             console.error('Network error or unexpected issue during invoice email send:', error);
             toast.error('Network error. Could not send invoice email.');
+        } finally {
+            setIsSendingEmail(false); // Set loading to false
         }
     };
 
@@ -455,9 +460,21 @@ export default function InvoicePage() {
                             <button onClick={handlePrint} className="print-invoice-button">
                                 <i className="fas fa-print"></i> Print Invoice
                             </button>
-                            {/* New Send Email Button */}
-                            <button onClick={handleSendEmail} className="send-email-button">
-                                <i className="fas fa-envelope"></i> Send Email
+                            {/* New Send Email Button with loading state */}
+                            <button 
+                                onClick={handleSendEmail} 
+                                className="send-email-button"
+                                disabled={isSendingEmail} // Disable button when sending
+                            >
+                                {isSendingEmail ? (
+                                    <>
+                                        <span className="spinner-small"></span> Sending...
+                                    </>
+                                ) : (
+                                    <>
+                                        <i className="fas fa-envelope"></i> Send Email
+                                    </>
+                                )}
                             </button>
                         </>
                     )}
@@ -595,9 +612,9 @@ export default function InvoicePage() {
             ) : (
                 <div className="invoice-display-area printable-content">
                     <div className="invoice-company-info">
-                        <h2>{process.env.REACT_APP_CLINIC_NAME || "Your Dental Clinic Name"}</h2>
-                        <p>{process.env.REACT_APP_CLINIC_ADDRESS || "123 Dental Lane, City, Country"}</p>
-                        <p>Phone: {process.env.REACT_APP_CLINIC_PHONE || "(123) 456-7890"} | Email: {process.env.REACT_APP_EMAIL_FROM || "info@dentalclinic.com"}</p>
+                        <h2>{process.env.REACT_APP_CLINIC_NAME || "Prime Dental Clinic"}</h2>
+                        <p>{process.env.REACT_APP_CLINIC_ADDRESS || "local government, 104, New Ipaja/Egbeda Road, opposite prestige super-market, Alimosho, Ipaja Rd, Ipaja, Lagos 100006, Lagos"}</p>
+                        <p>Phone: {process.env.REACT_APP_CLINIC_PHONE || "0703 070 8877"}</p>
                     </div>
                     <div className="invoice-header-display">
                         <h2>INVOICE</h2>
@@ -679,8 +696,6 @@ export default function InvoicePage() {
                         )}
                     </div>
                     <div className="invoice-notes">
-                        <h3>Notes:</h3>
-                        <p>Please make payment within 7 days of invoice date.</p>
                         {latestDentalRecord && (
                             <div className="invoice-treatment-context">
                                 <p><strong>Related Provisional Diagnosis:</strong> {Array.isArray(latestDentalRecord.provisionalDiagnosis) ? latestDentalRecord.provisionalDiagnosis.join(', ') : latestDentalRecord.provisionalDiagnosis || 'N/A'}</p>
