@@ -11,8 +11,6 @@
   --dark-green: #388E3C; /* Darker green for gradient */
   --accent-red: #F44336;
   --accent-orange: #FF9800; /* Original orange for returning patient button (kept for reference if needed elsewhere) */
-  --accent-purple: #9C27B0; /* Original color for a selection button (kept for reference if needed elsewhere) */
-  --accent-teal: #009688; /* Original color for another selection button (kept for reference if needed elsewhere) */
   --text-dark: #333;
   --text-medium: #555;
   --text-light: #fff;
@@ -82,34 +80,30 @@ body {
     letter-spacing: -0.5px;
 }
 
-/* UPDATED: Styling for the tagline to ensure clear visibility and prominence */
 .clinic-tagline {
-    color: var(--text-dark); /* Changed to text-dark for strong contrast on light background */
-    font-size: 1.6em; /* Further increased font size */
-    font-weight: 800; /* Made even bolder */
-    margin-top: 8px; /* Increased top margin */
-    margin-bottom: 20px; /* Increased bottom margin for more separation */
-    letter-spacing: 1px; /* Increased letter spacing for emphasis */
-    text-shadow: 1px 1px 4px rgba(0,0,0,0.3); /* Stronger text shadow for pop */
+    color: var(--text-dark);
+    font-size: 1.6em;
+    font-weight: 800;
+    margin-top: 8px;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.3);
 }
 
 
 .clinic-header p {
-    color: var(--text-medium); /* Slightly softer color for address lines */
-    font-size: 0.95em; /* Slightly smaller font size for address lines */
-    margin: 4px 0; /* Adjusted margin for better line spacing */
+    color: var(--text-medium);
+    font-size: 0.95em;
+    margin: 4px 0;
     line-height: 1.5;
 }
 
-/* Styles for phone number to make it stand out a bit */
 .clinic-header p:last-of-type {
-    font-weight: 700; /* Made phone number bolder */
+    font-weight: 700;
     color: var(--primary-blue);
-    margin-top: 15px; /* Increased top margin for more separation */
-    font-size: 1.1em; /* Slightly larger font for phone number */
+    margin-top: 15px;
+    font-size: 1.1em;
 }
-/* --- End Clinic Header Styling --- */
-
 
 h2 {
   text-align: center;
@@ -119,7 +113,17 @@ h2 {
   font-size: 2.2em;
 }
 
-/* Styles for individual form sections (new patient, returning patient) */
+h3 {
+    text-align: left;
+    color: var(--dark-blue);
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--light-blue);
+    font-size: 1.5em;
+    font-weight: 600;
+}
+
 .form-section {
   border: 1px solid var(--border-color);
   border-radius: 10px;
@@ -142,7 +146,6 @@ h2 {
   margin-bottom: 25px;
   line-height: 1.5;
 }
-
 
 .form-group {
   margin-bottom: 20px;
@@ -175,10 +178,7 @@ select {
   background-color: var(--text-light);
 }
 
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="tel"]:focus,
-input[type="date"]:focus,
+input:focus,
 select:focus {
   border-color: var(--primary-blue);
   box-shadow: 0 0 0 3px var(--light-blue);
@@ -186,7 +186,6 @@ select:focus {
   background-color: var(--text-light);
 }
 
-/* Style for select dropdown arrow */
 select {
   background-image: url('data:image/svg+xml;utf8,<svg fill="%23333" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
   background-repeat: no-repeat;
@@ -211,12 +210,12 @@ button {
   transition: all 0.3s ease;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Default button shadow */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); /* Default hover shadow */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
 button:disabled {
@@ -226,7 +225,6 @@ button:disabled {
   transform: none;
 }
 
-/* Specific styling for the submit button */
 button[type="submit"] {
   background: linear-gradient(45deg, var(--primary-blue), var(--dark-blue));
   color: var(--text-light);
@@ -236,7 +234,6 @@ button[type="submit"]:hover {
   background: linear-gradient(45deg, var(--dark-blue), var(--primary-blue));
 }
 
-/* Styling for the returning patient submit button */
 .returning-button {
   background: linear-gradient(45deg, var(--accent-orange), #E65100);
   color: var(--text-light);
@@ -250,14 +247,13 @@ button[type="submit"]:hover {
   background: #ffcc80;
 }
 
-/* Styles for the form selection buttons */
 .form-selection-buttons {
   display: flex;
-  flex-direction: column; /* Stack buttons vertically on smaller screens */
+  flex-direction: column;
   gap: 20px;
   margin-top: 20px;
   margin-bottom: 30px;
-  align-items: center; /* Center buttons horizontally */
+  align-items: center;
 }
 
 .form-selection-buttons button {
@@ -268,7 +264,6 @@ button[type="submit"]:hover {
   font-weight: 700;
   border-radius: 12px;
   text-transform: capitalize;
-  transition: all 0.3s ease;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
@@ -277,9 +272,8 @@ button[type="submit"]:hover {
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
 }
 
-/* New patient button color */
 .new-patient-button {
-  background: linear-gradient(45deg, var(--primary-blue), var(--dark-blue)); /* Blue gradient */
+  background: linear-gradient(45deg, var(--primary-blue), var(--dark-blue));
   color: var(--text-light);
 }
 
@@ -287,9 +281,8 @@ button[type="submit"]:hover {
   background: linear-gradient(45deg, var(--dark-blue), var(--primary-blue));
 }
 
-/* Returning patient button color */
 .returning-patient-button {
-  background: linear-gradient(45deg, var(--accent-green), var(--dark-green)); /* Green gradient */
+  background: linear-gradient(45deg, var(--accent-green), var(--dark-green));
   color: var(--text-light);
 }
 
@@ -297,7 +290,6 @@ button[type="submit"]:hover {
   background: linear-gradient(45deg, var(--dark-green), var(--accent-green));
 }
 
-/* Styling for the back button */
 .back-button {
   background-color: transparent;
   color: var(--primary-blue);
@@ -316,14 +308,6 @@ button[type="submit"]:hover {
   box-shadow: 0 2px 8px var(--shadow-light);
 }
 
-.back-button:disabled {
-  background-color: transparent;
-  border-color: #a0c4e8;
-  color: #a0c4e8;
-  cursor: not-allowed;
-}
-
-/* Style for the descriptive text above selection buttons */
 .form-selection-description {
   text-align: center;
   color: var(--text-dark);
@@ -337,7 +321,6 @@ button[type="submit"]:hover {
   padding: 0 10px;
 }
 
-
 .login-link {
   text-align: center;
   margin-top: 20px;
@@ -348,7 +331,6 @@ button[type="submit"]:hover {
   color: var(--primary-blue);
   text-decoration: none;
   font-weight: 600;
-  transition: color 0.3s ease;
 }
 
 .login-link a:hover {
@@ -382,32 +364,70 @@ button[type="submit"]:hover {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Separator style */
-.form-separator {
-  text-align: center;
-  margin: 30px 0;
-  font-weight: 600;
-  color: var(--info-color);
-  position: relative;
-  font-size: 1.2em;
+/* --- FAMILY MEMBER FORM STYLES --- */
+
+.family-members-section {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px dashed var(--border-color);
 }
 
-.form-separator::before,
-.form-separator::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  width: 40%;
-  height: 1px;
-  background-color: var(--border-color);
+.member-form-group {
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    background-color: #fff;
 }
 
-.form-separator::before {
-  left: 0;
+.member-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
 }
 
-.form-separator::after {
-  right: 0;
+.member-header h4 {
+    margin: 0;
+    font-size: 1.2em;
+    color: var(--text-dark);
+}
+
+.remove-member-button {
+    background-color: transparent;
+    color: var(--accent-red);
+    border: 1px solid var(--accent-red);
+    padding: 5px 10px;
+    font-size: 0.8em;
+    font-weight: 600;
+    border-radius: 5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: none;
+}
+
+.remove-member-button:hover {
+    background-color: #ffebee;
+    transform: none;
+    box-shadow: none;
+}
+
+.add-member-button {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--light-blue);
+    color: var(--dark-blue);
+    border: 2px dashed var(--dark-blue);
+    font-weight: 600;
+    margin-top: 10px;
+    box-shadow: none;
+}
+
+.add-member-button:hover {
+    background-color: #a0c4e8;
+    border-style: solid;
+    transform: none;
+    box-shadow: none;
 }
 
 
@@ -415,90 +435,23 @@ button[type="submit"]:hover {
 @media (max-width: 768px) {
   .form-container {
     padding: 30px 20px;
-    margin: 20px;
-    gap: 20px;
   }
   .clinic-header h1 {
     font-size: 2.2em;
   }
-  .clinic-header p {
-    font-size: 0.9em;
-  }
-  .form-section h2 {
-    font-size: 1.6em;
-  }
   h2 {
     font-size: 1.8em;
-    margin-bottom: 25px;
-  }
-  label {
-    font-size: 1em;
-  }
-  input, select, button {
-    font-size: 0.95em;
-    padding: 10px 12px;
-  }
-  .form-separator {
-    margin: 25px 0;
-    font-size: 1em;
-  }
-  .form-separator::before,
-  .form-separator::after {
-    width: 35%;
-  }
-  .form-selection-buttons button {
-    width: 90%;
-    padding: 15px 20px;
-    font-size: 1.1em;
-  }
-  .form-selection-description {
-    font-size: 1em;
-    max-width: 90%;
   }
 }
 
 @media (max-width: 480px) {
   .form-container {
     padding: 20px 15px;
-    margin: 15px;
-    gap: 15px;
   }
   .clinic-header h1 {
     font-size: 1.8em;
   }
-  .clinic-header p {
-    font-size: 0.85em;
-  }
-  .form-section h2 {
-    font-size: 1.4em;
-  }
   h2 {
     font-size: 1.6em;
-    margin-bottom: 20px;
-  }
-  button {
-    font-size: 0.9em;
-    padding: 12px 20px;
-  }
-  .login-link {
-      font-size: 0.85em;
-  }
-  .form-separator {
-    margin: 20px 0;
-    font-size: 0.9em;
-  }
-  .form-separator::before,
-  .form-separator::after {
-    width: 30%;
-  }
-  .form-selection-buttons button {
-    width: 100%;
-    padding: 12px 15px;
-    font-size: 1em;
-  }
-  .form-selection-description {
-    font-size: 0.95em;
-    max-width: 100%;
-    padding: 0 5px;
   }
 }

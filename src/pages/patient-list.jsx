@@ -1,11 +1,10 @@
 // src/pages/patient-list.jsx
-import React, { useState, useEffect, useMemo } from 'react'; // Added useMemo
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './patient-list.css';
 import API_BASE_URL from '../config/api';
 
 // Main App component to render the PatientList
-// In a real application, this would be integrated into your routing.
 export default function App() {
   return (
     <div className="app-container">
@@ -15,23 +14,14 @@ export default function App() {
 }
 
 function PatientList() {
-  // State to hold all patients fetched from the API
   const [allPatients, setAllPatients] = useState([]);
-  // State for search term
   const [searchTerm, setSearchTerm] = useState('');
-  // State for the selected date filter, initialized to today's date
-  // This state is now used for filtering again, along with the search term.
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  // State for loading indicator
+  const [selectedDate, setSelectedDate] = useState(null); // Default to null to show all dates initially
   const [loading, setLoading] = useState(true);
-  // State for error messages
   const [error, setError] = useState(null);
-  // State to store user role for access control
   const [userRole, setUserRole] = useState(null);
-  // Hook for programmatic navigation
   const navigate = useNavigate();
 
-  // Helper function to format a Date object or ISO string to YYYY-MM-DD
   const formatDateForInput = (date) => {
     if (!date) return '';
     const d = new Date(date);
@@ -41,117 +31,110 @@ function PatientList() {
     return `${year}-${month}-${day}`;
   };
 
-  // Effect hook to fetch patients when the component mounts or navigate changes
   useEffect(() => {
     const fetchPatients = async () => {
       const token = localStorage.getItem('jwtToken');
       const role = localStorage.getItem('role');
       setUserRole(role);
 
-      // Redirect to login if no token is found
       if (!token) {
-        console.log("No JWT token found in localStorage. Redirecting to login.");
         navigate('/login');
         return;
       }
 
       try {
-        // Fetch all patients (client-side filtering will be applied later)
         const response = await fetch(`${API_BASE_URL}/api/patients`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+          headers: { 'Authorization': `Bearer ${token}` }
         });
 
         if (response.ok) {
           const data = await response.json();
-          setAllPatients(data); // Store all fetched patients
-        } else if (response.status === 401 || response.status === 403) {
-          // Handle authentication/authorization errors
-          console.error(`Authentication error (${response.status}):`, response.statusText);
-          localStorage.clear(); // Clear storage and redirect
-          navigate('/login');
+          setAllPatients(data);
         } else {
-          // Handle other API errors
-          let errorMsg = `Failed to fetch patients. Status: ${response.status} ${response.statusText}`;
-          try {
-            const errorData = await response.json();
-            if (errorData && errorData.error) {
-              errorMsg = errorData.error;
-            } else if (errorData && errorData.message) {
-              errorMsg = errorData.message;
-            }
-          } catch (jsonError) {
-            console.warn("Could not parse error response as JSON:", jsonError);
-          }
+          // Handle non-OK responses
+          const errorMsg = `Failed to fetch patients. Status: ${response.status}`;
           setError(errorMsg);
-          console.error('API Error details:', response.status, response.statusText, errorMsg);
+          if (response.status === 401 || response.status === 403) {
+            localStorage.clear();
+            navigate('/login');
+          }
         }
       } catch (err) {
-        // Handle network errors
-        setError('Network error. Could not connect to the server. Please ensure the backend is running and accessible.');
-        console.error('Network Error during fetch:', err);
+        setError('Network error. Could not connect to the server.');
       } finally {
-        setLoading(false); // Set loading to false regardless of success or failure
+        setLoading(false);
       }
     };
 
     fetchPatients();
-  }, [navigate]); // navigate is a dependency as it's used inside the effect
+  }, [navigate]);
 
-  // Memoized filtering logic for patients based on search term AND selected date
-  const filteredPatients = useMemo(() => {
-    let tempPatients = allPatients;
+  const processedPatients = useMemo(() => {
+    // 1. Create a map of family heads
+    const familyHeads = allPatients.filter(p => p.isFamilyHead);
+    const familyMap = new Map(familyHeads.map(p => [p.id, { ...p, familyMembers: [] }]));
 
-    // 1. Filter by search term (name, phone, email) from ALL patients
+    // 2. Add family members to their respective heads
+    allPatients.forEach(p => {
+      if (!p.isFamilyHead && p.familyId && familyMap.has(p.familyId)) {
+        familyMap.get(p.familyId).familyMembers.push(p);
+      }
+    });
+    
+    // 3. Handle patients who are not part of a family structure (isFamilyHead is false, but familyId is null)
+    const singlePatients = allPatients.filter(p => !p.isFamilyHead && !p.familyId);
+    singlePatients.forEach(p => {
+        // Treat them like a "family" of one for consistent data structure
+        familyMap.set(p.id, { ...p, familyMembers: [] });
+    });
+
+
+    let families = Array.from(familyMap.values());
+
+    // 4. Filter by search term
     if (searchTerm) {
-        const lowerCaseSearchTerm = searchTerm.toLowerCase();
-        tempPatients = tempPatients.filter(patient =>
-            patient.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-            (userRole !== 'nurse' && patient.phoneNumber && patient.phoneNumber.includes(lowerCaseSearchTerm)) ||
-            (userRole !== 'nurse' && patient.email && patient.email.toLowerCase().includes(lowerCaseSearchTerm))
-        );
-    }
+      const lowerCaseSearchTerm = searchTerm.toLowerCase();
+      families = families.filter(family => {
+        const headMatch = family.name.toLowerCase().includes(lowerCaseSearchTerm) ||
+                          (userRole !== 'nurse' && family.phoneNumber && family.phoneNumber.includes(lowerCaseSearchTerm)) ||
+                          (userRole !== 'nurse' && family.email && family.email.toLowerCase().includes(lowerCaseSearchTerm));
+        
+        const memberMatch = family.familyMembers.some(member => member.name.toLowerCase().includes(lowerCaseSearchTerm));
 
-    // 2. Then, filter the already-searched results by selected date (if a date is selected)
-    if (selectedDate) {
-      const formattedSelectedDate = formatDateForInput(selectedDate);
-      tempPatients = tempPatients.filter(patient => {
-        // Assuming 'createdAt' is the field that stores the patient's creation date (e.g., ISO string)
-        return patient.createdAt && formatDateForInput(patient.createdAt) === formattedSelectedDate;
+        return headMatch || memberMatch;
       });
     }
 
-    return tempPatients;
-  }, [allPatients, searchTerm, selectedDate, userRole]); // Re-run when these dependencies change
+    // 5. Filter by selected date
+    if (selectedDate) {
+      const formattedSelectedDate = formatDateForInput(selectedDate);
+      families = families.filter(family => {
+        const headMatch = family.createdAt && formatDateForInput(family.createdAt) === formattedSelectedDate;
+        const memberMatch = family.familyMembers.some(member => member.createdAt && formatDateForInput(member.createdAt) === formattedSelectedDate);
+        return headMatch || memberMatch;
+      });
+    }
+    
+    return families;
+  }, [allPatients, searchTerm, selectedDate, userRole]);
 
-  // Loading state rendering
   if (loading) {
-    return (
-      <div className="app-container">
-        <div className="patient-list-container" style={{ textAlign: 'center', padding: '50px' }}>
-          <p className="info-message">Loading patient data...</p>
-          <div className="spinner"></div>
-        </div>
-      </div>
-    );
+    return <div className="spinner-container"><div className="spinner"></div><p>Loading patient data...</p></div>;
   }
 
-  // Error state rendering
   if (error) {
     return (
-      <div className="app-container">
-        <div className="patient-list-container">
-          <p className="info-message error">Error: {error}</p>
-          <button onClick={() => navigate('/dashboard')} className="back-to-dashboard-button" style={{ margin: '20px auto', display: 'block', width: 'fit-content' }}>
-            Back to Dashboard
-          </button>
+        <div className="app-container">
+            <div className="patient-list-container">
+                <p className="info-message error">Error: {error}</p>
+                <button onClick={() => navigate('/dashboard')} className="back-to-dashboard-button" style={{ margin: '20px auto', display: 'block', width: 'fit-content' }}>
+                    Back to Dashboard
+                </button>
+            </div>
         </div>
-      </div>
     );
   }
 
-  // Main rendering of the patient list
   return (
     <div className="patient-list-container">
       <header className="patient-list-header">
@@ -171,84 +154,73 @@ function PatientList() {
       <section className="search-filter-section">
         <input
           type="text"
-          placeholder="Search patients by name, phone, or email..." // Updated placeholder
+          placeholder="Search by name, phone, or email..."
           className="search-input"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        {/* Date Picker Input - Now functions as a secondary filter */}
         <input
           type="date"
-          className="date-input" // New class for styling
-          value={formatDateForInput(selectedDate)} // Display selected date
-          onChange={(e) => setSelectedDate(new Date(e.target.value))} // Update selected date
-          // Removed 'disabled' and 'title' attributes as it's now an active filter
+          className="date-input"
+          value={selectedDate ? formatDateForInput(selectedDate) : ''}
+          onChange={(e) => setSelectedDate(e.target.value ? new Date(e.target.value) : null)}
         />
+        {selectedDate && (
+          <button onClick={() => setSelectedDate(null)} className="clear-date-button">
+            <i className="fas fa-times"></i> Clear Date
+          </button>
+        )}
       </section>
 
-      {filteredPatients.length === 0 ? (
-        <p className="info-message">No patients found for the current search and date criteria. Try adjusting your search or date filter.</p>
+      {processedPatients.length === 0 ? (
+        <p className="info-message">No patients found. Try adjusting your search or date filter.</p>
       ) : (
         <div className="table-responsive">
           <table className="patient-table">
             <thead>
               <tr>
                 <th>Name</th>
+                <th>Role</th>
                 <th>Phone</th>
                 <th>Email</th>
                 <th>Date of Birth</th>
                 <th>Sex</th>
-                <th>HMO Covered</th>
+                <th>HMO</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredPatients.map((patient) => (
-                <tr key={patient.id}>
-                  <td>{patient.name}</td>
-                  <td>
-                    {userRole === 'nurse' ? (
-                      <span className="restricted-info">[Restricted]</span>
-                    ) : (
-                      patient.phoneNumber
-                    )}
-                  </td>
-                  <td>
-                    {userRole === 'nurse' ? (
-                      <span className="restricted-info">[Restricted]</span>
-                    ) : (
-                      patient.email || 'N/A'
-                    )}
-                  </td>
-                  <td>{patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
-                  <td>{patient.sex}</td>
-                  <td>{patient.hmo ? 'Yes' : 'No'}</td>
-                  <td className="table-actions-cell">
-                    {/* Hide "View Details" button from nurses and doctors */}
-                    {(userRole === 'owner' || userRole === 'staff') && (
-                      <button onClick={() => navigate(`/patients/${patient.id}`)} className="table-view-details-button">
-                        View Details
-                      </button>
-                    )}
-                    {/* Invoice and Receipts Buttons - Hidden from doctors */}
-                    {(userRole === 'owner' || userRole === 'staff' || userRole === 'nurse') && (
-                      <>
-                        <button onClick={() => navigate(`/patients/${patient.id}/invoice`)} className="table-invoice-button">
-                          <i className="fas fa-file-invoice"></i> Invoice
-                        </button>
-                        <button onClick={() => navigate(`/patients/${patient.id}/receipts`)} className="table-receipts-button">
-                          <i className="fas fa-receipt"></i> Receipts
-                        </button>
-                      </>
-                    )}
-                    {/* NEW: Edit Bio Button - Visible to owner and staff */}
-                    {(userRole === 'owner' || userRole === 'staff') && (
-                      <button onClick={() => navigate(`/patients/${patient.id}/edit`)} className="table-edit-bio-button">
-                        <i className="fas fa-user-edit"></i> Edit Bio
-                      </button>
-                    )}
-                  </td>
-                </tr>
+              {processedPatients.map((family) => (
+                <React.Fragment key={family.id}>
+                  {/* Family Head Row */}
+                  <tr className="family-head-row">
+                    <td>{family.name}</td>
+                    <td><span className="role-badge head">Head</span></td>
+                    <td>{userRole === 'nurse' ? '[Restricted]' : (family.phoneNumber || 'N/A')}</td>
+                    <td>{userRole === 'nurse' ? '[Restricted]' : (family.email || 'N/A')}</td>
+                    <td>{family.dateOfBirth ? new Date(family.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
+                    <td>{family.sex}</td>
+                    <td>{family.hmo ? 'Yes' : 'No'}</td>
+                    <td className="table-actions-cell">
+                      <PatientActions patient={family} userRole={userRole} navigate={navigate} />
+                    </td>
+                  </tr>
+                  {/* Family Member Rows */}
+                  {family.familyMembers.map((member) => (
+                    <tr key={member.id} className="family-member-row">
+                      <td className="indented-cell">{member.name}</td>
+                      <td><span className="role-badge member">Member</span></td>
+                      <td>[Inherited]</td>
+                      <td>[Inherited]</td>
+                      <td>{member.dateOfBirth ? new Date(member.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
+                      <td>{member.sex}</td>
+                      <td>{member.hmo ? 'Yes' : 'No'}</td>
+                      <td className="table-actions-cell">
+                         <PatientActions patient={member} userRole={userRole} navigate={navigate} />
+                      </td>
+                    </tr>
+                  ))}
+                </React.Fragment>
               ))}
             </tbody>
           </table>
@@ -256,4 +228,33 @@ function PatientList() {
       )}
     </div>
   );
+}
+
+
+// A helper component to render action buttons for a patient
+function PatientActions({ patient, userRole, navigate }) {
+    return (
+        <>
+            {(userRole === 'owner' || userRole === 'staff') && (
+                <button onClick={() => navigate(`/patients/${patient.id}`)} className="table-action-button view">
+                    <i className="fas fa-eye"></i> Details
+                </button>
+            )}
+            {(userRole === 'owner' || userRole === 'staff' || userRole === 'nurse') && (
+                <>
+                    <button onClick={() => navigate(`/patients/${patient.id}/invoice`)} className="table-action-button invoice">
+                        <i className="fas fa-file-invoice"></i> Invoice
+                    </button>
+                    <button onClick={() => navigate(`/patients/${patient.id}/receipts`)} className="table-action-button receipts">
+                        <i className="fas fa-receipt"></i> Receipts
+                    </button>
+                </>
+            )}
+            {(userRole === 'owner' || userRole === 'staff') && (
+                <button onClick={() => navigate(`/patients/${patient.id}/edit`)} className="table-action-button edit">
+                    <i className="fas fa-user-edit"></i> Edit Bio
+                </button>
+            )}
+        </>
+    );
 }

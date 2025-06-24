@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import './edit-patient-bio.css'; // Import the dedicated CSS file
+import './edit-patient-bio.css'; 
 import API_BASE_URL from '../config/api';
 
-// HMO Options for the dropdown (copied for consistency)
+// HMO Options for the dropdown
 const hmoOptions = [
     { name: "IHMS" }, { name: "HEALTH PARTNERS" }, { name: "ZENOR" },
     { name: "PHILIPS" }, { name: "PRO HEALTH" }, { name: "FOUNTAIN HEALTH" },
@@ -23,9 +23,10 @@ const hmoOptions = [
 ];
 
 export default function EditPatientBio() {
-    const { patientId } = useParams(); // Get patientId from URL parameters
+    const { patientId } = useParams();
     const navigate = useNavigate();
 
+    // State for the primary patient's data
     const [formData, setFormData] = useState({
         name: '',
         sex: '',
@@ -33,24 +34,24 @@ export default function EditPatientBio() {
         phoneNumber: '',
         email: '',
         hmo: null,
+        isFamilyHead: false // Track if the patient is a family head
     });
+    
+    // State for new family members to be added
+    const [newMembers, setNewMembers] = useState([]);
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [message, setMessage] = useState('');
     const [isError, setIsError] = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
-    // Helper to format date to YYYY-MM-DD for input[type="date"]
     const formatDateForInput = (dateString) => {
         if (!dateString) return '';
         const date = new Date(dateString);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
+        return date.toISOString().split('T')[0];
     };
 
-    // Fetch patient data when the component mounts or patientId changes
     useEffect(() => {
         const fetchPatientData = async () => {
             const token = localStorage.getItem('jwtToken');
@@ -58,15 +59,11 @@ export default function EditPatientBio() {
                 navigate('/login');
                 return;
             }
-
             try {
                 const response = await fetch(`${API_BASE_URL}/api/patients/${patientId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await response.json();
-
                 if (response.ok) {
                     setFormData({
                         name: data.name || '',
@@ -74,36 +71,47 @@ export default function EditPatientBio() {
                         dateOfBirth: data.dateOfBirth ? formatDateForInput(data.dateOfBirth) : '',
                         phoneNumber: data.phoneNumber || '',
                         email: data.email || '',
-                        hmo: data.hmo || null, // HMO should already be an object or null
+                        hmo: data.hmo || null,
+                        isFamilyHead: data.isFamilyHead || false,
                     });
                 } else {
                     setError(data.error || 'Failed to fetch patient data.');
                 }
             } catch (err) {
-                console.error('Fetch patient error:', err);
                 setError('Network error or server is unreachable.');
             } finally {
                 setLoading(false);
             }
         };
-
         fetchPatientData();
     }, [patientId, navigate]);
 
+    // Handlers for the primary patient form
     const handleChange = (e) => {
         const { name, value } = e.target;
         if (name === 'hmo') {
             const selectedHMO = hmoOptions.find(hmo => hmo.name === value);
-            setFormData((prevData) => ({
-                ...prevData,
-                hmo: selectedHMO || null,
-            }));
+            setFormData(prev => ({ ...prev, hmo: selectedHMO || null }));
         } else {
-            setFormData((prevData) => ({
-                ...prevData,
-                [name]: value,
-            }));
+            setFormData(prev => ({ ...prev, [name]: value }));
         }
+    };
+    
+    // Handlers for the new family members form
+    const handleMemberChange = (index, e) => {
+        const { name, value } = e.target;
+        const updatedMembers = [...newMembers];
+        updatedMembers[index][name] = value;
+        setNewMembers(updatedMembers);
+    };
+
+    const addMemberForm = () => {
+        setNewMembers([...newMembers, { name: '', sex: '', dateOfBirth: '' }]);
+    };
+
+    const removeMemberForm = (index) => {
+        const updatedMembers = newMembers.filter((_, i) => i !== index);
+        setNewMembers(updatedMembers);
     };
 
     const handleSubmit = async (e) => {
@@ -111,165 +119,150 @@ export default function EditPatientBio() {
         setSubmitting(true);
         setMessage('');
         setIsError(false);
-
         const token = localStorage.getItem('jwtToken');
-        if (!token) {
-            setMessage('Authentication required.');
-            setIsError(true);
-            setSubmitting(false);
-            return;
-        }
 
+        // 1. Update the primary patient's bio
         try {
             const response = await fetch(`${API_BASE_URL}/api/patients/${patientId}`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(formData),
             });
-
             const data = await response.json();
-
-            if (response.ok) {
-                setMessage(data.message || 'Patient bio updated successfully!');
-                setIsError(false);
-                // NEW: Navigate back to the patient list after successful update
-                navigate('/patients');
-            } else {
-                setMessage(data.message || data.error || 'Failed to update patient bio.');
-                setIsError(true);
+            if (!response.ok) {
+                throw new Error(data.message || 'Failed to update patient bio.');
             }
+            setMessage('Patient bio updated successfully! ');
         } catch (err) {
-            console.error('Update patient bio error:', err);
-            setMessage('Network error or server is unreachable. Please try again later.');
+            setMessage(`Error updating bio: ${err.message}`);
             setIsError(true);
-        } finally {
             setSubmitting(false);
+            return; // Stop if bio update fails
         }
+
+        // 2. Add new family members if any
+        if (newMembers.length > 0) {
+            let membersAddedCount = 0;
+            for (const member of newMembers) {
+                try {
+                    const memberResponse = await fetch(`${API_BASE_URL}/api/patients/${patientId}/members`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify(member),
+                    });
+                    if (memberResponse.ok) {
+                        membersAddedCount++;
+                    } else {
+                       const errorData = await memberResponse.json();
+                       console.error(`Failed to add member ${member.name}:`, errorData.message);
+                    }
+                } catch (err) {
+                    console.error(`Network error adding member ${member.name}:`, err);
+                }
+            }
+             setMessage(prev => `${prev} Added ${membersAddedCount} new family member(s).`);
+        }
+
+        setSubmitting(false);
+        setTimeout(() => navigate('/patients'), 2000); // Navigate back after showing the message
     };
 
-    if (loading) {
-        return (
-            <div className="edit-patient-bio-container">
-                <p className="info-message">Loading patient data...</p>
-                <div className="spinner"></div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="edit-patient-bio-container">
-                <p className="error-message">Error: {error}</p>
-                <button onClick={() => navigate('/patients')} className="back-button">Back to Patient List</button>
-            </div>
-        );
-    }
+    if (loading) return <div className="spinner-container"><div className="spinner"></div><p>Loading...</p></div>;
+    if (error) return <div className="edit-patient-bio-container"><p className="error-message">Error: {error}</p></div>;
 
     return (
         <div className="edit-patient-bio-container">
             <header className="edit-patient-bio-header">
                 <h2>Edit Patient Bio</h2>
-                {/* This button still navigates to the specific patient details page */}
-                <button onClick={() => navigate(`/patients/${patientId}`)} className="back-to-details-button">
-                    <i className="fas fa-arrow-left"></i> Back to Patient Details
+                <button onClick={() => navigate('/patients')} className="back-to-list-button">
+                    <i className="fas fa-arrow-left"></i> Back to Patient List
                 </button>
             </header>
 
             <form onSubmit={handleSubmit} className="edit-patient-bio-form">
                 <section className="form-section">
                     <h3>Patient Information</h3>
-                    <div className="form-group">
-                        <label htmlFor="name">Full Name *</label>
-                        <input
-                            type="text"
-                            id="name"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="sex">Sex *</label>
-                        <select
-                            id="sex"
-                            name="sex"
-                            value={formData.sex}
-                            onChange={handleChange}
-                            required
-                        >
-                            <option value="">Select Sex</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="dateOfBirth">Date of Birth</label>
-                        <input
-                            type="date"
-                            id="dateOfBirth"
-                            name="dateOfBirth"
-                            value={formData.dateOfBirth}
-                            onChange={handleChange}
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="phoneNumber">Phone Number *</label>
-                        <input
-                            type="tel"
-                            id="phoneNumber"
-                            name="phoneNumber"
-                            value={formData.phoneNumber}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="email">Email Address</label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="hmo">HMO / Insurance Provider</label>
-                        <select
-                            id="hmo"
-                            name="hmo"
-                            value={formData.hmo ? formData.hmo.name : ''}
-                            onChange={handleChange}
-                        >
-                            <option value="">Select HMO (Optional)</option>
-                            {hmoOptions.map((hmo, index) => (
-                                <option key={index} value={hmo.name}>
-                                    {hmo.name}
-                                </option>
-                            ))}
-                        </select>
+                    {/* Patient Info Fields... */}
+                    <div className="form-grid">
+                        <div className="form-group">
+                            <label htmlFor="name">Full Name *</label>
+                            <input id="name" name="name" type="text" value={formData.name} onChange={handleChange} required />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="sex">Sex *</label>
+                            <select id="sex" name="sex" value={formData.sex} onChange={handleChange} required>
+                                <option value="">Select Sex</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="dateOfBirth">Date of Birth</label>
+                            <input id="dateOfBirth" name="dateOfBirth" type="date" value={formData.dateOfBirth} onChange={handleChange} />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="phoneNumber">Phone Number *</label>
+                             <input id="phoneNumber" name="phoneNumber" type="tel" value={formData.phoneNumber} onChange={handleChange} required disabled={!formData.isFamilyHead} title={!formData.isFamilyHead ? "Cannot edit for a family member" : ""} />
+                        </div>
+                         <div className="form-group">
+                            <label htmlFor="email">Email Address</label>
+                            <input id="email" name="email" type="email" value={formData.email} onChange={handleChange} disabled={!formData.isFamilyHead} title={!formData.isFamilyHead ? "Cannot edit for a family member" : ""} />
+                        </div>
+                        <div className="form-group">
+                           <label htmlFor="hmo">HMO / Insurance</label>
+                           <select id="hmo" name="hmo" value={formData.hmo ? formData.hmo.name : ''} onChange={handleChange} disabled={!formData.isFamilyHead} title={!formData.isFamilyHead ? "Cannot edit for a family member" : ""}>
+                               <option value="">Select HMO</option>
+                               {hmoOptions.map((hmo, i) => <option key={i} value={hmo.name}>{hmo.name}</option>)}
+                           </select>
+                        </div>
                     </div>
                 </section>
 
+                {/* --- Section to Add Family Members (only for family heads) --- */}
+                {formData.isFamilyHead && (
+                    <section className="form-section members-section">
+                        <h3>Add Family Members</h3>
+                        {newMembers.map((member, index) => (
+                            <div key={index} className="member-form-group">
+                                <div className="member-header">
+                                    <h4>New Member #{index + 1}</h4>
+                                    <button type="button" onClick={() => removeMemberForm(index)} className="remove-member-button">
+                                        <i className="fas fa-trash"></i> Remove
+                                    </button>
+                                </div>
+                                <div className="form-grid">
+                                    <div className="form-group">
+                                        <label htmlFor={`memberName-${index}`}>Full Name *</label>
+                                        <input id={`memberName-${index}`} name="name" type="text" value={member.name} onChange={(e) => handleMemberChange(index, e)} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor={`memberSex-${index}`}>Sex *</label>
+                                        <select id={`memberSex-${index}`} name="sex" value={member.sex} onChange={(e) => handleMemberChange(index, e)} required>
+                                            <option value="">Select Sex</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor={`memberDob-${index}`}>Date of Birth</label>
+                                        <input id={`memberDob-${index}`} name="dateOfBirth" type="date" value={member.dateOfBirth} onChange={(e) => handleMemberChange(index, e)} />
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                        <button type="button" onClick={addMemberForm} className="add-member-button">
+                            <i className="fas fa-plus-circle"></i> Add Another Member
+                        </button>
+                    </section>
+                )}
+
                 {message && (
-                    <div className={`message ${isError ? 'error' : 'success'}`}>
-                        {message}
-                    </div>
+                    <div className={`message ${isError ? 'error' : 'success'}`}>{message}</div>
                 )}
 
                 <div className="form-actions">
                     <button type="submit" disabled={submitting}>
-                        {submitting ? 'Updating Bio...' : 'Update Patient Bio'}
+                        {submitting ? 'Submitting...' : 'Update and Save Changes'}
                     </button>
                 </div>
             </form>
