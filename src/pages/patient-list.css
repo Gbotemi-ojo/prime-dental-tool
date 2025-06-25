@@ -14,6 +14,9 @@
     --info-dark: #5a6268;
     --edit-color: #6a1b9a; /* Deep Purple for Edit */
     --edit-dark: #4a148c;
+    --appointment-color: #29B6F6; /* Light Blue */
+    --appointment-dark: #03A9F4;
+
 
     --text-dark: #333;
     --text-medium: #495057;
@@ -43,7 +46,7 @@
     box-shadow: 0 6px 20px var(--shadow-light);
     padding: 30px;
     width: 100%;
-    max-width: 1400px; /* Increased max width */
+    max-width: 1600px; /* Increased max width for new column */
     margin-top: 20px;
     display: flex;
     flex-direction: column;
@@ -153,7 +156,7 @@
     width: 100%;
     border-collapse: collapse;
     font-size: 0.95rem;
-    min-width: 1100px;
+    min-width: 1200px;
 }
 
 .patient-table thead {
@@ -266,6 +269,11 @@
 
 .table-action-button.edit { background-color: var(--edit-color); }
 .table-action-button.edit:hover { background-color: var(--edit-dark); }
+
+/* NEW Appointment Button Style */
+.table-action-button.appointment { background-color: var(--appointment-color); }
+.table-action-button.appointment:hover { background-color: var(--appointment-dark); }
+
 
 /* --- Loading & Error States --- */
 .spinner-container {

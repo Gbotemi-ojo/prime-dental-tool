@@ -9,6 +9,7 @@
   --secondary-color: #5C6BC0; /* Lighter Indigo */
   --accent-color: #4CAF50; /* Green for success/positive actions */
   --danger-color: #F44336; /* Red for destructive actions */
+  --appointment-color: #29B6F6; /* Light Blue for appointments */
   --text-dark: #263238; /* Dark Blue Grey for main text */
   --text-medium: #455A64; /* Lighter Blue Grey for secondary text */
   --text-light: #ffffff; /* White for light backgrounds */
@@ -170,6 +171,7 @@ body {
 }
 
 .nav-card.patients::before { background-color: #42A5F5; } /* Light blue */
+.nav-card.appointments::before { background-color: var(--appointment-color); } /* NEW */
 .nav-card.inventory::before { background-color: #66BB6A; } /* Light green */
 .nav-card.admin::before { background-color: #FF7043; } /* Orange */
 .nav-card.profile::before { background-color: #AB47BC; } /* Purple */
@@ -201,6 +203,7 @@ body {
 }
 
 .nav-card.patients .icon { color: #42A5F5; }
+.nav-card.appointments .icon { color: var(--appointment-color); } /* NEW */
 .nav-card.inventory .icon { color: #66BB6A; }
 .nav-card.admin .icon { color: #FF7043; }
 .nav-card.profile .icon { color: #AB47BC; }

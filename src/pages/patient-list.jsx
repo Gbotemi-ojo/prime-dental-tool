@@ -186,6 +186,7 @@ function PatientList() {
                 <th>Date of Birth</th>
                 <th>Sex</th>
                 <th>HMO</th>
+                <th>Next Appointment</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -201,6 +202,7 @@ function PatientList() {
                     <td>{family.dateOfBirth ? new Date(family.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
                     <td>{family.sex}</td>
                     <td>{family.hmo ? 'Yes' : 'No'}</td>
+                    <td>{family.nextAppointmentDate ? new Date(family.nextAppointmentDate).toLocaleDateString() : 'Not Set'}</td>
                     <td className="table-actions-cell">
                       <PatientActions patient={family} userRole={userRole} navigate={navigate} />
                     </td>
@@ -215,6 +217,7 @@ function PatientList() {
                       <td>{member.dateOfBirth ? new Date(member.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
                       <td>{member.sex}</td>
                       <td>{member.hmo ? 'Yes' : 'No'}</td>
+                      <td>{member.nextAppointmentDate ? new Date(member.nextAppointmentDate).toLocaleDateString() : 'Not Set'}</td>
                       <td className="table-actions-cell">
                          <PatientActions patient={member} userRole={userRole} navigate={navigate} />
                       </td>
@@ -233,6 +236,8 @@ function PatientList() {
 
 // A helper component to render action buttons for a patient
 function PatientActions({ patient, userRole, navigate }) {
+    const canManageAppointments = userRole === 'owner' || userRole === 'staff' || userRole === 'doctor';
+    
     return (
         <>
             {(userRole === 'owner' || userRole === 'staff') && (
@@ -240,6 +245,13 @@ function PatientActions({ patient, userRole, navigate }) {
                     <i className="fas fa-eye"></i> Details
                 </button>
             )}
+
+            {canManageAppointments && (
+                 <button onClick={() => navigate(`/patients/${patient.id}/set-appointment`)} className="table-action-button appointment">
+                    <i className="fas fa-calendar-plus"></i> Appt
+                </button>
+            )}
+
             {(userRole === 'owner' || userRole === 'staff' || userRole === 'nurse') && (
                 <>
                     <button onClick={() => navigate(`/patients/${patient.id}/invoice`)} className="table-action-button invoice">

@@ -29,9 +29,11 @@ const AllTransactions = lazy(() => import("./pages/AllTransactions"));
 const PatientReceiptsPage = lazy(() => import("./pages/PatientReceiptsPage"));
 const InvoicePage = lazy(() => import("./pages/InvoicePage"));
 const RevenueReportPage = lazy(() => import("./pages/RevenueReportPage"));
-
-// NEW: Lazy-load EditPatientBio component
 const EditPatientBio = lazy(() => import("./pages/EditPatientBio"));
+
+// NEW: Lazy-load Appointment components
+const AppointmentsPage = lazy(() => import("./pages/appointments"));
+const SetAppointmentPage = lazy(() => import("./pages/set-appointment"));
 
 
 function App() {
@@ -52,9 +54,6 @@ function App() {
           theme="light"
         />
 
-        {/* Optional: Include your Navbar component here if it's part of your global layout */}
-        {/* <NavBar /> */}
-
         {/* main-content-offset can be used to push content below a fixed header/navbar */}
         <div className="main-content-offset">
           <Routes>
@@ -68,6 +67,9 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<ProfilePage />} />
 
+            {/* NEW: Appointments Route */}
+            <Route path="/appointments" element={<AppointmentsPage />} />
+
             {/* Patient Management Routes */}
             <Route path="/patients" element={<PatientList />} />
             <Route path="/patients/:patientId" element={<PatientDetail />} />
@@ -75,10 +77,10 @@ function App() {
             <Route path="/patients/:patientId/dental-records/:recordId" element={<DentalRecordDetail />} />
             <Route path="/patients/:patientId/dental-records/:recordId/edit" element={<EditDentalRecord />} />
             <Route path="/patients/:patientId/receipts" element={<PatientReceiptsPage />} />
-            {/* Patient Invoice Route */}
             <Route path="/patients/:patientId/invoice" element={<InvoicePage />} />
-            {/* NEW ROUTE: Edit Patient Bio */}
             <Route path="/patients/:patientId/edit" element={<EditPatientBio />} />
+            {/* NEW: Set Appointment Route */}
+            <Route path="/patients/:patientId/set-appointment" element={<SetAppointmentPage />} />
 
 
             {/* Inventory Management Routes */}
@@ -104,8 +106,6 @@ function App() {
           </Routes>
         </div>
 
-        {/* Optional: Include your Footer component here if it's part of your global layout */}
-        {/* <Footer /> */}
       </Router>
     </Suspense>
   );

@@ -80,7 +80,7 @@ export default function Dashboard() {
   const isOwner = user.role === 'owner';
   const isStaff = user.role === 'staff';
   const isNurse = user.role === 'nurse';
-  const isDoctor = user.role === 'doctor'; // New: Check for doctor role
+  const isDoctor = user.role === 'doctor';
 
   return (
     <div className="dashboard-container">
@@ -101,6 +101,15 @@ export default function Dashboard() {
             <i className="icon fas fa-user-injured"></i>
             <h3>Patient Management</h3>
             <p>View, add, and manage patient demographic information and medical records.</p>
+          </a>
+        )}
+
+        {/* Appointments (Accessible by Owner, Staff, Nurse, and Doctor) */}
+        {(isOwner || isStaff || isNurse || isDoctor) && (
+          <a href="/appointments" className="nav-card appointments">
+            <i className="icon fas fa-calendar-alt"></i>
+            <h3>Appointments</h3>
+            <p>View and manage upcoming patient appointments and schedules.</p>
           </a>
         )}
 

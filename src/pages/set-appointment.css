@@ -1,0 +1,176 @@
+/* src/pages/set-appointment.css */
+
+.set-appointment-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f4f6f8 0%, #e5e9ec 100%);
+    padding: 20px;
+    font-family: 'Inter', sans-serif;
+}
+
+.form-card {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 500px;
+    position: relative;
+    animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.back-link {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: none;
+    border: none;
+    color: var(--text-medium, #546E7A);
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: var(--primary-color, #3F51B5);
+}
+
+.card-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.header-icon {
+    font-size: 3rem;
+    color: var(--primary-color, #3F51B5);
+    margin-bottom: 15px;
+}
+
+.card-header h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-dark, #263238);
+    margin: 0;
+}
+
+.card-header p {
+    font-size: 1rem;
+    color: var(--text-medium, #546E7A);
+    margin-top: 5px;
+}
+
+.card-header p strong {
+    color: var(--primary-color, #3F51B5);
+}
+
+.appointment-form .form-group {
+    margin-bottom: 25px;
+}
+
+.appointment-form label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: var(--text-dark, #263238);
+}
+
+.custom-select-wrapper {
+    position: relative;
+}
+
+.custom-select {
+    width: 100%;
+    padding: 15px 20px;
+    border: 1px solid var(--border-color, #e0e4e8);
+    border-radius: 10px;
+    background-color: #f9fafb;
+    font-size: 1rem;
+    color: var(--text-dark, #263238);
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.custom-select:focus {
+    outline: none;
+    border-color: var(--primary-color, #3F51B5);
+    box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.15);
+}
+
+.select-arrow {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-medium, #546E7A);
+    pointer-events: none;
+}
+
+.error-message-form {
+    color: #D32F2F;
+    background-color: #ffebee;
+    border: 1px solid #ef9a9a;
+    border-radius: 8px;
+    padding: 10px 15px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(45deg, var(--primary-color, #3F51B5), var(--secondary-color, #5C6BC0));
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.submit-btn:hover:not(:disabled) {
+    box-shadow: 0 5px 15px rgba(63, 81, 181, 0.4);
+    transform: translateY(-2px);
+}
+
+.submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.button-spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: button-spin 0.8s linear infinite;
+}
+
+@keyframes button-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
