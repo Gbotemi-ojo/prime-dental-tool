@@ -15,8 +15,6 @@ export default function AddDentalRecord() {
   const [patientName, setPatientName] = useState(''); // To display patient's name
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [message, setMessage] = useState('');
-  const [isError, setIsError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [userRole, setUserRole] = useState(null); // State to store user role
 
@@ -266,21 +264,27 @@ export default function AddDentalRecord() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    setMessage('');
-    setIsError(false);
+    toast.dismiss(); // Clear any existing toasts
 
+    // --- FORM VALIDATION ---
     if (!formData.complaint || formData.provisionalDiagnosis.length === 0 || formData.treatmentPlan.length === 0) {
-      setMessage('Please fill in Chief Complaint, Provisional Diagnosis, and Treatment Plan.');
-      setIsError(true);
+      toast.error('Please fill in Chief Complaint, Provisional Diagnosis, and Treatment Plan.');
       setSubmitting(false);
       return;
     }
 
+    // *** NEW VALIDATION FOR TREATMENT DONE ***
+    if (!formData.treatmentDone || formData.treatmentDone.trim() === '') {
+      toast.error('Adding a description of the treatment done is important before submission.');
+      setSubmitting(false);
+      return;
+    }
+
+
     const token = localStorage.getItem('jwtToken');
     const userId = localStorage.getItem('userId');
     if (!token || !userId) {
-      setMessage('Authentication required. Please log in again.');
-      setIsError(true);
+      toast.error('Authentication required. Please log in again.');
       setSubmitting(false);
       localStorage.clear();
       navigate('/login'); // Use navigate for redirection
@@ -306,8 +310,7 @@ export default function AddDentalRecord() {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage(data.message || 'Dental record added successfully!');
-        setIsError(false);
+        toast.success(data.message || 'Dental record added successfully!');
         // Clear the form on successful submission
         setFormData({
           complaint: '', historyOfPresentComplaint: '', pastDentalHistory: '',
@@ -331,13 +334,11 @@ export default function AddDentalRecord() {
         // Redirect back to patient detail page after successful submission
         navigate(`/patients/${patientId}`); // Use navigate for redirection
       } else {
-        setMessage(data.error || 'Failed to add dental record. Please check the details.');
-        setIsError(true);
+        toast.error(data.error || 'Failed to add dental record. Please check the details.');
       }
     } catch (err) {
       console.error('Submission error:', err);
-      setMessage('Network error or server is unreachable. Please try again later.');
-      setIsError(true);
+      toast.error('Network error or server is unreachable. Please try again later.');
     } finally {
       setSubmitting(false);
     }
@@ -780,14 +781,15 @@ export default function AddDentalRecord() {
               )}
             </div>
 
-            {/* NEW: Treatment Done Input */}
+            {/* NEW: Treatment Done Input with Validation */}
             <div className="form-group full-width-grid-item">
-              <label htmlFor="treatmentDone">Treatment Done</label>
+              <label htmlFor="treatmentDone">Treatment Done *</label>
               <textarea
                 id="treatmentDone"
                 name="treatmentDone"
                 value={formData.treatmentDone}
                 onChange={handleChange}
+                required
                 placeholder="e.g., Composite filling on #16, scaling and polishing completed."
               ></textarea>
             </div>
@@ -804,12 +806,6 @@ export default function AddDentalRecord() {
             </div>
           </div>
         </section>
-
-        {message && (
-          <div className={`message ${isError ? 'error' : 'success'}`}>
-            {message}
-          </div>
-        )}
 
         <div className="form-actions">
           <button type="submit" disabled={submitting}>

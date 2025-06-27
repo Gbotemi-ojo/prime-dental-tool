@@ -1,31 +1,25 @@
 /* src/pages/patient-receipts-page.css */
 
-/* Import Google Font - Inter for consistent typography */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  /* Consistent Color Palette */
-  --primary-color: #3F51B5; /* Indigo */
-  --secondary-color: #5C6BC0; /* Lighter Indigo */
-  --accent-color: #4CAF50; /* Green */
-  --danger-color: #F44336; /* Red */
-  --warning-color: #FFC107; /* Yellow */
-  --text-dark: #263238; /* Dark Blue Grey */
-  --text-medium: #455A64; /* Lighter Blue Grey */
-  --text-light: #ffffff; /* White */
-  --bg-light: #ECEFF1; /* Light Blue Grey */
-  --bg-medium: #CFD8DC; /* Medium Blue Grey */
-  --card-bg: #ffffff; /* Pure white */
-  --border-color: #E0E0E0; /* Light grey border */
-  --input-bg: #F5F7F8; /* Slightly off-white for inputs */
-
-  /* Shadows */
+  --primary-color: #3F51B5;
+  --secondary-color: #5C6BC0;
+  --accent-color: #4CAF50;
+  --danger-color: #F44336;
+  --warning-color: #FFC107;
+  --text-dark: #263238;
+  --text-medium: #455A64;
+  --text-light: #ffffff;
+  --bg-light: #ECEFF1;
+  --bg-medium: #CFD8DC;
+  --card-bg: #ffffff;
+  --border-color: #E0E0E0;
+  --input-bg: #F5F7F8;
   --shadow-sm: rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
   --shadow-md: rgba(0, 0, 0, 0.08) 0px 4px 12px;
   --shadow-lg: rgba(0, 0, 0, 0.15) 0px 8px 24px;
   --shadow-xl: rgba(0, 0, 0, 0.2) 0px 10px 30px;
-
-  /* Spacing */
   --spacing-xs: 8px;
   --spacing-sm: 12px;
   --spacing-md: 20px;
@@ -63,7 +57,7 @@ body {
   border-radius: 15px;
   box-shadow: var(--shadow-lg);
   width: 100%;
-  max-width: 900px; /* Max width for the receipt content */
+  max-width: 900px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -76,7 +70,6 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Header Section */
 .receipts-header {
   display: flex;
   justify-content: space-between;
@@ -105,11 +98,11 @@ body {
 .back-button,
 .generate-receipt-button,
 .print-receipt-button,
-.send-receipt-button {
+.send-email-button {
   display: inline-flex;
   align-items: center;
   padding: 10px 20px;
-  border: none; /* Default to no border, specific buttons will add one if needed */
+  border: none;
   border-radius: 8px;
   text-decoration: none;
   font-weight: 600;
@@ -119,13 +112,12 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   cursor: pointer;
-  outline: none; /* Remove outline on focus */
+  outline: none;
 }
 
 .back-button {
   background-color: var(--secondary-color);
   color: var(--text-light);
-  border: 1px solid var(--primary-color);
 }
 
 .back-button:hover {
@@ -135,65 +127,57 @@ body {
 }
 
 .generate-receipt-button {
-  /* Enhanced styling for Generate Receipt Button */
-  background: linear-gradient(135deg, var(--accent-color) 0%, #388E3C 100%); /* Green gradient */
+  background: linear-gradient(135deg, var(--accent-color) 0%, #388E3C 100%);
   color: var(--text-light);
-  border: 1px solid #388E3C; /* Darker green border */
-  position: relative; /* For potential future effects */
-  overflow: hidden; /* For potential future effects */
-  box-shadow: 0 4px 15px rgba(0, 128, 0, 0.2); /* Softer, more spread out shadow */
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smoother transition */
+  box-shadow: 0 4px 15px rgba(0, 128, 0, 0.2);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .generate-receipt-button:hover {
-  background: linear-gradient(135deg, #388E3C 0%, #2E7D32 100%); /* Darker gradient on hover */
-  transform: translateY(-3px) scale(1.02); /* More pronounced lift and slight scale */
-  box-shadow: 0 8px 25px rgba(0, 128, 0, 0.35); /* Deeper shadow on hover */
+  background: linear-gradient(135deg, #388E3C 0%, #2E7D32 100%);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 128, 0, 0.35);
 }
 
 .print-receipt-button {
-  background-color: #607D8B; /* Blue Grey for print */
+  background-color: #607D8B;
   color: var(--text-light);
-  border: 1px solid #455A64;
 }
 
 .print-receipt-button:hover {
-  background-color: #455A64; /* Darker Blue Grey */
+  background-color: #455A64;
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 
-.send-receipt-button {
-  background: linear-gradient(135deg, var(--primary-color) 0%, #303F9F 100%); /* Blue gradient for send */
-  color: var(--text-light);
-  border: 1px solid #303F9F; /* Darker blue border */
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 4px 15px rgba(63, 81, 181, 0.2); /* Softer shadow */
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+.send-email-button {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #303F9F 100%);
+    color: var(--text-light);
 }
 
-.send-receipt-button:hover {
-  background: linear-gradient(135deg, #303F9F 0%, #1A237E 100%); /* Darker blue gradient on hover */
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 8px 25px rgba(63, 81, 181, 0.35); /* Deeper shadow on hover */
+.send-email-button:disabled {
+    background: var(--bg-medium);
+    cursor: not-allowed;
 }
 
+.send-email-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, #303F9F 0%, #1A237E 100%);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(63, 81, 181, 0.35);
+}
 
 .back-button i,
 .generate-receipt-button i,
 .print-receipt-button i,
-.send-receipt-button i { /* Added .send-receipt-button here */
+.send-email-button i {
   margin-right: 8px;
   font-size: 1.1rem;
 }
 
-/* Form Section */
 .receipt-form-section {
-  background-color: var(--bg-light);
+  background-color: var(--card-bg);
   border-radius: 10px;
   padding: var(--spacing-lg);
-  box-shadow: var(--shadow-sm);
   border-left: 5px solid var(--primary-color);
 }
 
@@ -201,10 +185,13 @@ body {
   color: var(--primary-color);
   font-size: 1.8em;
   font-weight: 700;
-  margin-top: 0;
+  margin-top: var(--spacing-lg);
   margin-bottom: var(--spacing-md);
   padding-bottom: 10px;
   border-bottom: 1px solid var(--border-color);
+}
+.receipt-form-section h2:first-of-type {
+    margin-top: 0;
 }
 
 .receipt-form-section h3 {
@@ -213,8 +200,6 @@ body {
   font-weight: 600;
   margin-top: var(--spacing-md);
   margin-bottom: var(--spacing-sm);
-  border-bottom: 1px dashed var(--border-color);
-  padding-bottom: 5px;
 }
 
 .patient-info-display p {
@@ -288,7 +273,7 @@ body {
   margin-top: var(--spacing-sm);
   background-color: var(--card-bg);
   border-radius: 8px;
-  overflow: hidden; /* Ensures rounded corners apply to table content */
+  overflow: hidden;
   box-shadow: var(--shadow-sm);
 }
 
@@ -308,8 +293,8 @@ body {
   background-color: var(--bg-light);
 }
 
-.services-table .price-input {
-  width: 120px; /* Fixed width for price input */
+.services-table .price-input, .services-table .quantity-input {
+  width: 120px;
   padding: 6px 10px;
   border: 1px solid var(--border-color);
   border-radius: 5px;
@@ -329,42 +314,14 @@ body {
 }
 
 .services-table .remove-service-button:hover {
-  background-color: #C62828; /* Darker red */
-}
-
-/* REMOVED: .subtotal-display rule as per user request */
-/*
-.subtotal-display {
-  text-align: right;
-  font-size: 1.2em;
-  margin-top: var(--spacing-md);
-  font-weight: 700;
-  color: var(--primary-color);
-}
-*/
-
-.hmo-status-message {
-  font-size: 0.9em;
-  margin-top: -10px;
-  margin-bottom: 10px;
-  padding: 8px 15px;
-  border-radius: 5px;
-  background-color: #FFFDE7; /* Light yellow */
-  border: 1px solid #FFD700; /* Gold border */
-  color: #B8860B; /* Darker yellow text */
-}
-
-.hmo-status-message.not-onboard {
-  background-color: #FBE9E7; /* Light red */
-  border-color: #FFAB91; /* Red border */
-  color: #D84315; /* Darker red text */
+  background-color: #C62828;
 }
 
 .hmo-covered-input {
   display: flex;
   flex-direction: column;
   gap: 5px;
-  width: 100%; /* Take full width in flex container */
+  width: 100%;
 }
 
 .hmo-covered-input label {
@@ -373,22 +330,97 @@ body {
   font-size: 0.95em;
 }
 
-/* Receipt Display Area */
-.receipt-display-area {
-  background-color: var(--card-bg);
-  padding: var(--spacing-xl);
-  border-radius: 15px;
-  box-shadow: var(--shadow-lg);
-  width: 100%;
-  max-width: 700px; /* Slightly narrower for a receipt look */
-  margin: 0 auto; /* Center the receipt */
-  box-sizing: border-box;
-  display: none; /* Hidden by default, shown when generated */
-  flex-direction: column;
-  gap: var(--spacing-md);
+/* New Styles for Payment Details Section */
+.payment-summary-grid {
+    display: grid;
+    gap: var(--spacing-sm);
+    background-color: #F9FAFB;
+    padding: var(--spacing-lg);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
 }
 
-/* Styles for printing */
+.payment-summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.1em;
+    padding: var(--spacing-xs) 0;
+    border-bottom: 1px dashed var(--border-color);
+}
+.payment-summary-grid .payment-summary-item:last-child {
+    border-bottom: none;
+}
+
+.payment-summary-item span:first-child {
+    color: var(--text-medium);
+}
+
+.payment-summary-item span:last-child,
+.payment-summary-item strong:last-child {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.payment-summary-item.total-due {
+    font-size: 1.3em;
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--border-color);
+}
+.payment-summary-item.total-due strong {
+    color: var(--primary-color);
+}
+
+.payment-summary-item.previous-outstanding strong {
+    color: var(--danger-color);
+}
+.payment-summary-item.new-outstanding strong {
+    color: #E65100; /* Amber/Orange for warning */
+}
+.payment-summary-item.total-outstanding-final {
+    font-size: 1.4em;
+    padding-top: var(--spacing-sm);
+    border-top: 2px solid var(--danger-color);
+}
+
+.payment-summary-item.total-outstanding-final strong {
+    color: var(--danger-color);
+}
+
+.payment-method-selection, .amount-paid-input {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 15px;
+    align-items: center;
+    margin-top: var(--spacing-sm);
+}
+.payment-method-selection label, .amount-paid-input label {
+    font-weight: 600;
+    font-size: 1.1em;
+    color: var(--text-dark);
+    justify-self: start;
+}
+.amount-paid-input .form-control {
+    font-size: 1.2em;
+    font-weight: 700;
+    text-align: right;
+    padding: 12px;
+}
+
+/* Receipt Display Area */
+.receipt-display-area {
+  padding: var(--spacing-xl);
+  border-radius: 15px;
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  border: 1px solid #ccc;
+}
+
 @media print {
   body * {
     visibility: hidden;
@@ -408,16 +440,10 @@ body {
     margin: 0;
   }
   .receipts-header .actions {
-    display: none; /* Hide buttons when printing */
+    display: none;
   }
 }
 
-/* When showReceipt is true, display the receipt */
-.receipts-container .receipt-display-area {
-    display: flex; /* Override display: none when showReceipt is true */
-}
-
-/* Specific receipt elements styling */
 .receipt-header-display {
   text-align: center;
   border-bottom: 2px solid var(--primary-color);
@@ -463,36 +489,46 @@ body {
 
 .receipt-services-table th:last-child,
 .receipt-services-table td:last-child {
-  text-align: right; /* Align price to the right */
+  text-align: right;
 }
 
 .receipt-services-table tbody tr:last-child td {
   border-bottom: none;
 }
 
+.receipt-summary {
+    text-align: right;
+}
+
 .receipt-summary p {
-  text-align: right;
   margin: 5px 0;
   font-size: 1em;
 }
 
-.receipt-summary .total-due {
-  font-size: 1.4em;
-  font-weight: 700;
-  border-top: 2px solid var(--primary-color);
-  padding-top: var(--spacing-sm);
-  margin-top: var(--spacing-md);
+.receipt-summary .amount-paid-now {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--accent-color);
+    margin-top: 10px;
+}
+.receipt-summary .total-outstanding-final {
+    font-size: 1.4em;
+    font-weight: 800;
+    color: var(--danger-color);
+    border-top: 2px solid var(--danger-color);
+    margin-top: 15px;
+    padding-top: 10px;
 }
 
-/* NEW: Styles for HMO covered status in receipt summary */
-.receipt-summary .total-due.due-balance {
-    color: var(--warning-color); /* Use warning color for balance due */
+.receipt-summary .fully-covered-status {
+    font-weight: bold;
+    color: var(--accent-color);
+    margin-top: 15px;
+    padding: 8px;
+    background-color: #E8F5E9;
+    border-radius: 5px;
+    display: inline-block;
 }
-
-.receipt-summary .total-due.fully-covered {
-    color: var(--accent-color); /* Use accent color (green) for fully covered */
-}
-
 
 .receipt-footer {
   text-align: center;
@@ -503,7 +539,6 @@ body {
   padding-top: var(--spacing-md);
 }
 
-/* Spinner and Error Messages (re-used) */
 .spinner {
     border: 4px solid #f3f3f3;
     border-top: 4px solid var(--primary-color);
@@ -534,101 +569,4 @@ body {
     background-color: #f8d7da;
     color: #721c24;
     border: 1px solid #f5c6cb;
-}
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-  .receipts-container {
-    padding: var(--spacing-md);
-    margin: var(--spacing-sm);
-    gap: var(--spacing-md);
-  }
-  .receipts-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-sm);
-  }
-  .receipts-header h1 {
-    font-size: 2em;
-    width: 100%;
-  }
-  .receipts-header .actions {
-    width: 100%;
-    justify-content: flex-end;
-  }
-  .back-button, .generate-receipt-button, .print-receipt-button, .send-receipt-button {
-    width: 100%;
-    justify-content: center;
-  }
-  .receipt-form-section {
-    padding: var(--spacing-md);
-  }
-  .receipt-form-section h2 {
-    font-size: 1.6em;
-  }
-  .service-selection, .hmo-selection {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-  .form-select, .form-control, .add-service-button {
-    width: 100%;
-  }
-  .services-table th, .services-table td {
-    padding: 10px 12px;
-    font-size: 0.9em;
-  }
-  .services-table .price-input {
-    width: 100px;
-  }
-  .receipt-display-area {
-    padding: var(--spacing-md);
-  }
-  .receipt-header-display h2 {
-    font-size: 1.8em;
-  }
-  .receipt-summary .total-due {
-    font-size: 1.2em;
-  }
-}
-
-@media (max-width: 480px) {
-  .app-container {
-    padding: var(--spacing-sm);
-  }
-  .receipts-container {
-    padding: var(--spacing-sm);
-    margin: var(--spacing-xs);
-    gap: var(--spacing-sm);
-  }
-  .receipts-header h1 {
-    font-size: 1.8em;
-  }
-  .back-button, .generate-receipt-button, .print-receipt-button, .send-receipt-button {
-    padding: 8px 15px;
-    font-size: 0.9em;
-  }
-  .receipt-form-section {
-    padding: var(--spacing-sm);
-  }
-  .receipt-form-section h2 {
-    font-size: 1.4em;
-  }
-  .services-table th, .services-table td {
-    padding: 8px 10px;
-    font-size: 0.8em;
-  }
-  .services-table .price-input {
-    width: 80px;
-    font-size: 0.85em;
-  }
-  .receipt-display-area {
-    padding: var(--spacing-sm);
-  }
-  .receipt-header-display h2 {
-    font-size: 1.5em;
-  }
-  .receipt-summary .total-due {
-    font-size: 1.1em;
-  }
 }

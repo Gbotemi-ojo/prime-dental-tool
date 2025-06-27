@@ -1,271 +1,102 @@
 // src/pages/appointments.jsx
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify'; // Import toast
+import 'react-toastify/dist/ReactToastify.css'; // Import toast CSS
+import API_BASE_URL from '../config/api'; // Import API base URL
+import './appointments.css'; // Import the dedicated CSS file
 
-// TODO: Move this to a central config file (e.g., src/config/api.js)
-const API_BASE_URL = 'http://localhost:5000'; 
+const AppointmentCard = ({ patient, onSendReminder, onNavigate, sendingReminderId }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const hasOutstanding = parseFloat(patient.outstanding) > 0;
+    const isSending = sendingReminderId === patient.id; // Check if a reminder is being sent for this patient
 
-// CSS styles are embedded directly to avoid resolution errors.
-const AppointmentStyles = () => (
-    <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-        :root {
-            --primary-color: #3F51B5;
-            --secondary-color: #5C6BC0;
-            --accent-color: #00BCD4;
-            --text-dark: #263238;
-            --text-medium: #546E7A;
-            --text-light: #ffffff;
-            --background-light: #f4f6f8;
-            --background-card: #ffffff;
-            --border-color: #e0e4e8;
-            --shadow-light: rgba(0, 0, 0, 0.05);
-            --shadow-medium: rgba(0, 0, 0, 0.1);
-        }
-
-        .appointments-container {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--background-light);
-            min-height: 100vh;
-            padding: 30px;
-        }
-
-        .appointments-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .appointments-header h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--text-dark);
-        }
-
-        .back-button {
-            background-color: var(--secondary-color);
-            color: var(--text-light);
-            border: none;
-            border-radius: 8px;
-            padding: 12px 22px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .back-button:hover {
-            background-color: var(--primary-color);
-            transform: translateY(-2px);
-        }
-
-        .view-controls {
-            background-color: var(--background-card);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 15px var(--shadow-light);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .toggle-buttons {
-            display: flex;
-            background-color: #e9ecef;
-            border-radius: 10px;
-            padding: 5px;
-        }
-
-        .toggle-btn {
-            padding: 12px 25px;
-            border: none;
-            background-color: transparent;
-            color: var(--text-medium);
-            font-size: 1rem;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .toggle-btn.active {
-            background-color: var(--primary-color);
-            color: var(--text-light);
-            box-shadow: 0 3px 10px rgba(63, 81, 181, 0.3);
-        }
-
-        .date-picker-wrapper {
-            display: flex;
-            align-items: center;
-        }
-
-        .date-input-appointments {
-            padding: 12px 18px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 1rem;
-            font-family: 'Inter', sans-serif;
-            color: var(--text-dark);
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .date-input-appointments:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.15);
-        }
-
-        .appointments-list-section .list-header {
-            margin-bottom: 20px;
-        }
-
-        .appointments-list-section h2 {
-            font-size: 1.8rem;
-            color: var(--text-dark);
-            font-weight: 600;
-        }
-
-        .appointments-list {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-            display: grid;
-            gap: 15px;
-        }
-
-        .appointment-card {
-            background-color: var(--background-card);
-            padding: 20px 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px var(--shadow-light);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-left: 5px solid var(--accent-color);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            cursor: pointer;
-        }
-
-        .appointment-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 8px 25px var(--shadow-medium);
-        }
-
-        .patient-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .patient-name {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--text-dark);
-        }
-
-        .patient-contact {
-            font-size: 0.9rem;
-            color: var(--text-medium);
-            margin-top: 4px;
-        }
-
-        .appointment-details {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            color: var(--text-medium);
-        }
-
-        .appointment-time {
-            font-weight: 500;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .details-arrow {
-            font-size: 1.2rem;
-            color: var(--secondary-color);
-            transition: transform 0.3s ease;
-        }
-
-        .appointment-card:hover .details-arrow {
-            transform: translateX(5px);
-        }
-
-        .loading-indicator, .no-appointments-message {
-            text-align: center;
-            padding: 60px 20px;
-            background-color: var(--background-card);
-            border-radius: 12px;
-        }
-        
-        .loading-indicator p, .no-appointments-message p {
-            font-size: 1.2rem;
-            color: var(--text-medium);
-            font-weight: 500;
-        }
-
-        .no-appointments-message i {
-            font-size: 3rem;
-            color: var(--secondary-color);
-            margin-bottom: 20px;
-            display: block;
-        }
-
-        .loading-indicator .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 768px) {
-            .appointments-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
+    // Format the outstanding balance with commas
+    const formattedOutstanding = hasOutstanding
+        ? parseFloat(patient.outstanding).toLocaleString('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+          })
+        : '0.00';
+    
+    // Safely parse JSON fields, providing a default value if parsing fails
+    const parseJsonField = (jsonString) => {
+        if (!jsonString) return 'N/A';
+        try {
+            const parsed = JSON.parse(jsonString);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                return parsed.map(item => item.name || item).join(', ');
             }
-            .view-controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .toggle-buttons {
-                width: 100%;
-                justify-content: center;
-            }
+            return parsed.name || JSON.stringify(parsed);
+        } catch {
+            return jsonString; // Return original string if it's not valid JSON
         }
-    `}</style>
-);
+    };
 
+    return (
+        <li className="appointment-card">
+            <div className="card-main-content">
+                <div className="patient-info">
+                    <span className="patient-name" onClick={onNavigate}>{patient.name}</span>
+                    <span className="patient-contact">{patient.phoneNumber || 'No contact info'}</span>
+                    {hasOutstanding && (
+                         <div className="outstanding-badge">
+                            Outstanding: ₦{formattedOutstanding}
+                        </div>
+                    )}
+                </div>
+                <div className="card-actions">
+                    <button 
+                        className="send-reminder-btn"
+                        onClick={onSendReminder}
+                        disabled={!patient.email || isSending}
+                        title={!patient.email ? "Patient has no email address" : "Send reminder email"}
+                    >
+                        {isSending ? (
+                            <>
+                                <i className="fas fa-spinner fa-spin"></i> Sending...
+                            </>
+                        ) : (
+                            <>
+                                <i className="fas fa-envelope"></i> Send Reminder
+                            </>
+                        )}
+                    </button>
+                </div>
+            </div>
+             <div 
+                className="card-details-toggle"
+                onClick={() => setIsExpanded(!isExpanded)}
+            >
+                {isExpanded ? 'Hide Details' : 'Show Details'} <i className={`fas fa-chevron-${isExpanded ? 'up' : 'down'}`}></i>
+            </div>
+            {isExpanded && (
+                <div className="card-collapsible-content">
+                    <div className="detail-item">
+                        <span className="label">Latest Treatment Done</span>
+                        <div className="value">{patient.latestTreatmentDone || 'N/A'}</div>
+                    </div>
+                     <div className="detail-item">
+                        <span className="label">Treatment Plan</span>
+                        <div className="value">{parseJsonField(patient.latestTreatmentPlan)}</div>
+                    </div>
+                    <div className="detail-item">
+                        <span className="label">Provisional Diagnosis</span>
+                        <div className="value">{parseJsonField(patient.latestProvisionalDiagnosis)}</div>
+                    </div>
+                </div>
+            )}
+        </li>
+    );
+};
 
 const AppointmentsPage = () => {
     const [allPatients, setAllPatients] = useState([]);
-    const [viewMode, setViewMode] = useState('today'); // 'today' or 'byDate'
+    const [viewMode, setViewMode] = useState('today'); // 'today', 'tomorrow', or 'byDate'
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [sendingReminderId, setSendingReminderId] = useState(null); // Track which reminder is being sent
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -278,6 +109,7 @@ const AppointmentsPage = () => {
 
             try {
                 setLoading(true);
+                // The backend now provides the latest treatment info with all patients
                 const response = await fetch(`${API_BASE_URL}/api/patients`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -322,19 +154,65 @@ const AppointmentsPage = () => {
     }, [allPatients, selectedDate]);
 
     useEffect(() => {
-        if (viewMode === 'today') {
+        const newDate = new Date();
+        if (viewMode === 'tomorrow') {
+            newDate.setDate(newDate.getDate() + 1);
+        } else if (viewMode === 'today') {
+            // ensure when we switch back to today, it is actually today.
             setSelectedDate(new Date());
+            return;
         }
+        setSelectedDate(newDate);
     }, [viewMode]);
 
     const handleDateChange = (e) => {
+        // Correctly handle date selection to avoid timezone issues
         const date = new Date(e.target.value + 'T00:00:00');
         setSelectedDate(date);
+        setViewMode('byDate');
     };
+
+    const handleSendReminder = async (patientId) => {
+        const token = localStorage.getItem('jwtToken');
+        setSendingReminderId(patientId); // Set loading indicator for the specific button
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/patients/${patientId}/send-reminder`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                toast.success(data.message, { theme: "colored" });
+            } else {
+                toast.error(data.error || 'Failed to send reminder.', { theme: "colored" });
+            }
+        } catch (err) {
+            toast.error('Network error. Could not send reminder.', { theme: "colored" });
+        } finally {
+            setSendingReminderId(null); // Remove loading indicator
+        }
+    };
+    
+    const getHeaderText = () => {
+        if (viewMode === 'today') return "Today's";
+        if (viewMode === 'tomorrow') return "Tomorrow's";
+        return `Date: ${toLocalISOString(selectedDate)}`;
+    }
 
     return (
         <>
-            <AppointmentStyles />
+             <ToastContainer
+                position="bottom-center"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+             />
             <div className="appointments-container">
                 <header className="appointments-header">
                     <h1>Appointments Schedule</h1>
@@ -348,7 +226,12 @@ const AppointmentsPage = () => {
                         <button 
                             className={`toggle-btn ${viewMode === 'today' ? 'active' : ''}`} 
                             onClick={() => setViewMode('today')}>
-                            <i className="fas fa-calendar-day"></i> Today's Appointments
+                            <i className="fas fa-calendar-day"></i> Today
+                        </button>
+                        <button 
+                            className={`toggle-btn ${viewMode === 'tomorrow' ? 'active' : ''}`} 
+                            onClick={() => setViewMode('tomorrow')}>
+                            <i className="fas fa-calendar-check"></i> Tomorrow
                         </button>
                         <button 
                             className={`toggle-btn ${viewMode === 'byDate' ? 'active' : ''}`} 
@@ -369,6 +252,9 @@ const AppointmentsPage = () => {
                 </div>
 
                 <main className="appointments-list-section">
+                    <h2 style={{ marginBottom: '20px', color: 'var(--text-dark)' }}>
+                        {getHeaderText()} Appointments ({appointments.length})
+                    </h2>
                     {loading ? (
                         <div className="loading-indicator">
                             <div className="spinner"></div>
@@ -378,28 +264,20 @@ const AppointmentsPage = () => {
                         <p className="error-message">{error}</p>
                     ) : appointments.length > 0 ? (
                         <ul className="appointments-list">
-                            <div className="list-header">
-                                <h2>{viewMode === 'today' ? "Today's" : `Date: ${toLocalISOString(selectedDate)}`} Appointments ({appointments.length})</h2>
-                            </div>
                             {appointments.map(patient => (
-                                <li key={patient.id} className="appointment-card" onClick={() => navigate(`/patients/${patient.id}`)}>
-                                    <div className="patient-info">
-                                        <span className="patient-name">{patient.name}</span>
-                                        <span className="patient-contact">{patient.phoneNumber || 'No contact'}</span>
-                                    </div>
-                                    <div className="appointment-details">
-                                        <span className="appointment-time">
-                                            <i className="fas fa-clock"></i> All Day
-                                        </span>
-                                        <i className="fas fa-chevron-right details-arrow"></i>
-                                    </div>
-                                </li>
+                                <AppointmentCard 
+                                    key={patient.id} 
+                                    patient={patient}
+                                    onSendReminder={() => handleSendReminder(patient.id)}
+                                    onNavigate={() => navigate(`/patients/${patient.id}`)}
+                                    sendingReminderId={sendingReminderId}
+                                />
                             ))}
                         </ul>
                     ) : (
                         <div className="no-appointments-message">
-                            <i className="fas fa-calendar-times"></i>
-                            <p>No appointments scheduled for {viewMode === 'today' ? 'today' : toLocalISOString(selectedDate)}.</p>
+                            <i className="far fa-calendar-times"></i>
+                            <p>No appointments scheduled for {getHeaderText().toLowerCase()}.</p>
                         </div>
                     )}
                 </main>
