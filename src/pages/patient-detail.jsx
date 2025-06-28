@@ -30,6 +30,13 @@ export default function PatientDetail() {
         return;
       }
 
+      // Restriction 3: Only owner and doctor should be allowed on this page
+      if (role !== 'owner' && role !== 'doctor') {
+        console.log(`[PatientDetail] User role '${role}' not authorized to view this page. Redirecting to dashboard.`);
+        navigate('/dashboard'); // Redirect unauthorized users
+        return;
+      }
+
       // Parse the patientId from URL string to integer for API calls
       const parsedPatientId = parseInt(patientId); // Use 'patientId' directly from useParams
       if (isNaN(parsedPatientId)) {
@@ -93,7 +100,7 @@ export default function PatientDetail() {
 
     // Re-run effect if patientId or navigate function changes
     fetchData();
-  }, [patientId, navigate]); // Dependency array now uses 'patientId'
+  }, [patientId, navigate, userRole]); // Added userRole to dependency array to react to its changes
 
   if (loading) {
     return (
@@ -151,14 +158,14 @@ export default function PatientDetail() {
             </button>
           )}
 
-          {/* EDIT PATIENT BUTTON - Renders if user is 'owner' or 'staff' (doctors do not edit patient demographics) */}
-          {(userRole === 'owner' || userRole === 'staff') && (
+          {/* Buttons for Invoice and Receipt - Not visible for doctor */}
+          {(userRole === 'owner' || userRole === 'staff' || userRole === 'nurse') && ( // Restriction 1: Not visible for doctor
             <>
-              {/* Send Invoice Button - Renders if user is 'owner' or 'staff' (hidden from doctors) */}
+              {/* Send Invoice Button */}
               <button onClick={() => navigate(`/patients/${patient.id}/invoice`)} className="send-invoice-button">
                 <i className="fas fa-file-invoice"></i> Send Invoice
               </button>
-              {/* Send Receipt Button - Renders if user is 'owner' or 'staff' (hidden from doctors) */}
+              {/* Send Receipt Button */}
               <button onClick={() => navigate(`/patients/${patient.id}/receipts`)} className="send-receipt-button">
                 <i className="fas fa-receipt"></i> Send Receipt
               </button>
@@ -175,18 +182,18 @@ export default function PatientDetail() {
           </div>
           <div className="detail-item">
             <strong>Phone Number:</strong>{' '}
-            {/* Conditional rendering for phone number */}
-            {userRole === 'nurse' ? (
-              <span className="restricted-info">Restricted</span> // Display "Restricted"
+            {/* Restriction 2: Conditional rendering for phone number */}
+            {(userRole === 'doctor') ? (
+              <span>N/A</span> // Display N/A for doctors
             ) : (
-              <span>{patient.phoneNumber}</span>
+              <span>{patient.phoneNumber || 'N/A'}</span>
             )}
           </div>
           <div className="detail-item">
             <strong>Email:</strong>{' '}
-            {/* Conditional rendering for email */}
-            {userRole === 'nurse' ? (
-              <span className="restricted-info">Restricted</span> // Display "Restricted"
+            {/* Restriction 2: Conditional rendering for email */}
+            {(userRole === 'doctor') ? (
+              <span>N/A</span> // Display N/A for doctors
             ) : (
               <span>{patient.email || 'N/A'}</span>
             )}

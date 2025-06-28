@@ -95,7 +95,7 @@ export default function Dashboard() {
       </header>
 
       <nav className="nav-grid">
-        {/* Patient Management (Accessible by Owner, Staff, Nurse, and Doctor) */}
+        {/* Patient Management */}
         {(isOwner || isStaff || isNurse || isDoctor) && (
           <a href="/patients" className="nav-card patients">
             <i className="icon fas fa-user-injured"></i>
@@ -104,8 +104,8 @@ export default function Dashboard() {
           </a>
         )}
 
-        {/* Appointments (Accessible by Owner, Staff, Nurse, and Doctor) */}
-        {(isOwner || isStaff || isNurse || isDoctor) && (
+        {/* Appointments (Accessible by Owner & Staff) */}
+        {(isOwner || isStaff) && (
           <a href="/appointments" className="nav-card appointments">
             <i className="icon fas fa-calendar-alt"></i>
             <h3>Appointments</h3>
@@ -140,8 +140,8 @@ export default function Dashboard() {
           </a>
         )}
 
-        {/* All Inventory Transactions (Accessible by Owner ONLY) */}
-        {isOwner && (
+        {/* All Inventory Transactions (Accessible by Owner & Staff) */}
+        {(isOwner || isStaff) && (
           <a href="/inventory/transactions" className="nav-card inventory">
             <i className="icon fas fa-history"></i>
             <h3>All Inventory Transactions</h3>

@@ -8,25 +8,32 @@ export default function PatientReceiptsPage() {
     const { patientId } = useParams();
     const navigate = useNavigate();
 
+    // State for data
     const [patient, setPatient] = useState(null);
     const [latestDentalRecord, setLatestDentalRecord] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [userRole, setUserRole] = useState(null);
 
+    // State for UI mode based on patient's debt
+    const [isDebtPaymentMode, setIsDebtPaymentMode] = useState(false);
+    const [debtContextDescription, setDebtContextDescription] = useState('');
+
+    // State for form inputs
     const [receiptItems, setReceiptItems] = useState([]);
     const [selectedService, setSelectedService] = useState('');
     const [selectedHMO, setSelectedHMO] = useState('');
     const [hmoCoveredAmount, setHmoCoveredAmount] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('');
+    const [amountPaid, setAmountPaid] = useState('');
+
+    // State for UI flow
     const [showReceipt, setShowReceipt] = useState(false);
     const [isSendingEmail, setIsSendingEmail] = useState(false);
-    
-    // NEW state for managing the actual amount paid in this transaction
-    const [amountPaid, setAmountPaid] = useState('');
 
     const [receiptNumber] = useState(`RCPT-${Date.now().toString().slice(-6)}`);
 
+    // --- Data Definitions (Unchanged) ---
     const serviceOptions = [
         { name: "Registration & Consultation", price: 5000 },
         { name: "Registration & Consultation (family)", price: 10000 },
@@ -121,6 +128,7 @@ export default function PatientReceiptsPage() {
         { name: "QUEST", status: "ONBOARD", coverage: 0.8 }
     ];
 
+    // --- MODIFIED: Data Fetching and Mode Setting ---
     useEffect(() => {
         const fetchReceiptDetails = async () => {
             const token = localStorage.getItem('jwtToken');
@@ -133,9 +141,9 @@ export default function PatientReceiptsPage() {
                 return;
             }
 
-            if (role !== 'owner' && role !== 'staff' && role !== 'nurse') {
-                toast.error('Access denied. Only Staff, Nurses, and Owners can access this page.');
-                navigate(`/patients/${patientId}`);
+            if (role !== 'owner' && role !== 'staff') {
+                toast.error('Access denied. Only Owners and Staff can access this page.');
+                navigate('/dashboard');
                 return;
             }
 
@@ -147,27 +155,26 @@ export default function PatientReceiptsPage() {
             }
 
             try {
+                // 1. Fetch Patient Details
                 const patientResponse = await fetch(`${API_BASE_URL}/api/patients/${parsedPatientId}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
-                if (patientResponse.ok) {
-                    const patientData = await patientResponse.json();
-                    setPatient(patientData);
-                    if (patientData.hmo && patientData.hmo.name) {
-                        setSelectedHMO(patientData.hmo.name);
-                    }
-                } else if (patientResponse.status === 404) {
-                    setError('Patient not found.');
-                    setLoading(false);
-                    return;
-                } else {
+                if (!patientResponse.ok) {
                     const errorData = await patientResponse.json();
                     setError(errorData.error || `Failed to fetch patient details. Status: ${patientResponse.status}`);
                     setLoading(false);
                     return;
                 }
+                
+                const patientData = await patientResponse.json();
+                setPatient(patientData);
+                if (patientData.hmo && patientData.hmo.name) {
+                    setSelectedHMO(patientData.hmo.name);
+                }
 
+                // 2. Fetch Dental Records for context (regardless of debt status)
+                let latestRecord = null;
                 const recordsResponse = await fetch(`${API_BASE_URL}/api/patients/${parsedPatientId}/dental-records`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -176,31 +183,44 @@ export default function PatientReceiptsPage() {
                     const recordsData = await recordsResponse.json();
                     if (recordsData && recordsData.length > 0) {
                         const sortedRecords = recordsData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-                        const latestRecord = sortedRecords[0];
+                        latestRecord = sortedRecords[0];
                         setLatestDentalRecord(latestRecord);
-
-                        if (latestRecord.treatmentPlan && Array.isArray(latestRecord.treatmentPlan)) {
-                            const preAddedItems = latestRecord.treatmentPlan.map((plan, index) => {
-                                const serviceInfo = serviceOptions.find(s => s.name.toLowerCase() === plan.toLowerCase().trim());
-                                return {
-                                    id: `plan-${index}-${Date.now()}`,
-                                    name: plan.trim(),
-                                    price: serviceInfo ? serviceInfo.price : 0,
-                                    quantity: 1
-                                };
-                            });
-                            if (preAddedItems.length > 0) {
-                                setReceiptItems(preAddedItems);
-                                toast.info('Treatment plan items pre-added to receipt. Please review prices and quantities.');
-                            }
-                        }
                     } else {
                         console.warn('No dental records found for this patient.');
                     }
                 } else {
-                    console.warn(`Failed to fetch dental records for pre-populating receipt. Status: ${recordsResponse.status}`);
+                    console.warn(`Failed to fetch dental records. Status: ${recordsResponse.status}`);
                 }
 
+                // 3. CORE LOGIC: Check for outstanding balance and set mode
+                const outstandingBalance = parseFloat(patientData.outstanding);
+                if (outstandingBalance > 0) {
+                    setIsDebtPaymentMode(true);
+                    toast.info(`Patient has an outstanding balance of ₦${outstandingBalance.toFixed(2)}. Only debt payment is allowed.`);
+                    setAmountPaid(outstandingBalance.toFixed(2));
+                    
+                    // --- NEW: Set context description for the debt ---
+                    if (latestRecord && latestRecord.treatmentPlan && Array.isArray(latestRecord.treatmentPlan) && latestRecord.treatmentPlan.length > 0) {
+                        setDebtContextDescription(latestRecord.treatmentPlan.join(', '));
+                    }
+                } else {
+                    // --- Normal Mode: Pre-populate services from the latest record ---
+                    if (latestRecord && latestRecord.treatmentPlan && Array.isArray(latestRecord.treatmentPlan)) {
+                        const preAddedItems = latestRecord.treatmentPlan.map((plan, index) => {
+                            const serviceInfo = serviceOptions.find(s => s.name.toLowerCase() === plan.toLowerCase().trim());
+                            return {
+                                id: `plan-${index}-${Date.now()}`,
+                                name: plan.trim(),
+                                price: serviceInfo ? serviceInfo.price : 0,
+                                quantity: 1
+                            };
+                        });
+                        if (preAddedItems.length > 0) {
+                            setReceiptItems(preAddedItems);
+                            toast.info('Treatment plan items pre-added to receipt. Please review prices and quantities.');
+                        }
+                    }
+                }
             } catch (err) {
                 setError('Network error. Could not connect to the server.');
                 console.error('Network Error:', err);
@@ -212,26 +232,48 @@ export default function PatientReceiptsPage() {
         fetchReceiptDetails();
     }, [patientId, navigate]);
 
+
+    // --- MODIFIED: Calculations now respect Debt Payment Mode ---
     const patientHasHMO = !!patient?.hmo?.name;
     const patientHMOName = patientHasHMO ? patient.hmo.name : '';
     const patientHmoCoverageRate = patientHasHMO ? (hmoOptions.find(hmo => hmo.name === patientHMOName)?.coverage || 0) : 0;
-    const isHmoCovered = patientHasHMO && selectedHMO === patientHMOName;
+    
+    // HMO is only considered if NOT in debt payment mode.
+    const isHmoCovered = !isDebtPaymentMode && patientHasHMO && selectedHMO === patientHMOName;
 
-    const subtotal = receiptItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    // Subtotal is 0 in debt mode, otherwise calculated from items.
+    const subtotal = isDebtPaymentMode ? 0 : receiptItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    
     let calculatedCoveredAmount = 0;
     if (isHmoCovered) {
         calculatedCoveredAmount = subtotal * patientHmoCoverageRate;
     }
     const manualHmoCovered = parseFloat(hmoCoveredAmount);
-    const finalCoveredAmount = (manualHmoCovered > 0) ? manualHmoCovered : calculatedCoveredAmount;
-    const totalDueFromPatient = subtotal - finalCoveredAmount;
+    // Final covered amount is 0 in debt mode.
+    const finalCoveredAmount = isDebtPaymentMode ? 0 : ((manualHmoCovered > 0) ? manualHmoCovered : calculatedCoveredAmount);
+    
+    // Total due from THIS VISIT's services is 0 in debt mode.
+    const totalDueFromPatient = isDebtPaymentMode ? 0 : (subtotal - finalCoveredAmount);
 
+    const parsedAmountPaid = parseFloat(amountPaid) || 0;
+    const patientOutstanding = parseFloat(patient?.outstanding) || 0;
+    
+    // Balance change from this transaction. This works for both modes:
+    // - Normal Mode: (new bill) - (payment)
+    // - Debt Mode: 0 - (payment)
+    const balanceChangeFromThisVisit = totalDueFromPatient - parsedAmountPaid;
+    
+    // The projected new total outstanding balance. This also works for both modes.
+    const newTotalOutstanding = patientOutstanding + balanceChangeFromThisVisit;
+
+    // --- Auto-fill amount paid (only in normal mode) ---
     useEffect(() => {
-        if (!showReceipt) {
+        if (!showReceipt && !isDebtPaymentMode) {
             setAmountPaid(totalDueFromPatient >= 0 ? totalDueFromPatient.toFixed(2) : '0.00');
         }
-    }, [totalDueFromPatient, showReceipt]);
+    }, [totalDueFromPatient, showReceipt, isDebtPaymentMode]);
 
+    // --- Handler functions (Unchanged, but UI will prevent their use in Debt Mode) ---
     const handleAddService = () => {
         if (selectedService) {
             const serviceInfo = serviceOptions.find(s => s.name === selectedService);
@@ -278,15 +320,16 @@ export default function PatientReceiptsPage() {
             )
         );
     };
-
+    
     const handleHmoChange = (e) => {
         const selectedHmoName = e.target.value;
         setSelectedHMO(selectedHmoName);
         setHmoCoveredAmount('');
     };
 
+    // --- UI Flow Handlers ---
     const handleGenerateReceipt = () => {
-        if (receiptItems.length === 0) {
+        if (!isDebtPaymentMode && receiptItems.length === 0) {
             toast.error('Please add at least one service to generate a receipt.');
             return;
         }
@@ -294,23 +337,24 @@ export default function PatientReceiptsPage() {
             toast.error('Please select a payment method.');
             return;
         }
-        if (parseFloat(amountPaid) < 0 || amountPaid === '') {
-            toast.error('Please enter a valid amount paid.');
+        if (parsedAmountPaid <= -1 || amountPaid === '') {
+            toast.error('Please enter a valid, positive amount paid.');
             return;
         }
         setShowReceipt(true);
     };
-
+    
     const handlePrint = () => {
         window.print();
     };
 
+    // --- MODIFIED: Email sending logic builds payload based on mode ---
     const handleSendEmail = async () => {
         if (!patient || !patient.email) {
             toast.error('Patient email is missing. Cannot send receipt.');
             return;
         }
-        if (receiptItems.length === 0) {
+        if (!isDebtPaymentMode && receiptItems.length === 0) {
             toast.error('No services added to the receipt to send.');
             return;
         }
@@ -328,24 +372,37 @@ export default function PatientReceiptsPage() {
 
         setIsSendingEmail(true);
 
+        // --- Payload construction now depends on the UI mode ---
         const payload = {
             patientId: patient.id,
             patientName: patient.name,
             patientEmail: patient.email,
             receiptNumber: receiptNumber,
             receiptDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-            items: receiptItems.map(item => ({
-                description: item.name,
-                quantity: item.quantity,
-                unitPrice: item.price,
-                totalPrice: item.price * item.quantity
-            })),
-            subtotal: subtotal,
+            
+            // In debt mode, "items" just describe the payment. Otherwise, use actual services.
+            items: isDebtPaymentMode
+                ? [{
+                    description: `Payment towards outstanding balance${debtContextDescription ? ` (${debtContextDescription})` : ''}`,
+                    quantity: 1,
+                    unitPrice: parsedAmountPaid,
+                    totalPrice: parsedAmountPaid
+                }]
+                : receiptItems.map(item => ({
+                    description: item.name,
+                    quantity: item.quantity,
+                    unitPrice: item.price,
+                    totalPrice: item.price * item.quantity
+                })),
+
+            // In debt mode, new charges (subtotal, totalDue) are 0.
+            subtotal: isDebtPaymentMode ? 0 : subtotal,
             isHmoCovered: isHmoCovered,
             hmoName: isHmoCovered ? selectedHMO : null,
-            coveredAmount: finalCoveredAmount,
-            totalDueFromPatient: totalDueFromPatient,
-            amountPaid: parseFloat(amountPaid) || 0,
+            coveredAmount: isDebtPaymentMode ? 0 : finalCoveredAmount,
+            totalDueFromPatient: isDebtPaymentMode ? 0 : totalDueFromPatient,
+            
+            amountPaid: parsedAmountPaid,
             paymentMethod: paymentMethod,
             latestDentalRecord: latestDentalRecord ? {
                 provisionalDiagnosis: Array.isArray(latestDentalRecord.provisionalDiagnosis) ? latestDentalRecord.provisionalDiagnosis.join(', ') : latestDentalRecord.provisionalDiagnosis || 'N/A',
@@ -365,7 +422,7 @@ export default function PatientReceiptsPage() {
 
             if (response.ok) {
                 toast.success('Receipt email sent successfully!');
-                navigate(0); // Refresh the page to get updated outstanding balance
+                navigate(0); // Refresh the page to show updated patient balance
             } else {
                 const errorData = await response.json();
                 toast.error(`Failed to send receipt email: ${errorData.error || response.statusText}`);
@@ -379,52 +436,43 @@ export default function PatientReceiptsPage() {
         }
     };
 
+    // --- Loading/Error/Not Found States (Unchanged) ---
     if (loading) {
         return (
-            <div className="app-container">
-                <div className="receipts-container" style={{ textAlign: 'center', padding: '50px' }}>
-                    <p className="info-message">Loading patient details and dental records...</p>
-                    <div className="spinner"></div>
-                </div>
+            <div className="receipts-container" style={{ textAlign: 'center', padding: '50px' }}>
+                <p className="info-message">Loading patient details...</p>
+                <div className="spinner"></div>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="app-container">
-                <div className="receipts-container">
-                    <p className="info-message error">Error: {error}</p>
-                    <button onClick={() => navigate(`/patients/${patientId}`)} className="back-button" style={{ margin: '20px auto', display: 'block', width: 'fit-content' }}>
-                        <i className="fas fa-arrow-left"></i> Back to Patient Details
-                    </button>
-                </div>
+            <div className="receipts-container">
+                <p className="info-message error">Error: {error}</p>
+                <button onClick={() => navigate(`/patients/${patientId}`)} className="back-button" style={{ margin: '20px auto', display: 'block', width: 'fit-content' }}>
+                    <i className="fas fa-arrow-left"></i> Back to Patient Details
+                </button>
             </div>
         );
     }
 
     if (!patient) {
         return (
-            <div className="app-container">
-                <div className="receipts-container">
-                    <p className="info-message">Patient data not found.</p>
-                    <button onClick={() => navigate(`/patients`)} className="back-button" style={{ margin: '20px auto', display: 'block', width: 'fit-content' }}>
-                        <i className="fas fa-arrow-left"></i> Back to Patient List
-                    </button>
-                </div>
+            <div className="receipts-container">
+                <p className="info-message">Patient data not found.</p>
+                <button onClick={() => navigate(`/patients`)} className="back-button" style={{ margin: '20px auto', display: 'block', width: 'fit-content' }}>
+                    <i className="fas fa-arrow-left"></i> Back to Patient List
+                </button>
             </div>
         );
     }
-
-    const parsedAmountPaid = parseFloat(amountPaid) || 0;
-    const outstandingFromThisVisit = totalDueFromPatient - parsedAmountPaid;
-    const patientOutstanding = parseFloat(patient?.outstanding) || 0;
-    const newTotalOutstanding = patientOutstanding + (outstandingFromThisVisit > 0 ? outstandingFromThisVisit : 0);
-
+    
+    // --- MODIFIED: Main component render with conditional UI ---
     return (
         <div className="receipts-container">
             <header className="receipts-header">
-                <h1>Generate Receipt for {patient.name}</h1>
+                <h1>{isDebtPaymentMode ? `Clear Balance for ${patient.name}` : `Generate Receipt for ${patient.name}`}</h1>
                 <div className="actions">
                     <button onClick={() => navigate(`/patients/${patientId}`)} className="back-button">
                         <i className="fas fa-arrow-left"></i> Back
@@ -446,150 +494,123 @@ export default function PatientReceiptsPage() {
                     )}
                 </div>
             </header>
+            
+            {isDebtPaymentMode && !showReceipt && (
+                 <div className="debt-payment-warning">
+                    <i className="fas fa-exclamation-triangle"></i>
+                    <strong>Outstanding Balance Detected:</strong> To bill for new services, the patient's outstanding balance of <strong>₦{patientOutstanding.toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong> must be cleared first.
+                    {debtContextDescription && <p style={{ marginTop: '5px' }}><strong>Reference:</strong> Payment for {debtContextDescription}</p>}
+                </div>
+            )}
 
             {!showReceipt ? (
                 <section className="receipt-form-section">
                     <h2>Patient Information</h2>
                     <div className="patient-info-display">
                         <p><strong>Name:</strong> {patient.name}</p>
-                        {userRole === 'nurse' ? (
+                        {(userRole === 'owner' || userRole === 'staff') && (
                             <>
-                                <p><strong>Phone:</strong> <span className="restricted-info">Restricted</span></p>
-                                <p><strong>Email:</strong> <span className="restricted-info">Restricted</span></p>
-                            </>
-                        ) : (
-                            <>
-                                <p><strong>Phone:</strong> {patient.phoneNumber}</p>
                                 <p><strong>Email:</strong> {patient.email || 'N/A'}</p>
+                                <p><strong>Phone Number:</strong> {patient.phoneNumber || 'N/A'}</p>
                             </>
                         )}
-                        {patientHasHMO && (
-                            <p><strong>Registered HMO:</strong> {patientHMOName}</p>
-                        )}
+                        {patientHasHMO && (<p><strong>Registered HMO:</strong> {patientHMOName}</p>)}
                     </div>
 
-                    {latestDentalRecord && (
-                        <div className="dental-record-context">
-                            <h3>Latest Dental Record Context:</h3>
-                            <p><strong>Date:</strong> {new Date(latestDentalRecord.createdAt).toLocaleDateString()}</p>
-                            <p><strong>Provisional Diagnosis:</strong> {Array.isArray(latestDentalRecord.provisionalDiagnosis) ? latestDentalRecord.provisionalDiagnosis.join(', ') : latestDentalRecord.provisionalDiagnosis || 'N/A'}</p>
-                            <p><strong>Treatment Plan (for context):</strong> {Array.isArray(latestDentalRecord.treatmentPlan) ? latestDentalRecord.treatmentPlan.join(', ') : latestDentalRecord.treatmentPlan || 'N/A'}</p>
-                        </div>
-                    )}
+                    {/* Service and HMO sections are hidden in Debt Payment Mode */}
+                    {!isDebtPaymentMode && (
+                        <>
+                            {latestDentalRecord && (
+                                <div className="dental-record-context">
+                                    <h3>Latest Dental Record Context:</h3>
+                                    <p><strong>Date:</strong> {new Date(latestDentalRecord.createdAt).toLocaleDateString()}</p>
+                                    <p><strong>Treatment Plan (for context):</strong> {Array.isArray(latestDentalRecord.treatmentPlan) ? latestDentalRecord.treatmentPlan.join(', ') : latestDentalRecord.treatmentPlan || 'N/A'}</p>
+                                </div>
+                            )}
 
-                    <h2>Services Billed</h2>
-                    <div className="service-selection">
-                        <select value={selectedService} onChange={(e) => setSelectedService(e.target.value)} className="form-select">
-                            <option value="">Select a service</option>
-                            {serviceOptions.map((service, index) => (
-                                <option key={index} value={service.name}>
-                                    {service.name} - ₦{service.price.toLocaleString()}
-                                </option>
-                            ))}
-                        </select>
-                        <button onClick={handleAddService} className="add-service-button">
-                            Add Service
-                        </button>
-                    </div>
-
-                    {receiptItems.length > 0 && (
-                        <div className="receipt-items-list">
-                            <h3>Added Services:</h3>
-                            <table className="services-table">
-                                <thead>
-                                    <tr>
-                                        <th>Service</th>
-                                        <th>Quantity</th>
-                                        {!isHmoCovered && <th>Unit Price (₦)</th>}
-                                        {!isHmoCovered && <th>Total (₦)</th>}
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {receiptItems.map(item => (
-                                        <tr key={item.id}>
-                                            <td>{item.name}</td>
-                                            <td>
-                                                <input
-                                                    type="number"
-                                                    value={item.quantity}
-                                                    onChange={(e) => handleQuantityChange(item.id, e.target.value)}
-                                                    className="quantity-input"
-                                                    min="1"
-                                                />
-                                            </td>
-                                            {!isHmoCovered && (
-                                                <td>
-                                                    <input
-                                                        type="number"
-                                                        value={item.price}
-                                                        onChange={(e) => handlePriceChange(item.id, e.target.value)}
-                                                        className="price-input"
-                                                        min="0"
-                                                    />
-                                                </td>
-                                            )}
-                                            {!isHmoCovered && <td>₦{(item.price * item.quantity).toLocaleString()}</td>}
-                                            <td>
-                                                <button onClick={() => handleRemoveService(item.id)} className="remove-service-button">
-                                                    <i className="fas fa-trash"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
+                            <h2>Services Billed</h2>
+                            <div className="service-selection">
+                                <select value={selectedService} onChange={(e) => setSelectedService(e.target.value)} className="form-select">
+                                    <option value="">Select a service</option>
+                                    {serviceOptions.map((service, index) => (
+                                        <option key={index} value={service.name}>
+                                            {service.name} - ₦{service.price.toLocaleString()}
+                                        </option>
                                     ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                </select>
+                                <button onClick={handleAddService} className="add-service-button">Add Service</button>
+                            </div>
+
+                            {receiptItems.length > 0 && (
+                                <div className="receipt-items-list">
+                                    <h3>Added Services:</h3>
+                                    <table className="services-table">
+                                         <thead>
+                                            <tr>
+                                                <th>Service</th>
+                                                <th>Quantity</th>
+                                                {/* MODIFIED: Hide price columns for HMO patients */}
+                                                {!isHmoCovered && <th>Unit Price (₦)</th>}
+                                                {!isHmoCovered && <th>Total (₦)</th>}
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {receiptItems.map(item => (
+                                                <tr key={item.id}>
+                                                    <td>{item.name}</td>
+                                                    <td>
+                                                        <input type="number" value={item.quantity} onChange={(e) => handleQuantityChange(item.id, e.target.value)} className="quantity-input" min="1"/>
+                                                    </td>
+                                                    {/* MODIFIED: Hide price inputs for HMO patients */}
+                                                    {!isHmoCovered && (
+                                                        <>
+                                                            <td>
+                                                                <input type="number" value={item.price} onChange={(e) => handlePriceChange(item.id, e.target.value)} className="price-input" min="0"/>
+                                                            </td>
+                                                            <td>₦{(item.price * item.quantity).toLocaleString()}</td>
+                                                        </>
+                                                    )}
+                                                    <td>
+                                                        <button onClick={() => handleRemoveService(item.id)} className="remove-service-button"><i className="fas fa-trash"></i></button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+
+                            <h2>HMO Details</h2>
+                            <div className="hmo-selection">
+                                <select value={selectedHMO} onChange={handleHmoChange} className="form-select">
+                                    <option value="">Select HMO Provider (if any)</option>
+                                    {hmoOptions.map((hmo, index) => (<option key={index} value={hmo.name}>{hmo.name}</option>))}
+                                </select>
+                                {isHmoCovered && (
+                                    <div className="hmo-covered-input">
+                                        <label htmlFor="hmoCoveredAmount">HMO Covered Amount (Override)</label>
+                                        <input type="number" id="hmoCoveredAmount" value={hmoCoveredAmount} onChange={(e) => setHmoCoveredAmount(e.target.value)} placeholder="e.g., 30000" min="0" className="form-control"/>
+                                    </div>
+                                )}
+                            </div>
+                        </>
                     )}
 
-                    <h2>HMO Details</h2>
-                    <div className="hmo-selection">
-                         <select value={selectedHMO} onChange={handleHmoChange} className="form-select">
-                            <option value="">Select HMO Provider (if any)</option>
-                            {hmoOptions.map((hmo, index) => (
-                                <option key={index} value={hmo.name}>
-                                    {hmo.name}
-                                </option>
-                            ))}
-                        </select>
-                        {isHmoCovered && (
-                            <div className="hmo-covered-input">
-                                <label htmlFor="hmoCoveredAmount">HMO Covered Amount (Override)</label>
-                                <input
-                                    type="number"
-                                    id="hmoCoveredAmount"
-                                    value={hmoCoveredAmount}
-                                    onChange={(e) => setHmoCoveredAmount(e.target.value)}
-                                    placeholder="e.g., 30000"
-                                    min="0"
-                                    className="form-control"
-                                />
-                            </div>
-                        )}
-                    </div>
-                    
                     <h2>Payment Details</h2>
                     <div className="payment-summary-grid">
-                        <div className="payment-summary-item">
-                            <span>Subtotal</span>
-                            <span>₦{subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-                        </div>
-                        <div className="payment-summary-item">
-                            <span>HMO Coverage</span>
-                            <span>- ₦{finalCoveredAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-                        </div>
-                        <div className="payment-summary-item total-due">
-                            <strong>Amount Due This Visit</strong>
-                            <strong>₦{totalDueFromPatient.toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong>
-                        </div>
-
-                        {patientOutstanding > 0 && (
-                             <div className="payment-summary-item previous-outstanding">
-                                <strong>Previous Outstanding</strong>
-                                <strong>₦{patientOutstanding.toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong>
-                            </div>
+                         {/* Subtotal and HMO Coverage are hidden in debt mode */}
+                        {!isDebtPaymentMode && (
+                             <>
+                                <div className="payment-summary-item"><span>Subtotal</span><span>₦{subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></div>
+                                <div className="payment-summary-item"><span>HMO Coverage</span><span>- ₦{finalCoveredAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></div>
+                            </>
                         )}
-                       
+                        
+                        {patientOutstanding > 0 && (
+                             <div className="payment-summary-item previous-outstanding"><strong>Previous Outstanding</strong><strong>₦{patientOutstanding.toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong></div>
+                        )}
+
                         <div className="payment-method-selection">
                             <label htmlFor="paymentMethod">Payment Method *</label>
                             <select id="paymentMethod" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="form-select" required>
@@ -604,30 +625,15 @@ export default function PatientReceiptsPage() {
 
                         <div className="amount-paid-input">
                             <label htmlFor="amountPaid">Amount Paid Now *</label>
-                            <input
-                                type="number"
-                                id="amountPaid"
-                                value={amountPaid}
-                                onChange={(e) => setAmountPaid(e.target.value)}
-                                placeholder="Enter amount paid"
-                                min="0"
-                                className="form-control"
-                                required
-                            />
+                            <input type="number" id="amountPaid" value={amountPaid} onChange={(e) => setAmountPaid(e.target.value)} placeholder="Enter amount paid" min="0" className="form-control" required/>
                         </div>
 
-                         {outstandingFromThisVisit > 0.005 && (
-                             <div className="payment-summary-item new-outstanding">
-                                <strong>Outstanding From This Visit</strong>
-                                <strong>₦{outstandingFromThisVisit.toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong>
-                            </div>
+                        {balanceChangeFromThisVisit !== 0 && (
+                             <div className="payment-summary-item new-outstanding"><strong>Balance Change This Visit</strong><strong>₦{balanceChangeFromThisVisit.toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong></div>
                         )}
 
-                        {newTotalOutstanding > 0.005 && (
-                             <div className="payment-summary-item total-outstanding-final">
-                                <strong>New Total Outstanding</strong>
-                                <strong>₦{newTotalOutstanding.toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong>
-                            </div>
+                        {newTotalOutstanding !== 0 && (
+                             <div className="payment-summary-item total-outstanding-final"><strong>New Total Outstanding</strong><strong>₦{newTotalOutstanding.toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong></div>
                         )}
                     </div>
                 </section>
@@ -646,24 +652,18 @@ export default function PatientReceiptsPage() {
                     <div className="receipt-patient-info">
                         <h3>Received From:</h3>
                         <p><strong>Patient Name:</strong> {patient.name}</p>
-                        {userRole === 'owner' || userRole === 'staff' ? (
+                         {(userRole === 'owner' || userRole === 'staff') && (
                             <>
-                                <p><strong>Phone:</strong> {patient.phoneNumber}</p>
                                 <p><strong>Email:</strong> {patient.email || 'N/A'}</p>
-                            </>
-                        ) : (
-                            <>
-                                <p><strong>Phone:</strong> <span className="restricted-info">Restricted</span></p>
-                                <p><strong>Email:</strong> <span className="restricted-info">Restricted</span></p>
+                                <p><strong>Phone Number:</strong> {patient.phoneNumber || 'N/A'}</p>
                             </>
                         )}
-                        {isHmoCovered && (
-                            <p><strong>HMO:</strong> {selectedHMO}</p>
-                        )}
+                        {isHmoCovered && (<p><strong>HMO:</strong> {selectedHMO}</p>)}
                     </div>
                     <div className="receipt-services-rendered">
                         <h3>Services Rendered:</h3>
                         <table className="receipt-services-table">
+                            {/* MODIFIED: Table headers and content now respect HMO privacy and show debt context */}
                             <thead>
                                 <tr>
                                     <th>Description</th>
@@ -673,43 +673,45 @@ export default function PatientReceiptsPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {receiptItems.map(item => (
-                                    <tr key={item.id}>
-                                        <td>{item.name}</td>
-                                        <td>{item.quantity}</td>
-                                        {!isHmoCovered && <td>₦{item.price.toLocaleString()}</td>}
-                                        {!isHmoCovered && <td>₦{(item.price * item.quantity).toLocaleString()}</td>}
+                                {isDebtPaymentMode ? (
+                                    <tr>
+                                        <td>{`Payment towards outstanding balance${debtContextDescription ? ` (${debtContextDescription})` : ''}`}</td>
+                                        <td>1</td>
+                                        {/* In debt mode, isHmoCovered is always false, so prices are shown. This is correct. */}
+                                        <td>₦{parsedAmountPaid.toLocaleString()}</td>
+                                        <td>₦{parsedAmountPaid.toLocaleString()}</td>
                                     </tr>
-                                ))}
+                                ) : (
+                                    receiptItems.map(item => (
+                                        <tr key={item.id}>
+                                            <td>{item.name}</td>
+                                            <td>{item.quantity}</td>
+                                            {/* Conditionally render price cells based on HMO coverage */}
+                                            {!isHmoCovered && (
+                                                <>
+                                                    <td>₦{item.price.toLocaleString()}</td>
+                                                    <td>₦{(item.price * item.quantity).toLocaleString()}</td>
+                                                </>
+                                            )}
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
                     </div>
                     <div className="receipt-summary">
                         <p><strong>Payment Method:</strong> {paymentMethod || 'N/A'}</p>
-                        
-                        {!isHmoCovered ? (
-                             <p><strong>Total for this Visit:</strong> ₦{totalDueFromPatient.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
-                        ) : (
-                            <p><strong>Patient's Portion for this Visit:</strong> ₦{totalDueFromPatient.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
-                        )}
-
                         <p className="amount-paid-now"><strong>Amount Paid Now:</strong> ₦{parsedAmountPaid.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
-                       
                         {newTotalOutstanding > 0.005 && (
                              <p className="total-outstanding-final"><strong>Total Outstanding Balance:</strong> ₦{newTotalOutstanding.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
                         )}
-                         {isHmoCovered && totalDueFromPatient <= 0 && (
+                        {isHmoCovered && totalDueFromPatient <= 0 && newTotalOutstanding <= 0 && (
                             <p className="fully-covered-status">Status: Fully Covered by HMO for this visit</p>
                         )}
                     </div>
                     <div className="receipt-footer">
                         <p>Thank you for your patronage!</p>
                         <p>Signature: _________________________</p>
-                        <p className="clinic-contact">
-                            {process.env.REACT_APP_CLINIC_NAME || 'Prime Dental Clinic'} |
-                            {process.env.REACT_APP_CLINIC_ADDRESS || ' local government, 104, New Ipaja/Egbeda Road, opposite prestige super-market, Alimosho, Ipaja Rd, Ipaja, Lagos 100006, Lagos'} |
-                            {process.env.REACT_APP_CLINIC_PHONE || '0703 070 8877'}
-                        </p>
                     </div>
                 </div>
             )}

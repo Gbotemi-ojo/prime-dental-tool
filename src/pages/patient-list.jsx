@@ -1,5 +1,5 @@
 // src/pages/patient-list.jsx
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './patient-list.css';
 import API_BASE_URL from '../config/api';
@@ -16,7 +16,7 @@ export default function App() {
 function PatientList() {
   const [allPatients, setAllPatients] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDate, setSelectedDate] = useState(null); // Default to null to show all dates initially
+  const [selectedDate, setSelectedDate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userRole, setUserRole] = useState(null);
@@ -51,7 +51,6 @@ function PatientList() {
           const data = await response.json();
           setAllPatients(data);
         } else {
-          // Handle non-OK responses
           const errorMsg = `Failed to fetch patients. Status: ${response.status}`;
           setError(errorMsg);
           if (response.status === 401 || response.status === 403) {
@@ -70,42 +69,33 @@ function PatientList() {
   }, [navigate]);
 
   const processedPatients = useMemo(() => {
-    // 1. Create a map of family heads
     const familyHeads = allPatients.filter(p => p.isFamilyHead);
     const familyMap = new Map(familyHeads.map(p => [p.id, { ...p, familyMembers: [] }]));
 
-    // 2. Add family members to their respective heads
     allPatients.forEach(p => {
       if (!p.isFamilyHead && p.familyId && familyMap.has(p.familyId)) {
         familyMap.get(p.familyId).familyMembers.push(p);
       }
     });
-    
-    // 3. Handle patients who are not part of a family structure (isFamilyHead is false, but familyId is null)
+
     const singlePatients = allPatients.filter(p => !p.isFamilyHead && !p.familyId);
     singlePatients.forEach(p => {
-        // Treat them like a "family" of one for consistent data structure
         familyMap.set(p.id, { ...p, familyMembers: [] });
     });
 
-
     let families = Array.from(familyMap.values());
 
-    // 4. Filter by search term
     if (searchTerm) {
       const lowerCaseSearchTerm = searchTerm.toLowerCase();
       families = families.filter(family => {
         const headMatch = family.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-                          (userRole !== 'nurse' && family.phoneNumber && family.phoneNumber.includes(lowerCaseSearchTerm)) ||
-                          (userRole !== 'nurse' && family.email && family.email.toLowerCase().includes(lowerCaseSearchTerm));
-        
+                          (!['nurse', 'doctor'].includes(userRole) && family.phoneNumber && family.phoneNumber.includes(lowerCaseSearchTerm)) ||
+                          (!['nurse', 'doctor'].includes(userRole) && family.email && family.email.toLowerCase().includes(lowerCaseSearchTerm));
         const memberMatch = family.familyMembers.some(member => member.name.toLowerCase().includes(lowerCaseSearchTerm));
-
         return headMatch || memberMatch;
       });
     }
 
-    // 5. Filter by selected date
     if (selectedDate) {
       const formattedSelectedDate = formatDateForInput(selectedDate);
       families = families.filter(family => {
@@ -114,62 +104,29 @@ function PatientList() {
         return headMatch || memberMatch;
       });
     }
-    
+
     return families;
   }, [allPatients, searchTerm, selectedDate, userRole]);
 
-  if (loading) {
-    return <div className="spinner-container"><div className="spinner"></div><p>Loading patient data...</p></div>;
-  }
-
-  if (error) {
-    return (
-        <div className="app-container">
-            <div className="patient-list-container">
-                <p className="info-message error">Error: {error}</p>
-                <button onClick={() => navigate('/dashboard')} className="back-to-dashboard-button" style={{ margin: '20px auto', display: 'block', width: 'fit-content' }}>
-                    Back to Dashboard
-                </button>
-            </div>
-        </div>
-    );
-  }
+  if (loading) return <div className="spinner-container"><div className="spinner"></div><p>Loading patient data...</p></div>;
+  if (error) return <div className="app-container"><div className="patient-list-container"><p className="info-message error">Error: {error}</p></div></div>;
 
   return (
     <div className="patient-list-container">
       <header className="patient-list-header">
         <h1>Patient Directory</h1>
         <div className="actions">
-          <button onClick={() => navigate('/dashboard')} className="back-to-dashboard-button">
-            <i className="fas fa-arrow-left"></i> Back to Dashboard
-          </button>
+          <button onClick={() => navigate('/dashboard')} className="back-to-dashboard-button"><i className="fas fa-arrow-left"></i> Back</button>
           {(userRole === 'owner' || userRole === 'staff') && (
-            <button onClick={() => navigate('/')} className="add-patient-button">
-              <i className="fas fa-plus-circle"></i> Add New Patient
-            </button>
+            <button onClick={() => navigate('/')} className="add-patient-button"><i className="fas fa-plus-circle"></i> Add New Patient</button>
           )}
         </div>
       </header>
 
       <section className="search-filter-section">
-        <input
-          type="text"
-          placeholder="Search by name, phone, or email..."
-          className="search-input"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <input
-          type="date"
-          className="date-input"
-          value={selectedDate ? formatDateForInput(selectedDate) : ''}
-          onChange={(e) => setSelectedDate(e.target.value ? new Date(e.target.value) : null)}
-        />
-        {selectedDate && (
-          <button onClick={() => setSelectedDate(null)} className="clear-date-button">
-            <i className="fas fa-times"></i> Clear Date
-          </button>
-        )}
+        <input type="text" placeholder="Search by name, phone, or email..." className="search-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+        <input type="date" className="date-input" value={selectedDate ? formatDateForInput(selectedDate) : ''} onChange={(e) => setSelectedDate(e.target.value ? new Date(e.target.value) : null)} />
+        {selectedDate && <button onClick={() => setSelectedDate(null)} className="clear-date-button"><i className="fas fa-times"></i> Clear</button>}
       </section>
 
       {processedPatients.length === 0 ? (
@@ -181,8 +138,7 @@ function PatientList() {
               <tr>
                 <th>Name</th>
                 <th>Role</th>
-                <th>Phone</th>
-                <th>Email</th>
+                <th>Contact</th>
                 <th>Date of Birth</th>
                 <th>Sex</th>
                 <th>HMO</th>
@@ -193,12 +149,17 @@ function PatientList() {
             <tbody>
               {processedPatients.map((family) => (
                 <React.Fragment key={family.id}>
-                  {/* Family Head Row */}
                   <tr className="family-head-row">
                     <td>{family.name}</td>
                     <td><span className="role-badge head">Head</span></td>
-                    <td>{userRole === 'nurse' ? '[Restricted]' : (family.phoneNumber || 'N/A')}</td>
-                    <td>{userRole === 'nurse' ? '[Restricted]' : (family.email || 'N/A')}</td>
+                    <td>
+                        {(!['nurse', 'doctor'].includes(userRole)) ? (
+                            <div className="contact-info">
+                                <span>{family.phoneNumber || 'N/A'}</span>
+                                <span>{family.email || 'N/A'}</span>
+                            </div>
+                        ) : 'Restricted'}
+                    </td>
                     <td>{family.dateOfBirth ? new Date(family.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
                     <td>{family.sex}</td>
                     <td>{family.hmo ? 'Yes' : 'No'}</td>
@@ -207,13 +168,17 @@ function PatientList() {
                       <PatientActions patient={family} userRole={userRole} navigate={navigate} />
                     </td>
                   </tr>
-                  {/* Family Member Rows */}
                   {family.familyMembers.map((member) => (
                     <tr key={member.id} className="family-member-row">
                       <td className="indented-cell">{member.name}</td>
                       <td><span className="role-badge member">Member</span></td>
-                      <td>[Inherited]</td>
-                      <td>[Inherited]</td>
+                       <td>
+                        {(!['nurse', 'doctor'].includes(userRole)) ? (
+                            <div className="contact-info inherited">
+                                <span>Inherited</span>
+                            </div>
+                        ) : 'Restricted'}
+                      </td>
                       <td>{member.dateOfBirth ? new Date(member.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
                       <td>{member.sex}</td>
                       <td>{member.hmo ? 'Yes' : 'No'}</td>
@@ -233,40 +198,52 @@ function PatientList() {
   );
 }
 
-
-// A helper component to render action buttons for a patient
+// --- NEW & IMPROVED: Actions component with dropdown ---
 function PatientActions({ patient, userRole, navigate }) {
-    const canManageAppointments = userRole === 'owner' || userRole === 'staff' || userRole === 'doctor';
-    
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef(null);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [dropdownRef]);
+
+    const handleActionClick = (path) => {
+        navigate(path);
+        setIsOpen(false); // Close dropdown after action
+    };
+
+    const actionItems = [
+        { roles: ['owner', 'doctor'], label: 'Details', icon: 'fa-eye', path: `/patients/${patient.id}` },
+        { roles: ['owner', 'staff', 'nurse', 'doctor'], label: 'Appointment', icon: 'fa-calendar-plus', path: `/patients/${patient.id}/set-appointment` },
+        { roles: ['owner', 'staff', 'nurse'], label: 'Invoice', icon: 'fa-file-invoice', path: `/patients/${patient.id}/invoice` },
+        { roles: ['owner', 'staff'], label: 'Receipts', icon: 'fa-receipt', path: `/patients/${patient.id}/receipts` },
+        { roles: ['owner', 'staff'], label: 'Edit Bio', icon: 'fa-user-edit', path: `/patients/${patient.id}/edit` }
+    ];
+
+    const availableActions = actionItems.filter(action => action.roles.includes(userRole));
+
     return (
-        <>
-            {(userRole === 'owner' || userRole === 'staff') && (
-                <button onClick={() => navigate(`/patients/${patient.id}`)} className="table-action-button view">
-                    <i className="fas fa-eye"></i> Details
-                </button>
+        <div className="actions-dropdown-container" ref={dropdownRef}>
+            <button onClick={() => setIsOpen(!isOpen)} className="actions-dropdown-button">
+                Actions <i className={`fas fa-chevron-down ${isOpen ? 'open' : ''}`}></i>
+            </button>
+            {isOpen && (
+                <div className="actions-dropdown-menu">
+                    {availableActions.map(action => (
+                         <a key={action.label} onClick={() => handleActionClick(action.path)} className="actions-dropdown-item">
+                            <i className={`fas ${action.icon}`}></i>
+                            <span>{action.label}</span>
+                        </a>
+                    ))}
+                </div>
             )}
-
-            {canManageAppointments && (
-                 <button onClick={() => navigate(`/patients/${patient.id}/set-appointment`)} className="table-action-button appointment">
-                    <i className="fas fa-calendar-plus"></i> Appt
-                </button>
-            )}
-
-            {(userRole === 'owner' || userRole === 'staff' || userRole === 'nurse') && (
-                <>
-                    <button onClick={() => navigate(`/patients/${patient.id}/invoice`)} className="table-action-button invoice">
-                        <i className="fas fa-file-invoice"></i> Invoice
-                    </button>
-                    <button onClick={() => navigate(`/patients/${patient.id}/receipts`)} className="table-action-button receipts">
-                        <i className="fas fa-receipt"></i> Receipts
-                    </button>
-                </>
-            )}
-            {(userRole === 'owner' || userRole === 'staff') && (
-                <button onClick={() => navigate(`/patients/${patient.id}/edit`)} className="table-action-button edit">
-                    <i className="fas fa-user-edit"></i> Edit Bio
-                </button>
-            )}
-        </>
+        </div>
     );
 }

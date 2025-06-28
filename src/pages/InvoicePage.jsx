@@ -17,7 +17,6 @@ const serviceOptions = [
     { name: "Surgical Extraction (Impacted 3rd Molar)", price: 100000 },
     { name: "Temporary Dressing", price: 20000 },
     { name: "Amalgam Filling", price: 30000 },
-    // CORRECTED: Naming to EXACTLY match the reported string from treatmentPlan
     { name: "FUJI 9(POSTERIOR GIC (PER FILLING)", price: 50000 },
     { name: "Tooth Whitening (3 Sessions)", price: 100000 },
     { name: "Curretage/Subgingival (per tooth)", price: 30000 },
@@ -59,50 +58,28 @@ const serviceOptions = [
     { name: "E-Max Crown", price: 300000 }
 ];
 
-// All HMOs now have status: "ONBOARD" with a dummy coverage rate for internal calculation
 const hmoOptions = [
-    { name: "IHMS", status: "ONBOARD", coverage: 0.8 },
-    { name: "HEALTH PARTNERS", status: "ONBOARD", coverage: 0.75 },
-    { name: "ZENOR", status: "ONBOARD", coverage: 0.9 },
-    { name: "PHILIPS", status: "ONBOARD", coverage: 0.6 },
-    { name: "PRO HEALTH", status: "ONBOARD", coverage: 0.85 },
-    { name: "FOUNTAIN HEALTH", status: "ONBOARD", coverage: 0.7 },
-    { name: "DOT HMO", status: "ONBOARD", coverage: 0.95 },
-    { name: "CLEARLINE", status: "ONBOARD", coverage: 0.8 },
-    { name: "STERLING HEALTH", status: "ONBOARD", coverage: 0.75 },
-    { name: "OCEANIC", status: "ONBOARD", coverage: 0.88 },
-    { name: "SUNU", status: "ONBOARD", coverage: 0.7 },
-    { name: "LIFEWORTH", status: "ONBOARD", coverage: 0.82 },
-    { name: "CKLINE", status: "ONBOARD", coverage: 0.65 },
-    { name: "WELLNESS", status: "ONBOARD", coverage: 0.9 },
-    { name: "RELIANCE", status: "ONBOARD", coverage: 0.78 },
-    { name: "FIRST GUARANTEE", status: "ONBOARD", coverage: 0.83 },
-    { name: "THT", status: "ONBOARD", coverage: 0.72 },
-    { name: "DOHEEC", status: "ONBOARD", coverage: 0.87 },
-    { name: "GNI", status: "ONBOARD", coverage: 0.73 },
-    { name: "MH", status: "ONBOARD", coverage: 0.8 },
-    { name: "AIICO MULTISHIELD", status: "ONBOARD", coverage: 0.92 },
-    { name: "GREENBAY", status: "ONBOARD", coverage: 0.68 },
-    { name: "MARINA", status: "ONBOARD", coverage: 0.85 },
-    { name: "EAGLE", status: "ONBOARD", coverage: 0.79 },
-    { name: "MEDIPLAN", status: "ONBOARD", coverage: 0.8 },
-    { name: "METROHEALTH", status: "ONBOARD", coverage: 0.86 },
-    { name: "RONSBERGER", status: "ONBOARD", coverage: 0.7 },
-    { name: "WELPRO", status: "ONBOARD", coverage: 0.91 },
-    { name: "GORAH", status: "ONBOARD", coverage: 0.76 },
-    { name: "SMATHEALTH", status: "ONBOARD", coverage: 0.84 },
-    { name: "AXA MANSARD", status: "ONBOARD", coverage: 0.93 },
-    { name: "BASTION", status: "ONBOARD", coverage: 0.77 },
-    { name: "REDCARE", status: "ONBOARD", coverage: 0.89 },
-    { name: "AVON", status: "ONBOARD", coverage: 0.9 },
-    { name: "ANCHOR", status: "ONBOARD", coverage: 0.71 },
-    { name: "LEADWAY", status: "ONBOARD", coverage: 0.88 },
-    { name: "NOOR", status: "ONBOARD", coverage: 0.74 },
-    { name: "ALLENZA", status: "ONBOARD", coverage: 0.81 },
-    { name: "UNITED HEALTH CARE", status: "ONBOARD", coverage: 0.94 },
-    { name: "QUEST", status: "ONBOARD", coverage: 0.8 },
+    { name: "IHMS", status: "ONBOARD", coverage: 0.8 }, { name: "HEALTH PARTNERS", status: "ONBOARD", coverage: 0.75 },
+    { name: "ZENOR", status: "ONBOARD", coverage: 0.9 }, { name: "PHILIPS", status: "ONBOARD", coverage: 0.6 },
+    { name: "PRO HEALTH", status: "ONBOARD", coverage: 0.85 }, { name: "FOUNTAIN HEALTH", status: "ONBOARD", coverage: 0.7 },
+    { name: "DOT HMO", status: "ONBOARD", coverage: 0.95 }, { name: "CLEARLINE", status: "ONBOARD", coverage: 0.8 },
+    { name: "STERLING HEALTH", status: "ONBOARD", coverage: 0.75 }, { name: "OCEANIC", status: "ONBOARD", coverage: 0.88 },
+    { name: "SUNU", status: "ONBOARD", coverage: 0.7 }, { name: "LIFEWORTH", status: "ONBOARD", coverage: 0.82 },
+    { name: "CKLINE", status: "ONBOARD", coverage: 0.65 }, { name: "WELLNESS", status: "ONBOARD", coverage: 0.9 },
+    { name: "RELIANCE", status: "ONBOARD", coverage: 0.78 }, { name: "FIRST GUARANTEE", status: "ONBOARD", coverage: 0.83 },
+    { name: "THT", status: "ONBOARD", coverage: 0.72 }, { name: "DOHEEC", status: "ONBOARD", coverage: 0.87 },
+    { name: "GNI", status: "ONBOARD", coverage: 0.73 }, { name: "MH", status: "ONBOARD", coverage: 0.8 },
+    { name: "AIICO MULTISHIELD", status: "ONBOARD", coverage: 0.92 }, { name: "GREENBAY", status: "ONBOARD", coverage: 0.68 },
+    { name: "MARINA", status: "ONBOARD", coverage: 0.85 }, { name: "EAGLE", status: "ONBOARD", coverage: 0.79 },
+    { name: "MEDIPLAN", status: "ONBOARD", coverage: 0.8 }, { name: "METROHEALTH", status: "ONBOARD", coverage: 0.86 },
+    { name: "RONSBERGER", status: "ONBOARD", coverage: 0.7 }, { name: "WELPRO", status: "ONBOARD", coverage: 0.91 },
+    { name: "GORAH", status: "ONBOARD", coverage: 0.76 }, { name: "SMATHEALTH", status: "ONBOARD", coverage: 0.84 },
+    { name: "AXA MANSARD", status: "ONBOARD", coverage: 0.93 }, { name: "BASTION", status: "ONBOARD", coverage: 0.77 },
+    { name: "REDCARE", status: "ONBOARD", coverage: 0.89 }, { name: "AVON", status: "ONBOARD", coverage: 0.9 },
+    { name: "ANCHOR", status: "ONBOARD", coverage: 0.71 }, { name: "LEADWAY", status: "ONBOARD", coverage: 0.88 },
+    { name: "NOOR", status: "ONBOARD", coverage: 0.74 }, { name: "ALLENZA", status: "ONBOARD", coverage: 0.81 },
+    { name: "UNITED HEALTH CARE", status: "ONBOARD", coverage: 0.94 }, { name: "QUEST", status: "ONBOARD", coverage: 0.8 }
 ];
-
 
 export default function InvoicePage() {
     const { patientId } = useParams();
@@ -117,18 +94,14 @@ export default function InvoicePage() {
     const [invoiceItems, setInvoiceItems] = useState([]);
     const [selectedService, setSelectedService] = useState('');
     const [selectedHMO, setSelectedHMO] = useState('');
-    const [hmoCoveredAmount, setHmoCoveredAmount] = useState('');
     const [showInvoice, setShowInvoice] = useState(false);
-    const [isSendingEmail, setIsSendingEmail] = useState(false); // NEW state for email sending loading
-    // Invoice number needs to be consistent, initialize once and keep
+    const [isSendingEmail, setIsSendingEmail] = useState(false);
     const [invoiceNumber] = useState(`INV-${Date.now().toString().slice(-6)}`);
 
-    // Determine if the patient has an HMO registered in their profile
     const patientHasHMO = !!patient?.hmo?.name;
     const patientHMOName = patientHasHMO ? patient.hmo.name : '';
     const patientHmoCoverageRate = patientHasHMO ?
         (hmoOptions.find(hmo => hmo.name === patientHMOName)?.coverage || 0) : 0;
-
 
     useEffect(() => {
         const fetchInvoiceDetails = async () => {
@@ -142,10 +115,9 @@ export default function InvoicePage() {
                 return;
             }
 
-            // Nurse can also access now for sending invoices
-            if (role !== 'owner' && role !== 'staff' && role !== 'nurse') {
-                toast.error('Access denied. Only Staff, Nurses, and Owners can access this page.');
-                navigate(`/patients/${patientId}`);
+            if (role !== 'owner' && role !== 'staff') {
+                toast.error('Access denied. Only Owners and Staff can access this page.');
+                navigate('/dashboard');
                 return;
             }
 
@@ -164,19 +136,14 @@ export default function InvoicePage() {
                 if (patientResponse.ok) {
                     const patientData = await patientResponse.json();
                     setPatient(patientData);
-                    // Pre-select patient's HMO if they have one
                     if (patientData.hmo && patientData.hmo.name) {
                         setSelectedHMO(patientData.hmo.name);
                     }
                 } else if (patientResponse.status === 404) {
                     setError('Patient not found.');
-                    setLoading(false);
-                    return;
                 } else {
                     const errorData = await patientResponse.json();
                     setError(errorData.error || `Failed to fetch patient details. Status: ${patientResponse.status}`);
-                    setLoading(false);
-                    return;
                 }
 
                 const recordsResponse = await fetch(`${API_BASE_URL}/api/patients/${parsedPatientId}/dental-records`, {
@@ -192,12 +159,10 @@ export default function InvoicePage() {
 
                         if (latestRecord.treatmentPlan && Array.isArray(latestRecord.treatmentPlan)) {
                             const preAddedItems = latestRecord.treatmentPlan.map((planItem, index) => {
-                                // Trim the planItem and convert to lowercase for case-insensitive matching
                                 const serviceMatch = serviceOptions.find(s => s.name.toLowerCase() === planItem.toLowerCase().trim());
                                 return {
                                     id: `tp-${Date.now()}-${index}`,
                                     name: planItem.trim(),
-                                    // Use the price from serviceMatch, default to 0 if no match
                                     price: serviceMatch ? serviceMatch.price : 0,
                                     quantity: 1
                                 };
@@ -208,10 +173,7 @@ export default function InvoicePage() {
                             }
                         }
                     }
-                } else {
-                    console.warn(`Could not fetch dental records for patient ${parsedPatientId}. Status: ${recordsResponse.status}`);
                 }
-
             } catch (err) {
                 setError('Network error. Could not connect to the server.');
                 console.error('Network Error:', err);
@@ -228,21 +190,11 @@ export default function InvoicePage() {
             const serviceInfo = serviceOptions.find(s => s.name === selectedService);
             if (serviceInfo) {
                 setInvoiceItems(prevItems => {
-                    const existingItem = prevItems.find(item => item.name === serviceInfo.name);
-                    if (existingItem) {
-                        toast.warn(`"${serviceInfo.name}" is already in the invoice. Adjust quantity if needed.`);
+                    if (prevItems.find(item => item.name === serviceInfo.name)) {
+                        toast.warn(`"${serviceInfo.name}" is already in the invoice.`);
                         return prevItems;
                     }
-
-                    return [
-                        ...prevItems,
-                        {
-                            id: Date.now(),
-                            name: serviceInfo.name,
-                            price: serviceInfo.price,
-                            quantity: 1
-                        }
-                    ];
+                    return [...prevItems, { id: Date.now(), name: serviceInfo.name, price: serviceInfo.price, quantity: 1 }];
                 });
                 setSelectedService('');
             }
@@ -251,48 +203,15 @@ export default function InvoicePage() {
         }
     };
 
-    const handleRemoveService = (idToRemove) => {
-        setInvoiceItems(prevItems => prevItems.filter(item => item.id !== idToRemove));
-    };
-
-    const handlePriceChange = (id, newPrice) => {
-        setInvoiceItems(prevItems =>
-            prevItems.map(item =>
-                item.id === id ? { ...item, price: parseFloat(newPrice) || 0 } : item
-            )
-        );
-    };
-
-    const handleQuantityChange = (id, newQuantity) => {
-        setInvoiceItems(prevItems =>
-            prevItems.map(item =>
-                item.id === id ? { ...item, quantity: parseInt(newQuantity) || 1 } : item
-            )
-        );
-    };
-
-    const handleHmoChange = (e) => {
-        const selectedHmoName = e.target.value;
-        setSelectedHMO(selectedHmoName);
-        setHmoCoveredAmount(''); // Reset covered amount on HMO change
-    };
+    const handleRemoveService = (idToRemove) => setInvoiceItems(prevItems => prevItems.filter(item => item.id !== idToRemove));
+    const handlePriceChange = (id, newPrice) => setInvoiceItems(prevItems => prevItems.map(item => item.id === id ? { ...item, price: parseFloat(newPrice) || 0 } : item));
+    const handleQuantityChange = (id, newQuantity) => setInvoiceItems(prevItems => prevItems.map(item => item.id === id ? { ...item, quantity: parseInt(newQuantity) || 1 } : item));
+    const handleHmoChange = (e) => setSelectedHMO(e.target.value);
 
     const subtotal = invoiceItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-    let calculatedCoveredAmount = 0;
-    if (patientHasHMO && selectedHMO === patientHMOName) {
-        calculatedCoveredAmount = subtotal * patientHmoCoverageRate;
-    }
-
-    // Prioritize manually entered HMO Covered Amount if it's a valid number and greater than 0
-    const manualHmoCovered = parseFloat(hmoCoveredAmount);
-    const finalCoveredAmount = (manualHmoCovered > 0) ? manualHmoCovered : calculatedCoveredAmount;
-
-    const totalDue = subtotal - finalCoveredAmount;
-
-    // This check determines if the invoice should behave like an HMO invoice (hide prices, show only balance/fully covered)
     const isInvoiceForHmoPatient = patientHasHMO && selectedHMO === patientHMOName;
-
+    const finalCoveredAmount = isInvoiceForHmoPatient ? subtotal * patientHmoCoverageRate : 0;
+    const totalDue = subtotal - finalCoveredAmount;
 
     const handleGenerateInvoice = () => {
         if (invoiceItems.length === 0) {
@@ -302,9 +221,7 @@ export default function InvoicePage() {
         setShowInvoice(true);
     };
 
-    const handlePrint = () => {
-        window.print();
-    };
+    const handlePrint = () => window.print();
 
     const handleSendEmail = async () => {
         if (!patient || !patient.email) {
@@ -322,70 +239,33 @@ export default function InvoicePage() {
             return;
         }
 
-        setIsSendingEmail(true); // Set loading to true
-
-        // --- ENHANCED LOGGING BEFORE SENDING PAYLOAD ---
-        console.log("--- Frontend Payload Debugging ---");
-        console.log("Frontend - invoiceItems raw:", invoiceItems);
-        // Log each item's calculated totalPrice
-        invoiceItems.forEach((item, index) => {
-            console.log(`Frontend - invoiceItems[${index}] - name: ${item.name}, price: ${item.price}, quantity: ${item.quantity}, calculated totalPrice: ${item.price * item.quantity}`);
-        });
-
-        console.log("Frontend - subtotal (calculated):", subtotal);
-        console.log("Frontend - coveredAmount (final after logic):", finalCoveredAmount); // Use finalCoveredAmount
-        console.log("Frontend - totalDue (calculated):", totalDue);
-        console.log("Frontend - isInvoiceForHmoPatient:", isInvoiceForHmoPatient);
-        console.log("Frontend - selectedHMO:", selectedHMO);
-        console.log("Frontend - hmoCoveredAmount (input):", hmoCoveredAmount);
-        console.log("Frontend - patientHasHMO:", patientHasHMO);
-        console.log("Frontend - patientHMOName:", patientHMOName);
-        console.log("Frontend - patientHmoCoverageRate:", patientHmoCoverageRate);
-
+        setIsSendingEmail(true);
 
         const payload = {
-            patientId: patient.id,
-            patientName: patient.name,
-            patientEmail: patient.email,
-            invoiceNumber: invoiceNumber,
-            invoiceDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-            // Only send 'items' array, structured as the backend validation expects.
-            // The backend's EmailService will be responsible for transforming this
-            // into the 'services' format for the email template.
+            patientId: patient.id, patientName: patient.name, patientEmail: patient.email,
+            invoiceNumber: invoiceNumber, invoiceDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
             items: invoiceItems.map(item => ({
-                description: item.name,    // Map item.name to description
-                quantity: item.quantity,
-                unitPrice: item.price,     // Map item.price to unitPrice
-                totalPrice: item.price * item.quantity // Calculate totalPrice for each item here
+                description: item.name, quantity: item.quantity,
+                unitPrice: isInvoiceForHmoPatient ? 0 : item.price,
+                totalPrice: isInvoiceForHmoPatient ? 0 : (item.price * item.quantity)
             })),
-            isHmoCovered: isInvoiceForHmoPatient,
-            hmoName: isInvoiceForHmoPatient ? selectedHMO : null,
-            coveredAmount: isInvoiceForHmoPatient ? finalCoveredAmount : 0, // Use finalCoveredAmount here
-            totalAmount: totalDue, // This is the total amount due from the patient (totalDue from frontend)
-            notes: "Thank you for your patronage",
-            clinicName: process.env.REACT_APP_CLINIC_NAME || "Prime Dental Clinic",
+            isHmoCovered: isInvoiceForHmoPatient, hmoName: isInvoiceForHmoPatient ? selectedHMO : null,
+            coveredAmount: finalCoveredAmount, totalAmount: totalDue,
+            notes: "Thank you for your patronage", clinicName: process.env.REACT_APP_CLINIC_NAME || "Prime Dental Clinic",
             clinicAddress: process.env.REACT_APP_CLINIC_ADDRESS || "local government, 104, New Ipaja/Egbeda Road, opposite prestige super-market, Alimosho, Ipaja Rd, Ipaja, Lagos 100006, Lagos",
             clinicPhone: process.env.REACT_APP_CLINIC_PHONE || "0703 070 8877",
-            // Include latestDentalRecord for the template
             latestDentalRecord: latestDentalRecord ? {
                 provisionalDiagnosis: Array.isArray(latestDentalRecord.provisionalDiagnosis) ? latestDentalRecord.provisionalDiagnosis.join(', ') : latestDentalRecord.provisionalDiagnosis || 'N/A',
                 treatmentPlan: Array.isArray(latestDentalRecord.treatmentPlan) ? latestDentalRecord.treatmentPlan.join(', ') : latestDentalRecord.treatmentPlan || 'N/A'
             } : null,
-            // Pass subtotal and totalDue explicitly for non-HMO display in template
-            subtotal: subtotal, // Raw subtotal
-            totalDueFromPatient: totalDue // Renamed to clearly reflect patient's responsibility
+            subtotal: isInvoiceForHmoPatient ? 0 : subtotal,
+            totalDueFromPatient: totalDue
         };
-
-        // Log the final payload to the console for debugging
-        console.log('Final payload sent to backend:', payload);
 
         try {
             const response = await fetch(`${API_BASE_URL}/api/invoices/send`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(payload)
             });
 
@@ -394,87 +274,30 @@ export default function InvoicePage() {
             } else {
                 const errorData = await response.json();
                 toast.error(`Failed to send invoice email: ${errorData.error || response.statusText}`);
-                console.error('Backend error response:', errorData);
             }
         } catch (error) {
-            console.error('Network error or unexpected issue during invoice email send:', error);
             toast.error('Network error. Could not send invoice email.');
         } finally {
-            setIsSendingEmail(false); // Set loading to false
+            setIsSendingEmail(false);
         }
     };
 
-
-    if (loading) {
-        return (
-            <div className="app-container">
-                <div className="invoice-container" style={{ textAlign: 'center', padding: '50px' }}>
-                    <p className="info-message">Loading patient details and dental records...</p>
-                    <div className="spinner"></div>
-                </div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="app-container">
-                <div className="invoice-container">
-                    <p className="info-message error">Error: {error}</p>
-                    <button onClick={() => navigate(`/patients/${patientId}`)} className="back-button" style={{ margin: '20px auto', display: 'block', width: 'fit-content' }}>
-                        <i className="fas fa-arrow-left"></i> Back to Patient Details
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
-    if (!patient) {
-        return (
-            <div className="app-container">
-                <div className="invoice-container">
-                    <p className="info-message">Patient data not found.</p>
-                    <button onClick={() => navigate(`/patients`)} className="back-button" style={{ margin: '20px auto', display: 'block', width: 'fit-content' }}>
-                        <i className="fas fa-arrow-left"></i> Back to Patient List
-                    </button>
-                </div>
-            </div>
-        );
-    }
+    if (loading) return <div className="app-container"><div className="invoice-container" style={{ textAlign: 'center', padding: '50px' }}><p className="info-message">Loading...</p><div className="spinner"></div></div></div>;
+    if (error) return <div className="app-container"><div className="invoice-container"><p className="info-message error">Error: {error}</p></div></div>;
+    if (!patient) return <div className="app-container"><div className="invoice-container"><p className="info-message">Patient not found.</p></div></div>;
 
     return (
         <div className="invoice-container">
             <header className="invoice-header">
                 <h1>Generate Invoice for {patient.name}</h1>
                 <div className="actions">
-                    <button onClick={() => navigate(`/patients/${patientId}`)} className="back-button">
-                        <i className="fas fa-arrow-left"></i> Back to Patient Details
-                    </button>
-                    {!showInvoice && (
-                        <button onClick={handleGenerateInvoice} className="generate-invoice-button">
-                            <i className="fas fa-file-invoice"></i> Generate Invoice
-                        </button>
-                    )}
+                    <button onClick={() => navigate(`/patients/${patientId}`)} className="back-button"><i className="fas fa-arrow-left"></i> Back</button>
+                    {!showInvoice && <button onClick={handleGenerateInvoice} className="generate-invoice-button"><i className="fas fa-file-invoice"></i> Generate</button>}
                     {showInvoice && (
                         <>
-                            <button onClick={handlePrint} className="print-invoice-button">
-                                <i className="fas fa-print"></i> Print Invoice
-                            </button>
-                            {/* New Send Email Button with loading state */}
-                            <button 
-                                onClick={handleSendEmail} 
-                                className="send-email-button"
-                                disabled={isSendingEmail} // Disable button when sending
-                            >
-                                {isSendingEmail ? (
-                                    <>
-                                        <span className="spinner-small"></span> Sending...
-                                    </>
-                                ) : (
-                                    <>
-                                        <i className="fas fa-envelope"></i> Send Email
-                                    </>
-                                )}
+                            <button onClick={handlePrint} className="print-invoice-button"><i className="fas fa-print"></i> Print</button>
+                            <button onClick={handleSendEmail} className="send-email-button" disabled={isSendingEmail}>
+                                {isSendingEmail ? <><span className="spinner-small"></span> Sending...</> : <><i className="fas fa-envelope"></i> Send Email</>}
                             </button>
                         </>
                     )}
@@ -486,45 +309,26 @@ export default function InvoicePage() {
                     <h2>Patient Information</h2>
                     <div className="patient-info-display">
                         <p><strong>Name:</strong> {patient.name}</p>
-                        {userRole === 'nurse' ? (
-                            <>
-                                <p><strong>Phone:</strong> <span className="restricted-info">Restricted</span></p>
-                                <p><strong>Email:</strong> <span className="restricted-info">Restricted</span></p>
-                            </>
-                        ) : (
-                            <>
-                                <p><strong>Phone:</strong> {patient.phoneNumber}</p>
-                                <p><strong>Email:</strong> {patient.email || 'N/A'}</p>
-                            </>
-                        )}
-                        {/* Display Patient's Registered HMO here */}
-                        {patientHasHMO && (
-                            <p><strong>Registered HMO:</strong> {patientHMOName}</p>
-                        )}
+                        <p><strong>Phone:</strong> {patient.phoneNumber || 'N/A'}</p>
+                        <p><strong>Email:</strong> {patient.email || 'N/A'}</p>
+                        {patientHasHMO && <p><strong>Registered HMO:</strong> {patientHMOName}</p>}
                     </div>
 
                     {latestDentalRecord && (
                         <div className="dental-record-context">
                             <h3>Latest Dental Record Context:</h3>
-                            <p><strong>Date:</strong> {new Date(latestDentalRecord.createdAt).toLocaleDateString()}</p>
-                            <p><strong>Provisional Diagnosis:</strong> {Array.isArray(latestDentalRecord.provisionalDiagnosis) ? latestDentalRecord.provisionalDiagnosis.join(', ') : latestDentalRecord.provisionalDiagnosis || 'N/A'}</p>
-                            <p><strong>Treatment Plan (for context):</strong> {Array.isArray(latestDentalRecord.treatmentPlan) ? latestDentalRecord.treatmentPlan.join(', ') : latestDentalRecord.treatmentPlan || 'N/A'}</p>
+                            <p><strong>Diagnosis:</strong> {Array.isArray(latestDentalRecord.provisionalDiagnosis) ? latestDentalRecord.provisionalDiagnosis.join(', ') : latestDentalRecord.provisionalDiagnosis || 'N/A'}</p>
+                            <p><strong>Treatment Plan:</strong> {Array.isArray(latestDentalRecord.treatmentPlan) ? latestDentalRecord.treatmentPlan.join(', ') : latestDentalRecord.treatmentPlan || 'N/A'}</p>
                         </div>
                     )}
 
                     <h2>Services to Bill</h2>
                     <div className="service-selection">
                         <select value={selectedService} onChange={(e) => setSelectedService(e.target.value)} className="form-select">
-                            <option value="">Select a service</option>
-                            {serviceOptions.map((service, index) => (
-                                <option key={index} value={service.name}>
-                                    {service.name} - ₦{service.price.toLocaleString()}
-                                </option>
-                            ))}
+                            <option value="">Select a service...</option>
+                            {serviceOptions.map((s, i) => <option key={i} value={s.name}>{s.name} - ₦{s.price.toLocaleString()}</option>)}
                         </select>
-                        <button onClick={handleAddService} className="add-service-button">
-                            Add Service
-                        </button>
+                        <button onClick={handleAddService} className="add-service-button">Add</button>
                     </div>
 
                     {invoiceItems.length > 0 && (
@@ -534,9 +338,8 @@ export default function InvoicePage() {
                                 <thead>
                                     <tr>
                                         <th>Service</th>
-                                        <th>Quantity</th>
-                                        {/* Conditionally hide Unit Price and Total columns based on HMO status */}
-                                        {!isInvoiceForHmoPatient && <th>Unit Price (₦)</th>}
+                                        <th>Qty</th>
+                                        {!isInvoiceForHmoPatient && <th>Price (₦)</th>}
                                         {!isInvoiceForHmoPatient && <th>Total (₦)</th>}
                                         <th>Actions</th>
                                     </tr>
@@ -545,40 +348,15 @@ export default function InvoicePage() {
                                     {invoiceItems.map(item => (
                                         <tr key={item.id}>
                                             <td>{item.name}</td>
-                                            <td>
-                                                <input
-                                                    type="number"
-                                                    value={item.quantity}
-                                                    onChange={(e) => handleQuantityChange(item.id, e.target.value)}
-                                                    className="quantity-input"
-                                                    min="1"
-                                                />
-                                            </td>
-                                            {/* Conditionally hide Unit Price and Total columns based on HMO status */}
-                                            {!isInvoiceForHmoPatient && (
-                                                <td>
-                                                    <input
-                                                        type="number"
-                                                        value={item.price}
-                                                        onChange={(e) => handlePriceChange(item.id, e.target.value)}
-                                                        className="price-input"
-                                                        min="0"
-                                                    />
-                                                </td>
-                                            )}
+                                            <td><input type="number" value={item.quantity} onChange={(e) => handleQuantityChange(item.id, e.target.value)} className="quantity-input" min="1" /></td>
+                                            {!isInvoiceForHmoPatient && <td><input type="number" value={item.price} onChange={(e) => handlePriceChange(item.id, e.target.value)} className="price-input" min="0" /></td>}
                                             {!isInvoiceForHmoPatient && <td>₦{(item.price * item.quantity).toLocaleString()}</td>}
-                                            <td>
-                                                <button onClick={() => handleRemoveService(item.id)} className="remove-service-button">
-                                                    <i className="fas fa-trash"></i>
-                                                </button>
-                                            </td>
+                                            <td><button onClick={() => handleRemoveService(item.id)} className="remove-service-button"><i className="fas fa-trash"></i></button></td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
-                            <div className="subtotal-display">
-                                <strong>Subtotal:</strong> ₦{subtotal.toLocaleString()}
-                            </div>
+                            <div className="subtotal-display"><strong>Subtotal:</strong> ₦{subtotal.toLocaleString()}</div>
                         </div>
                     )}
 
@@ -586,27 +364,8 @@ export default function InvoicePage() {
                     <div className="hmo-selection">
                         <select value={selectedHMO} onChange={handleHmoChange} className="form-select">
                             <option value="">Select HMO Provider</option>
-                            {hmoOptions.map((hmo, index) => (
-                                <option key={index} value={hmo.name}>
-                                    {hmo.name}
-                                </option>
-                            ))}
+                            {hmoOptions.map((hmo, index) => <option key={index} value={hmo.name}>{hmo.name}</option>)}
                         </select>
-                        {/* Only show HMO Covered Amount input if the patient has an HMO AND the selected HMO matches the patient's registered HMO */}
-                        {isInvoiceForHmoPatient && (
-                            <div className="hmo-covered-input">
-                                <label htmlFor="hmoCoveredAmount">HMO Covered Amount (₦)</label>
-                                <input
-                                    type="number"
-                                    id="hmoCoveredAmount"
-                                    value={hmoCoveredAmount}
-                                    onChange={(e) => setHmoCoveredAmount(e.target.value)}
-                                    placeholder="e.g., 50000"
-                                    min="0"
-                                    className="form-control"
-                                />
-                            </div>
-                        )}
                     </div>
                 </section>
             ) : (
@@ -614,7 +373,6 @@ export default function InvoicePage() {
                     <div className="invoice-company-info">
                         <h2>{process.env.REACT_APP_CLINIC_NAME || "Prime Dental Clinic"}</h2>
                         <p>{process.env.REACT_APP_CLINIC_ADDRESS || "local government, 104, New Ipaja/Egbeda Road, opposite prestige super-market, Alimosho, Ipaja Rd, Ipaja, Lagos 100006, Lagos"}</p>
-                        <p>Phone: {process.env.REACT_APP_CLINIC_PHONE || "0703 070 8877"}</p>
                     </div>
                     <div className="invoice-header-display">
                         <h2>INVOICE</h2>
@@ -624,27 +382,8 @@ export default function InvoicePage() {
                     <div className="invoice-patient-info">
                         <h3>Bill To:</h3>
                         <p><strong>Patient Name:</strong> {patient.name}</p>
-                        {/* Conditional display of patient contact info based on user role and HMO status */}
-                        {(userRole === 'owner' || userRole === 'staff') ? (
-                            <>
-                                <p><strong>Phone:</strong> {patient.phoneNumber}</p>
-                                <p><strong>Email:</strong> {patient.email || 'N/A'}</p>
-                            </>
-                        ) : (userRole === 'nurse' && isInvoiceForHmoPatient) ? ( // Nurse and HMO patient
-                            <>
-                                <p><strong>Phone:</strong> <span className="restricted-info">Restricted</span></p>
-                                <p><strong>Email:</strong> <span className="restricted-info">Restricted</span></p>
-                            </>
-                        ) : ( // Nurse and non-HMO patient (default restricted)
-                            <>
-                                <p><strong>Phone:</strong> <span className="restricted-info">Restricted</span></p>
-                                <p><strong>Email:</strong> <span className="restricted-info">Restricted</span></p>
-                            </>
-                        )}
-                        {/* Display HMO on invoice if it's an HMO patient and HMO is selected */}
-                        {isInvoiceForHmoPatient && (
-                            <p><strong>HMO:</strong> {selectedHMO}</p>
-                        )}
+                        <p><strong>Email:</strong> {patient.email || 'N/A'}</p>
+                        {isInvoiceForHmoPatient && <p><strong>HMO:</strong> {selectedHMO}</p>}
                     </div>
                     <div className="invoice-services-rendered">
                         <h3>Services Rendered:</h3>
@@ -653,9 +392,8 @@ export default function InvoicePage() {
                                 <tr>
                                     <th>Service</th>
                                     <th>Quantity</th>
-                                    {/* Conditionally hide Unit Price and Total columns for HMO patients */}
                                     {!isInvoiceForHmoPatient && <th>Unit Price (₦)</th>}
-                                    {!isInvoiceForHmoPatient && <th>Total (₦)</th>}
+                                    {!isInvoiceForHmoPatient && <th>Amount (₦)</th>}
                                 </tr>
                             </thead>
                             <tbody>
@@ -663,7 +401,6 @@ export default function InvoicePage() {
                                     <tr key={item.id}>
                                         <td>{item.name}</td>
                                         <td>{item.quantity}</td>
-                                        {/* Conditionally hide Unit Price and Total columns for HMO patients */}
                                         {!isInvoiceForHmoPatient && <td>₦{item.price.toLocaleString()}</td>}
                                         {!isInvoiceForHmoPatient && <td>₦{(item.price * item.quantity).toLocaleString()}</td>}
                                     </tr>
@@ -671,36 +408,15 @@ export default function InvoicePage() {
                             </tbody>
                         </table>
                     </div>
+                    {/* --- MODIFIED: This entire summary is now conditional --- */}
                     <div className="invoice-summary">
-                        {/* Display simplified summary for HMO patients */}
-                        {isInvoiceForHmoPatient ? (
-                            <>
-                                {totalDue > 0 ? (
-                                    <p className="total-due due-balance">
-                                        <strong>Balance Due from Patient:</strong> ₦{totalDue.toLocaleString()}
-                                    </p>
-                                ) : (
-                                    <p className="total-due fully-covered">
-                                        <strong>Status: Fully Covered by HMO</strong>
-                                    </p>
-                                )}
-                            </>
-                        ) : (
-                            // Display full summary for non-HMO patients
+                        {!isInvoiceForHmoPatient && (
                             <>
                                 <p><strong>Subtotal:</strong> ₦{subtotal.toLocaleString()}</p>
                                 <p className="total-due">
-                                    <strong>Total Amount Due from Patient:</strong> ₦{subtotal.toLocaleString()}
+                                    <strong>Total Amount Due from Patient:</strong> ₦{totalDue.toLocaleString()}
                                 </p>
                             </>
-                        )}
-                    </div>
-                    <div className="invoice-notes">
-                        {latestDentalRecord && (
-                            <div className="invoice-treatment-context">
-                                <p><strong>Related Provisional Diagnosis:</strong> {Array.isArray(latestDentalRecord.provisionalDiagnosis) ? latestDentalRecord.provisionalDiagnosis.join(', ') : latestDentalRecord.provisionalDiagnosis || 'N/A'}</p>
-                                <p><strong>Related Treatment Plan:</strong> {Array.isArray(latestDentalRecord.treatmentPlan) ? latestDentalRecord.treatmentPlan.join(', ') : latestDentalRecord.treatmentPlan || 'N/A'}</p>
-                            </div>
                         )}
                     </div>
                     <div className="invoice-footer">

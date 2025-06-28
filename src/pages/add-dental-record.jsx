@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom'; // Import useNavigate for redirection
 import { toast } from 'react-toastify'; // Import toast for notifications
 import './add-dental-record.css'; // Import the dedicated CSS file
-import API_BASE_URL from '../config/api'
+import API_BASE_URL from '../config/api';
 
 // This component is now ready to be used directly in your React Router setup.
 // Example: <Route path="/patients/:patientId/dental-records/new" element={<AddDentalRecord />} />
@@ -151,6 +151,14 @@ export default function AddDentalRecord() {
         navigate('/login'); // Use navigate for redirection
         return;
       }
+
+      // Restriction: Only owner and doctor should be allowed on this page
+      if (role !== 'owner' && role !== 'doctor') {
+        console.log(`[AddDentalRecord] User role '${role}' not authorized to view this page. Redirecting to dashboard.`);
+        navigate('/dashboard'); // Redirect unauthorized users
+        return; // Stop further execution of this effect
+      }
+
 
       const parsedPatientId = parseInt(patientId); // Ensure patientId is parsed as an integer
       if (isNaN(parsedPatientId)) {
@@ -383,14 +391,14 @@ export default function AddDentalRecord() {
             <i className="fas fa-users"></i> All Patient List
           </button>
 
-          {/* Send Invoice Button - Hidden from doctors */}
+          {/* Send Invoice Button - Only visible for owner, staff, and nurse */}
           {(userRole === 'owner' || userRole === 'staff' || userRole === 'nurse') && (
             <button onClick={() => navigate(`/patients/${patientId}/invoice`)} className="generate-invoice-button">
               <i className="fas fa-file-invoice"></i> Send Invoice
             </button>
           )}
 
-          {/* Send Receipt Button - Hidden from doctors */}
+          {/* Send Receipt Button - Only visible for owner, staff, and nurse */}
           {(userRole === 'owner' || userRole === 'staff' || userRole === 'nurse') && (
             <button onClick={() => navigate(`/patients/${patientId}/receipts`)} className="generate-receipt-button">
               <i className="fas fa-receipt"></i> Send Receipt
