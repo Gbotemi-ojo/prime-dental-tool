@@ -17,6 +17,12 @@ export default function AddDentalRecord() {
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [userRole, setUserRole] = useState(null); // State to store user role
+  const [appointmentInterval, setAppointmentInterval] = useState(''); // State for the selected appointment interval
+
+  // Options for the appointment recall period
+  const appointmentIntervals = [
+      '1 day', '2 days', '3 days', '1 week', '2 weeks', '1 month', '6 weeks', '3 months', '6 months'
+  ];
 
   // Initial state for quadrant fields
   const initialQuadrantState = { q1: '', q2: '', q3: '', q4: '' };
@@ -153,7 +159,7 @@ export default function AddDentalRecord() {
       }
 
       // Restriction: Only owner and doctor should be allowed on this page
-      if (role !== 'owner' && role !== 'doctor') {
+      if (role !== 'owner' && role !== 'doctor' && role !== 'nurse') {
         console.log(`[AddDentalRecord] User role '${role}' not authorized to view this page. Redirecting to dashboard.`);
         navigate('/dashboard'); // Redirect unauthorized users
         return; // Stop further execution of this effect
@@ -273,22 +279,27 @@ export default function AddDentalRecord() {
     e.preventDefault();
     setSubmitting(true);
     toast.dismiss(); // Clear any existing toasts
-
+  
     // --- FORM VALIDATION ---
     if (!formData.complaint || formData.provisionalDiagnosis.length === 0 || formData.treatmentPlan.length === 0) {
       toast.error('Please fill in Chief Complaint, Provisional Diagnosis, and Treatment Plan.');
       setSubmitting(false);
       return;
     }
-
-    // *** NEW VALIDATION FOR TREATMENT DONE ***
+  
     if (!formData.treatmentDone || formData.treatmentDone.trim() === '') {
       toast.error('Adding a description of the treatment done is important before submission.');
       setSubmitting(false);
       return;
     }
-
-
+  
+    // NEW VALIDATION for appointment interval
+    if (!appointmentInterval) {
+      toast.error('Please set the next appointment recall period before submitting.');
+      setSubmitting(false);
+      return;
+    }
+  
     const token = localStorage.getItem('jwtToken');
     const userId = localStorage.getItem('userId');
     if (!token || !userId) {
@@ -298,15 +309,16 @@ export default function AddDentalRecord() {
       navigate('/login'); // Use navigate for redirection
       return;
     }
-
+  
     try {
+      // --- Step 1: Create Dental Record ---
       const payload = {
         ...formData,
-        patientId: parseInt(patientId), // Ensure patientId is an integer
-        userId: parseInt(userId), // Ensure userId is an integer
+        patientId: parseInt(patientId),
+        userId: parseInt(userId),
       };
-
-      const response = await fetch(`${API_BASE_URL}/api/patients/${patientId}/dental-records`, {
+  
+      const recordResponse = await fetch(`${API_BASE_URL}/api/patients/${patientId}/dental-records`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -314,39 +326,62 @@ export default function AddDentalRecord() {
         },
         body: JSON.stringify(payload),
       });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success(data.message || 'Dental record added successfully!');
-        // Clear the form on successful submission
-        setFormData({
-          complaint: '', historyOfPresentComplaint: '', pastDentalHistory: '',
-          medicationS: false, medicationH: false, medicationA: false, medicationD: false,
-          medicationE: false, medicationPUD: false, medicationBloodDisorder: false, medicationAllergy: false,
-          familySocialHistory: '', extraOralExamination: '', intraOralExamination: '',
-          teethPresent: { ...initialQuadrantState },
-          cariousCavity: { ...initialQuadrantState },
-          filledTeeth: { ...initialQuadrantState },
-          missingTeeth: { ...initialQuadrantState },
-          fracturedTeeth: { ...initialQuadrantState },
-          periodontalCondition: '',
-          oralHygiene: '',
-          investigations: '', xrayFindings: '',
-          provisionalDiagnosis: [], // Reset to empty array
-          treatmentPlan: [],       // Reset to empty array
-          treatmentDone: '',       // NEW: Reset treatmentDone
-          calculus: '',
-          recordDate: new Date().toISOString().split('T')[0],
-        });
-        // Redirect back to patient detail page after successful submission
-        navigate(`/patients/${patientId}`); // Use navigate for redirection
-      } else {
-        toast.error(data.error || 'Failed to add dental record. Please check the details.');
+  
+      const recordData = await recordResponse.json();
+  
+      if (!recordResponse.ok) {
+        throw new Error(recordData.error || 'Failed to add dental record. Please check the details.');
       }
+  
+      toast.success(recordData.message || 'Dental record added successfully!');
+  
+      // --- Step 2: Schedule Next Appointment ---
+      try {
+        const appointmentResponse = await fetch(`${API_BASE_URL}/api/patients/${patientId}/schedule-appointment`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ interval: appointmentInterval }),
+        });
+  
+        const appointmentData = await appointmentResponse.json();
+  
+        if (!appointmentResponse.ok) {
+          toast.warn(`Dental record saved, but failed to set appointment: ${appointmentData.error}. Please set it manually.`);
+        } else {
+          toast.success('Next appointment has been scheduled successfully!');
+        }
+      } catch (appointmentError) {
+        toast.warn('Dental record saved, but a network error occurred while setting the appointment. Please set it manually.');
+      }
+  
+      // --- Step 3: Clear form and redirect ---
+      setFormData({
+        complaint: '', historyOfPresentComplaint: '', pastDentalHistory: '',
+        medicationS: false, medicationH: false, medicationA: false, medicationD: false,
+        medicationE: false, medicationPUD: false, medicationBloodDisorder: false, medicationAllergy: false,
+        familySocialHistory: '', extraOralExamination: '', intraOralExamination: '',
+        teethPresent: { ...initialQuadrantState },
+        cariousCavity: { ...initialQuadrantState },
+        filledTeeth: { ...initialQuadrantState },
+        missingTeeth: { ...initialQuadrantState },
+        fracturedTeeth: { ...initialQuadrantState },
+        periodontalCondition: '',
+        oralHygiene: '',
+        investigations: '', xrayFindings: '',
+        provisionalDiagnosis: [],
+        treatmentPlan: [],
+        treatmentDone: '',
+        calculus: '',
+        recordDate: new Date().toISOString().split('T')[0],
+      });
+      navigate(`/patients/${patientId}`);
+  
     } catch (err) {
       console.error('Submission error:', err);
-      toast.error('Network error or server is unreachable. Please try again later.');
+      toast.error(err.message || 'An unexpected error occurred. Please try again later.');
     } finally {
       setSubmitting(false);
     }
@@ -815,9 +850,29 @@ export default function AddDentalRecord() {
           </div>
         </section>
 
+        {/* NEW: Next Appointment Section */}
+        <section className="form-section">
+          <h2>Next Appointment</h2>
+          <div className="form-group">
+            <label htmlFor="appointment-interval">Recall Period *</label>
+            <select
+              id="appointment-interval"
+              value={appointmentInterval}
+              onChange={(e) => setAppointmentInterval(e.target.value)}
+              required
+            >
+              <option value="" disabled>Select a recall period</option>
+              {appointmentIntervals.map(opt => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
+          </div>
+        </section>
+
+
         <div className="form-actions">
           <button type="submit" disabled={submitting}>
-            {submitting ? 'Adding Record...' : 'Add Dental Record'}
+            {submitting ? 'Submitting...' : 'Submit Record & Set Appointment'}
           </button>
         </div>
       </form>

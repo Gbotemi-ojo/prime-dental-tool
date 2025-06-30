@@ -108,6 +108,8 @@ function PatientList() {
     return families;
   }, [allPatients, searchTerm, selectedDate, userRole]);
 
+  const showNextAppointmentColumn = !['nurse', 'doctor'].includes(userRole);
+
   if (loading) return <div className="spinner-container"><div className="spinner"></div><p>Loading patient data...</p></div>;
   if (error) return <div className="app-container"><div className="patient-list-container"><p className="info-message error">Error: {error}</p></div></div>;
 
@@ -142,7 +144,7 @@ function PatientList() {
                 <th>Date of Birth</th>
                 <th>Sex</th>
                 <th>HMO</th>
-                <th>Next Appointment</th>
+                {showNextAppointmentColumn && <th>Next Appointment</th>}
                 <th>Actions</th>
               </tr>
             </thead>
@@ -158,12 +160,12 @@ function PatientList() {
                                 <span>{family.phoneNumber || 'N/A'}</span>
                                 <span>{family.email || 'N/A'}</span>
                             </div>
-                        ) : 'Restricted'}
+                        ) : '' /* Empty string for restricted roles */}
                     </td>
                     <td>{family.dateOfBirth ? new Date(family.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
                     <td>{family.sex}</td>
                     <td>{family.hmo ? 'Yes' : 'No'}</td>
-                    <td>{family.nextAppointmentDate ? new Date(family.nextAppointmentDate).toLocaleDateString() : 'Not Set'}</td>
+                    {showNextAppointmentColumn && <td>{family.nextAppointmentDate ? new Date(family.nextAppointmentDate).toLocaleDateString() : 'Not Set'}</td>}
                     <td className="table-actions-cell">
                       <PatientActions patient={family} userRole={userRole} navigate={navigate} />
                     </td>
@@ -177,12 +179,12 @@ function PatientList() {
                             <div className="contact-info inherited">
                                 <span>Inherited</span>
                             </div>
-                        ) : 'Restricted'}
+                        ) : '' /* Empty string for restricted roles */}
                       </td>
                       <td>{member.dateOfBirth ? new Date(member.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
                       <td>{member.sex}</td>
                       <td>{member.hmo ? 'Yes' : 'No'}</td>
-                      <td>{member.nextAppointmentDate ? new Date(member.nextAppointmentDate).toLocaleDateString() : 'Not Set'}</td>
+                      {showNextAppointmentColumn && <td>{member.nextAppointmentDate ? new Date(member.nextAppointmentDate).toLocaleDateString() : 'Not Set'}</td>}
                       <td className="table-actions-cell">
                          <PatientActions patient={member} userRole={userRole} navigate={navigate} />
                       </td>

@@ -131,8 +131,8 @@ export default function Dashboard() {
           </a>
         )}
 
-        {/* View Profile (Accessible by Owner, Staff, Nurse, and Doctor) */}
-        {(isOwner || isStaff || isNurse || isDoctor) && (
+        {/* View Profile (Accessible by Owner ONLY) */}
+        {isOwner && (
           <a href="/profile" className="nav-card profile">
             <i className="icon fas fa-id-card"></i>
             <h3>My Profile</h3>

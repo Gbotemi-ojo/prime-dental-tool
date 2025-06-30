@@ -184,18 +184,18 @@ export default function PatientDetail() {
             <strong>Phone Number:</strong>{' '}
             {/* Restriction 2: Conditional rendering for phone number */}
             {(userRole === 'doctor') ? (
-              <span>N/A</span> // Display N/A for doctors
+              <span>null</span> // Display N/A for doctors
             ) : (
-              <span>{patient.phoneNumber || 'N/A'}</span>
+              <span>{patient.phoneNumber || 'null'}</span>
             )}
           </div>
           <div className="detail-item">
             <strong>Email:</strong>{' '}
             {/* Restriction 2: Conditional rendering for email */}
             {(userRole === 'doctor') ? (
-              <span>N/A</span> // Display N/A for doctors
+              <span>null</span> // Display null for doctors
             ) : (
-              <span>{patient.email || 'N/A'}</span>
+              <span>{patient.email || 'null'}</span>
             )}
           </div>
           <div className="detail-item">

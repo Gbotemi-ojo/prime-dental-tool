@@ -115,8 +115,10 @@ export default function InvoicePage() {
                 return;
             }
 
-            if (role !== 'owner' && role !== 'staff') {
-                toast.error('Access denied. Only Owners and Staff can access this page.');
+            // MODIFIED: Cleaner role check for accessing the page
+            const allowedRoles = ['owner', 'staff', 'nurse'];
+            if (!allowedRoles.includes(role)) {
+                toast.error('Access denied. You do not have permission to view this page.');
                 navigate('/dashboard');
                 return;
             }
@@ -224,7 +226,9 @@ export default function InvoicePage() {
     const handlePrint = () => window.print();
 
     const handleSendEmail = async () => {
-        if (!patient || !patient.email) {
+        // MODIFIED: Allow nurses to send emails without having the email on the frontend.
+        // The backend will use the patientId to get the email.
+        if (!patient || (!patient.email && userRole !== 'nurse')) {
             toast.error('Patient email is missing. Cannot send invoice.');
             return;
         }
@@ -242,7 +246,9 @@ export default function InvoicePage() {
         setIsSendingEmail(true);
 
         const payload = {
-            patientId: patient.id, patientName: patient.name, patientEmail: patient.email,
+            patientId: patient.id,
+            patientName: patient.name,
+            patientEmail: patient.email, // This will be undefined for nurses, which is handled by the backend
             invoiceNumber: invoiceNumber, invoiceDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
             items: invoiceItems.map(item => ({
                 description: item.name, quantity: item.quantity,
@@ -309,8 +315,8 @@ export default function InvoicePage() {
                     <h2>Patient Information</h2>
                     <div className="patient-info-display">
                         <p><strong>Name:</strong> {patient.name}</p>
-                        <p><strong>Phone:</strong> {patient.phoneNumber || 'N/A'}</p>
-                        <p><strong>Email:</strong> {patient.email || 'N/A'}</p>
+                        <p><strong>Phone:</strong> {patient.phoneNumber || 'null'}</p>
+                        <p><strong>Email:</strong> {patient.email || 'null'}</p>
                         {patientHasHMO && <p><strong>Registered HMO:</strong> {patientHMOName}</p>}
                     </div>
 
@@ -382,7 +388,7 @@ export default function InvoicePage() {
                     <div className="invoice-patient-info">
                         <h3>Bill To:</h3>
                         <p><strong>Patient Name:</strong> {patient.name}</p>
-                        <p><strong>Email:</strong> {patient.email || 'N/A'}</p>
+                        <p><strong>Email:</strong> {patient.email || 'null'}</p>
                         {isInvoiceForHmoPatient && <p><strong>HMO:</strong> {selectedHMO}</p>}
                     </div>
                     <div className="invoice-services-rendered">
