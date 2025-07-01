@@ -9,16 +9,16 @@ export default function RevenueReportPage() {
     const [allReceipts, setAllReceipts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [userRole, setUserRole] = useState(null); // To check user role for access
+    const [userRole, setUserRole] = useState(null);
 
-    // State for selected time period and calculated total
-    const [selectedPeriod, setSelectedPeriod] = useState('month'); // Default to month view
-    const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0].substring(0, 7)); // Default to current month (YYYY-MM)
+    const [selectedPeriod, setSelectedPeriod] = useState('month');
+    const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0].substring(0, 7));
     const [totalRevenue, setTotalRevenue] = useState(0);
 
-    // Column indices (based on your Google Sheet headers in Sheet2!A:J)
-    // Receipt Date: 0 (Column A)
-    // Total Due From Patient (₦): 7 (Column H)
+    // NEW: State for outstanding payments
+    const [outstandingData, setOutstandingData] = useState({ patients: [], total: 0 });
+    const [outstandingLoading, setOutstandingLoading] = useState(true);
+
     const DATE_COLUMN_INDEX = 0;
     const AMOUNT_COLUMN_INDEX = 7;
 
@@ -37,9 +37,9 @@ export default function RevenueReportPage() {
                 return;
             }
 
-            if (role !== 'owner' && role !== 'staff') { // Allow staff to view reports as well
+            if (role !== 'owner' && role !== 'staff') {
                 toast.error('Access denied. Only Owners and Staff can view this report.');
-                navigate('/dashboard'); // Redirect to dashboard if not authorized
+                navigate('/dashboard');
                 return;
             }
 
@@ -50,7 +50,6 @@ export default function RevenueReportPage() {
 
                 if (response.ok) {
                     const data = await response.json();
-                    // Assuming the first row is headers, slice the array to get only data rows
                     const dataRows = data.slice(1);
                     setAllReceipts(dataRows);
                 } else {
@@ -68,9 +67,54 @@ export default function RevenueReportPage() {
         };
 
         fetchRevenueData();
-    }, [navigate]); // navigate is a dependency
+    }, [navigate]);
 
-    // Effect to recalculate total revenue whenever `allReceipts`, `selectedPeriod`, or `filterDate` changes
+    // NEW: Effect to fetch outstanding patient data
+    useEffect(() => {
+        const fetchOutstandingData = async () => {
+            setOutstandingLoading(true);
+            const token = localStorage.getItem('jwtToken');
+
+            // No need to re-check role, as it's handled in the first effect
+            if (!token) return;
+
+            try {
+                // This new endpoint should return all patients from your primary database
+                const response = await fetch(`${API_BASE_URL}/api/patients`, { // Assuming endpoint is /api/patients
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const patients = await response.json();
+                    let total = 0;
+                    // Filter for patients with an outstanding balance > 0
+                    const owingPatients = patients.filter(p => {
+                        const outstandingAmount = parseFloat(p.outstanding);
+                        if (!isNaN(outstandingAmount) && outstandingAmount > 0) {
+                            total += outstandingAmount;
+                            return true;
+                        }
+                        return false;
+                    });
+
+                    // Sort patients by the highest outstanding amount
+                    owingPatients.sort((a, b) => parseFloat(b.outstanding) - parseFloat(a.outstanding));
+
+                    setOutstandingData({ patients: owingPatients, total: total });
+                } else {
+                    toast.error('Failed to fetch outstanding patient data.');
+                }
+            } catch (err) {
+                toast.error('Network error fetching outstanding data.');
+                console.error('Network Error:', err);
+            } finally {
+                setOutstandingLoading(false);
+            }
+        };
+
+        fetchOutstandingData();
+    }, []); // Runs once on component mount
+
     useEffect(() => {
         if (allReceipts.length === 0) {
             setTotalRevenue(0);
@@ -84,24 +128,22 @@ export default function RevenueReportPage() {
             const rowDateStr = row[DATE_COLUMN_INDEX];
             const rowAmountStr = row[AMOUNT_COLUMN_INDEX];
 
-            // Basic validation for row data
             if (!rowDateStr || rowDateStr === 'N/A' || !rowAmountStr || rowAmountStr === 'N/A') {
-                return; // Skip rows with missing or 'N/A' date or amount
+                return;
             }
 
-            const rowDate = new Date(rowDateStr); // Example: "2025-06-16"
+            const rowDate = new Date(rowDateStr);
             const amount = parseFloat(rowAmountStr);
 
             if (isNaN(amount)) {
                 console.warn(`Invalid amount found in row: "${rowAmountStr}". Skipping.`);
-                return; // Skip if amount is not a valid number
+                return;
             }
 
             let includeRow = false;
 
             switch (selectedPeriod) {
                 case 'day':
-                    // Compare YYYY-MM-DD
                     if (currentFilterDateObj &&
                         rowDate.getFullYear() === currentFilterDateObj.getFullYear() &&
                         rowDate.getMonth() === currentFilterDateObj.getMonth() &&
@@ -111,23 +153,20 @@ export default function RevenueReportPage() {
                     break;
                 case 'week':
                     if (currentFilterDateObj) {
-                        // Calculate the start of the week (Sunday) for both dates
                         const getStartOfWeek = (date) => {
                             const d = new Date(date);
-                            d.setHours(0, 0, 0, 0); // Reset time to start of day
-                            d.setDate(d.getDate() - d.getDay()); // Adjust to Sunday (0)
+                            d.setHours(0, 0, 0, 0);
+                            d.setDate(d.getDate() - d.getDay());
                             return d;
                         };
                         const startOfWeekRow = getStartOfWeek(rowDate);
                         const startOfWeekFilter = getStartOfWeek(currentFilterDateObj);
-
                         if (startOfWeekRow.getTime() === startOfWeekFilter.getTime()) {
                             includeRow = true;
                         }
                     }
                     break;
                 case 'month':
-                    // For month input, filterDate will be YYYY-MM
                     if (currentFilterDateObj &&
                         rowDate.getMonth() === currentFilterDateObj.getMonth() &&
                         rowDate.getFullYear() === currentFilterDateObj.getFullYear()) {
@@ -135,14 +174,13 @@ export default function RevenueReportPage() {
                     }
                     break;
                 case 'year':
-                    // For year input, filterDate will be YYYY
                     if (currentFilterDateObj && rowDate.getFullYear() === currentFilterDateObj.getFullYear()) {
                         includeRow = true;
                     }
                     break;
                 case 'all':
                 default:
-                    includeRow = true; // Include all records
+                    includeRow = true;
                     break;
             }
 
@@ -151,29 +189,18 @@ export default function RevenueReportPage() {
             }
         });
         setTotalRevenue(sum);
-    }, [allReceipts, selectedPeriod, filterDate]); // Re-run effect if these states change
+    }, [allReceipts, selectedPeriod, filterDate]);
 
     const handlePeriodChange = (e) => {
         const newPeriod = e.target.value;
         setSelectedPeriod(newPeriod);
-        // Set default filterDate based on new period
         const today = new Date();
         switch (newPeriod) {
-            case 'day':
-                setFilterDate(today.toISOString().split('T')[0]); // YYYY-MM-DD
-                break;
-            case 'month':
-                setFilterDate(today.toISOString().split('T')[0].substring(0, 7)); // YYYY-MM
-                break;
-            case 'year':
-                setFilterDate(today.getFullYear().toString()); // YYYY
-                break;
-            case 'all':
-                setFilterDate(''); // No specific date filter for 'all time'
-                break;
-            default:
-                setFilterDate(today.toISOString().split('T')[0]);
-                break;
+            case 'day': setFilterDate(today.toISOString().split('T')[0]); break;
+            case 'month': setFilterDate(today.toISOString().split('T')[0].substring(0, 7)); break;
+            case 'year': setFilterDate(today.getFullYear().toString()); break;
+            case 'all': setFilterDate(''); break;
+            default: setFilterDate(today.toISOString().split('T')[0]); break;
         }
     };
 
@@ -184,10 +211,7 @@ export default function RevenueReportPage() {
     if (loading) {
         return (
             <div className="revenue-report-container">
-                <div className="loading-state">
-                    <p>Loading revenue data...</p>
-                    <div className="spinner"></div>
-                </div>
+                <div className="loading-state"><p>Loading revenue data...</p><div className="spinner"></div></div>
             </div>
         );
     }
@@ -197,33 +221,27 @@ export default function RevenueReportPage() {
             <div className="revenue-report-container">
                 <div className="error-state">
                     <p>Error: {error}</p>
-                    <button onClick={() => navigate('/dashboard')} className="back-button">
-                        <i className="fas fa-arrow-left"></i> Back to Dashboard
-                    </button>
+                    <button onClick={() => navigate('/dashboard')} className="back-button"><i className="fas fa-arrow-left"></i> Back to Dashboard</button>
                 </div>
             </div>
         );
     }
-
-    // Role-based access check after loading and error handling
+    
     if (userRole !== 'owner' && userRole !== 'staff') {
         return (
             <div className="revenue-report-container">
                 <div className="access-denied">
                     <p>Access Denied. You do not have permission to view this report.</p>
-                    <button onClick={() => navigate('/dashboard')} className="back-button">
-                        <i className="fas fa-arrow-left"></i> Back to Dashboard
-                    </button>
+                    <button onClick={() => navigate('/dashboard')} className="back-button"><i className="fas fa-arrow-left"></i> Back to Dashboard</button>
                 </div>
             </div>
         );
     }
 
-
     return (
         <div className="revenue-report-container">
             <header className="revenue-report-header">
-                <h1>Revenue Report</h1>
+                <h1>Revenue & Receivables</h1>
                 <button onClick={() => navigate('/dashboard')} className="back-button">
                     <i className="fas fa-arrow-left"></i> Back to Dashboard
                 </button>
@@ -231,7 +249,7 @@ export default function RevenueReportPage() {
 
             <section className="controls-section">
                 <div className="control-group">
-                    <label htmlFor="period-select">View by:</label>
+                    <label htmlFor="period-select">View Revenue by:</label>
                     <select id="period-select" value={selectedPeriod} onChange={handlePeriodChange} className="form-select">
                         <option value="day">Day</option>
                         <option value="week">Week</option>
@@ -240,7 +258,6 @@ export default function RevenueReportPage() {
                         <option value="all">All Time</option>
                     </select>
                 </div>
-
                 {(selectedPeriod === 'day' || selectedPeriod === 'month' || selectedPeriod === 'year') && (
                     <div className="control-group date-filter-group">
                         <label htmlFor="filter-date">
@@ -250,29 +267,16 @@ export default function RevenueReportPage() {
                         </label>
                         <input
                             type={selectedPeriod === 'day' ? 'date' : selectedPeriod === 'month' ? 'month' : 'number'}
-                            id="filter-date"
-                            value={filterDate}
-                            onChange={handleFilterDateChange}
-                            className="form-control"
-                            // Set min/max for year for better usability
-                            min={selectedPeriod === 'year' ? "1900" : undefined}
-                            max={selectedPeriod === 'year' ? "2100" : undefined}
-                            // For month type, value format is "YYYY-MM"
-                            // For date type, value format is "YYYY-MM-DD"
+                            id="filter-date" value={filterDate} onChange={handleFilterDateChange} className="form-control"
+                            min={selectedPeriod === 'year' ? "1900" : undefined} max={selectedPeriod === 'year' ? "2100" : undefined}
                         />
                     </div>
                 )}
                 {selectedPeriod === 'week' && (
                      <div className="control-group date-filter-group">
                         <label htmlFor="filter-date-week">Select a date in the week:</label>
-                        <input
-                            type="date"
-                            id="filter-date-week"
-                            value={filterDate} // For week, still a single date for selection
-                            onChange={handleFilterDateChange}
-                            className="form-control"
-                        />
-                         <p className="filter-hint">Selecting a date will show revenue for its entire week.</p>
+                        <input type="date" id="filter-date-week" value={filterDate} onChange={handleFilterDateChange} className="form-control" />
+                         <p className="filter-hint">Shows revenue for the entire week of the selected date.</p>
                      </div>
                 )}
             </section>
@@ -289,11 +293,40 @@ export default function RevenueReportPage() {
                 </p>
             </section>
 
-            {/* Optional: Display raw data or filtered data for debugging */}
-            {/* <section className="raw-data-section">
-                <h3>Raw Data (First 5 Rows for Debugging):</h3>
-                <pre>{JSON.stringify(allReceipts.slice(0, 5), null, 2)}</pre>
-            </section> */}
+            {/* NEW: Outstanding Balances Section */}
+            <section className="outstanding-section">
+                <div className="total-outstanding-section">
+                    <h2>Total Outstanding: <span className="outstanding-amount">₦{outstandingData.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></h2>
+                    <p className="period-display">Across {outstandingData.patients.length} patient(s)</p>
+                </div>
+
+                {outstandingLoading ? (
+                    <div className="loading-state small"><div className="spinner"></div><p>Loading outstanding balances...</p></div>
+                ) : outstandingData.patients.length > 0 ? (
+                    <div className="patients-table-container">
+                        <table className="patients-table">
+                            <thead>
+                                <tr>
+                                    <th>Patient Name</th>
+                                    <th>Phone Number</th>
+                                    <th>Outstanding Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {outstandingData.patients.map(patient => (
+                                    <tr key={patient.id}>
+                                        <td>{patient.name}</td>
+                                        <td>{patient.phoneNumber || 'N/A'}</td>
+                                        <td className="amount-cell">₦{parseFloat(patient.outstanding).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <p className="no-data-message">No patients with outstanding balances found.</p>
+                )}
+            </section>
         </div>
     );
 }

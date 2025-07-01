@@ -8,6 +8,7 @@
     --secondary-color: #5C6BC0; /* Lighter Indigo */
     --accent-color: #4CAF50; /* Green */
     --danger-color: #F44336; /* Red */
+    --warning-color: #FF9800; /* Orange for outstanding */
     --text-dark: #263238;
     --text-medium: #455A64;
     --text-light: #ffffff;
@@ -34,8 +35,8 @@
     border-radius: 15px;
     box-shadow: var(--shadow-xl);
     width: 100%;
-    max-width: 900px; /* Slightly narrower than dashboard for focus */
-    margin: var(--spacing-xl) auto; /* Center the container */
+    max-width: 900px;
+    margin: var(--spacing-xl) auto;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -94,6 +95,15 @@
     font-size: 1.2em;
     color: var(--text-medium);
 }
+.loading-state.small {
+    padding: var(--spacing-md);
+    font-size: 1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+}
+
 
 .error-state p, .access-denied p {
     color: var(--danger-color);
@@ -109,6 +119,11 @@
     animation: spin 1s linear infinite;
     margin: 20px auto;
 }
+.loading-state.small .spinner {
+    width: 24px;
+    height: 24px;
+    margin: 0;
+}
 
 @keyframes spin {
     0% { transform: rotate(0deg); }
@@ -120,7 +135,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--spacing-md);
-    align-items: flex-end; /* Align items to the bottom */
+    align-items: flex-end;
     background-color: var(--bg-light);
     padding: var(--spacing-md);
     border-radius: 10px;
@@ -131,8 +146,8 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xs);
-    flex: 1; /* Allow groups to take available space */
-    min-width: 180px; /* Minimum width for each control group */
+    flex: 1;
+    min-width: 180px;
 }
 
 .control-group label {
@@ -155,7 +170,7 @@
 
 .form-select:focus, .form-control:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.2); /* Soft focus ring */
+    box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.2);
     outline: none;
 }
 
@@ -173,7 +188,7 @@
     padding: var(--spacing-lg);
     border-radius: 10px;
     box-shadow: var(--shadow-md);
-    margin-top: var(--spacing-lg);
+    margin-top: var(--spacing-md);
 }
 
 .total-revenue-section h2 {
@@ -183,7 +198,7 @@
 }
 
 .revenue-amount {
-    color: var(--text-light); /* Ensure high contrast */
+    color: var(--text-light);
     font-weight: 800;
     letter-spacing: -0.01em;
 }
@@ -194,7 +209,84 @@
     opacity: 0.9;
 }
 
-/* Responsive adjustments for the new page */
+
+/* --- NEW STYLES for Outstanding Section --- */
+.outstanding-section {
+    margin-top: var(--spacing-lg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    overflow: hidden; /* To keep child elements within the rounded corners */
+}
+
+.total-outstanding-section {
+    text-align: center;
+    background-color: var(--warning-color); /* Orange to draw attention */
+    color: var(--text-light);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+}
+
+.total-outstanding-section h2 {
+    font-size: 2.2em; /* Slightly smaller than main revenue */
+    margin-bottom: var(--spacing-xs);
+    font-weight: 700;
+}
+
+.outstanding-amount {
+    color: var(--text-light);
+    font-weight: 800;
+}
+
+.patients-table-container {
+    max-height: 400px; /* Set a max height */
+    overflow-y: auto; /* Allow scrolling for the table */
+    background-color: var(--card-bg);
+}
+
+.patients-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1em;
+}
+
+.patients-table th, .patients-table td {
+    padding: var(--spacing-sm) var(--spacing-md);
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.patients-table th {
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.patients-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.patients-table tbody tr:hover {
+    background-color: var(--bg-light);
+}
+
+.patients-table .amount-cell {
+    font-weight: 600;
+    color: var(--danger-color);
+    text-align: right;
+}
+
+.no-data-message {
+    padding: var(--spacing-lg);
+    text-align: center;
+    color: var(--text-medium);
+    font-style: italic;
+    background-color: var(--card-bg);
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
     .revenue-report-container {
         padding: var(--spacing-md);
@@ -217,7 +309,7 @@
         flex-direction: column;
         align-items: stretch;
     }
-    .total-revenue-section h2 {
+    .total-revenue-section h2, .total-outstanding-section h2 {
         font-size: 2em;
     }
 }
@@ -230,7 +322,7 @@
     .revenue-report-header h1 {
         font-size: 1.8em;
     }
-    .total-revenue-section h2 {
+    .total-revenue-section h2, .total-outstanding-section h2 {
         font-size: 1.6em;
     }
     .period-display {
