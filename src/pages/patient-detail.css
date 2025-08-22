@@ -10,8 +10,8 @@
   --accent-color: #4CAF50; /* Green for success/positive actions */
   --danger-color: #F44336; /* Red for destructive actions */
   --warning-color: #FFC107; /* Yellow for edit/warning */
-  --invoice-color: #FFC107; /* Added: Yellow for Invoice, consistent with dental-record-detail */
-  --receipt-color: #00BCD4; /* Added: Cyan for Receipt, consistent with dental-record-detail */
+  --invoice-color: #FF9800; /* Updated: Orange for Invoice for better distinction */
+  --receipt-color: #00BCD4; /* Cyan for Receipt */
   --text-dark: #263238; /* Dark Blue Grey for main text */
   --text-medium: #455A64; /* Lighter Blue Grey for secondary text */
   --text-light: #ffffff; /* White for light backgrounds */
@@ -67,7 +67,7 @@ body {
   border-radius: 15px;
   box-shadow: var(--shadow-xl);
   width: 100%;
-  max-width: 1000px; /* Adjusted max-width for detail view */
+  max-width: 1000px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -95,114 +95,73 @@ body {
 .detail-header h1 {
   color: var(--primary-color);
   font-weight: 800;
-  font-size: 2.5em; /* Slightly smaller than main dashboard h1 */
+  font-size: 2.5em;
   margin: 0;
   letter-spacing: -0.02em;
+  word-break: break-word; /* Ensure long names wrap */
 }
 
 .detail-header .actions {
   display: flex;
   gap: var(--spacing-sm);
   flex-wrap: wrap;
+  align-items: center;
 }
 
 /* Base styles for all header buttons */
 .back-button,
 .edit-button,
 .add-record-button,
-.send-invoice-button, /* New button class */
-.send-receipt-button { /* New button class */
+.send-invoice-button,
+.send-receipt-button {
   display: inline-flex;
   align-items: center;
+  justify-content: center; /* Center content inside button */
   padding: 10px 20px;
-  border: none; /* Remove default border */
+  border: none;
   border-radius: 8px;
   text-decoration: none;
   font-weight: 600;
   transition: all 0.3s ease;
   font-size: 0.95rem;
   box-shadow: var(--shadow-sm);
-  text-transform: uppercase; /* Make text uppercase */
+  text-transform: uppercase;
   letter-spacing: 0.5px;
-  cursor: pointer; /* Indicate it's clickable */
+  cursor: pointer;
+  white-space: nowrap; /* Prevent text from wrapping inside button */
 }
 
-/* Specific button colors */
-.back-button {
-  background-color: var(--secondary-color);
-  color: var(--text-light);
-}
+.back-button { background-color: var(--secondary-color); color: var(--text-light); }
+.back-button:hover { background-color: var(--primary-color); transform: translateY(-2px); box-shadow: var(--shadow-md); }
 
-.back-button:hover {
-  background-color: var(--primary-color);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
+.edit-button { background-color: var(--warning-color); color: var(--text-dark); }
+.edit-button:hover { background-color: #E6B300; transform: translateY(-2px); box-shadow: var(--shadow-md); }
 
-.edit-button {
-  background-color: var(--warning-color); /* Yellow for edit */
-  color: var(--text-dark); /* Dark text for contrast on yellow */
-}
+.add-record-button { background-color: var(--accent-color); color: var(--text-light); }
+.add-record-button:hover { background-color: #388E3C; transform: translateY(-2px); box-shadow: var(--shadow-md); }
 
-.edit-button:hover {
-  background-color: #E6B300; /* Darker yellow */
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
+.send-invoice-button { background-color: var(--invoice-color); color: var(--text-dark); }
+.send-invoice-button:hover { background-color: #F57C00; transform: translateY(-2px); box-shadow: var(--shadow-md); }
 
-.add-record-button {
-  background-color: var(--accent-color);
-  color: var(--text-light);
-}
-
-.add-record-button:hover {
-  background-color: #388E3C; /* Darker green */
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-/* NEW: Send Invoice Button styles */
-.send-invoice-button {
-    background-color: var(--invoice-color); /* Yellow for invoice */
-    color: var(--text-dark); /* Dark text for contrast on yellow */
-}
-
-.send-invoice-button:hover {
-    background-color: #FFA000; /* Darker yellow */
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-
-/* NEW: Send Receipt Button styles */
-.send-receipt-button {
-    background-color: var(--receipt-color); /* Cyan for receipt */
-    color: var(--text-light);
-}
-
-.send-receipt-button:hover {
-    background-color: #00838F; /* Darker cyan */
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-
+.send-receipt-button { background-color: var(--receipt-color); color: var(--text-light); }
+.send-receipt-button:hover { background-color: #00838F; transform: translateY(-2px); box-shadow: var(--shadow-md); }
 
 .back-button i,
 .edit-button i,
 .add-record-button i,
-.send-invoice-button i, /* Apply to new buttons */
-.send-receipt-button i { /* Apply to new buttons */
+.send-invoice-button i,
+.send-receipt-button i {
   margin-right: 8px;
   font-size: 1.1rem;
 }
 
-/* Sections within the detail page */
+/* Sections */
 .detail-section {
   background-color: var(--bg-light);
   border-radius: 10px;
   padding: var(--spacing-lg);
   box-shadow: var(--shadow-sm);
-  margin-bottom: var(--spacing-lg); /* Space between sections */
-  border-left: 5px solid var(--primary-color); /* Accent border */
+  border-left: 5px solid var(--primary-color);
 }
 
 .detail-section h2 {
@@ -215,281 +174,213 @@ body {
   border-bottom: 1px solid var(--border-color);
 }
 
-/* Flexbox Grid for Detail Items in sections (for Demographic Information) */
+/* Demographic Information Grid */
 .detail-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-md); /* Space between items */
-    margin-bottom: var(--spacing-md); /* Space below the grid if not the last element in section */
+    gap: var(--spacing-md);
 }
 
 .detail-item {
-  /* Adjusted flex basis to properly create two columns when wrapped */
-  flex: 1 1 calc(50% - (var(--spacing-md) / 2)); /* Two columns, considering gap */
+  flex: 1 1 calc(50% - var(--spacing-md)); /* Two columns, adjusted for gap */
   display: flex;
-  align-items: baseline; /* Align label and value nicely */
-  margin-bottom: var(--spacing-sm); /* Adjusted for grid layout */
-  font-size: 1em;
-  padding: 5px 0; /* Add slight padding for spacing */
-  border-bottom: 1px dashed rgba(0, 0, 0, 0.05); /* Subtle separator */
+  flex-direction: column; /* Stack label and value by default */
+  font-size: 1.05em; /* Slightly larger for readability */
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--border-color);
 }
 
-.detail-item:last-child {
-    border-bottom: none; /* No border on last item */
+.detail-item:last-child, .detail-item:nth-last-child(2):nth-child(odd) {
+    border-bottom: none; /* No border on last item(s) */
 }
 
 .detail-item strong {
   color: var(--text-dark);
-  min-width: 150px; /* Increased min-width for better label alignment */
   font-weight: 600;
-  flex-shrink: 0; /* Prevent shrinking */
-  margin-right: var(--spacing-xs); /* Space between label and value */
+  margin-bottom: 4px; /* Space between label and value */
+  font-size: 0.9em;
+  text-transform: uppercase;
+  color: var(--text-medium);
 }
 
 .detail-item span {
-  color: var(--text-medium);
-  flex-grow: 1;
-  word-break: break-word; /* Allow long text to break */
+  color: var(--text-dark);
+  word-break: break-word;
 }
 
-/* NEW: Specific styling for the HMO Covered detail item's text */
-.detail-item span strong.hmo-covered-yes {
-    color: var(--accent-color); /* Green for "Yes" */
-    font-weight: 700;
-}
-
-.detail-item span strong.hmo-covered-no {
-    color: var(--danger-color); /* Red for "No" */
-    font-weight: 700;
-}
-
-.restricted-info {
-    color: var(--danger-color); /* Red color for restricted info */
-    font-style: italic;
-    font-weight: 500;
-}
-
+.hmo-covered-yes { color: var(--accent-color); font-weight: 700; }
+.hmo-covered-no { color: var(--danger-color); font-weight: 700; }
+.restricted-info { color: var(--danger-color); font-style: italic; font-weight: 500; }
 
 /* Medical Records Table */
 .records-table-responsive {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    box-shadow: var(--shadow-md); /* Slightly stronger shadow for table */
+    box-shadow: var(--shadow-md);
     border-radius: 8px;
-    border: 1px solid var(--border-color); /* Overall table border */
+    border: 1px solid var(--border-color);
 }
 
 .medical-records-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 0; /* No margin-top if inside detail-section */
   font-size: 0.95rem;
-  min-width: 700px; /* Ensure horizontal scroll on small screens */
+  min-width: 700px;
 }
 
-.medical-records-table thead {
-  background-color: var(--table-header-bg); /* Light indigo header */
-  color: var(--primary-color); /* Dark text for header */
-}
+.medical-records-table thead { background-color: var(--table-header-bg); color: var(--primary-color); }
+.medical-records-table th { padding: 15px 20px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--border-color); white-space: nowrap; }
+.medical-records-table tbody tr { border-bottom: 1px solid var(--border-color); transition: background-color 0.2s ease; }
+.medical-records-table tbody tr:nth-child(even) { background-color: var(--table-row-even); }
+.medical-records-table tbody tr:hover { background-color: var(--table-row-hover); }
+.medical-records-table td { padding: 12px 20px; text-align: left; vertical-align: middle; color: var(--text-medium); white-space: nowrap; max-width: 250px; overflow: hidden; text-overflow: ellipsis; }
 
-.medical-records-table th {
-  padding: 15px 20px;
-  text-align: left;
-  font-weight: 700; /* Bolder header text */
-  border-bottom: 2px solid var(--border-color);
-  white-space: nowrap;
-  font-size: 1em;
-}
-
-.medical-records-table tbody tr {
-  border-bottom: 1px solid #E3F2FD; /* Lighter border between rows */
-  transition: background-color 0.2s ease, transform 0.1s ease;
-}
-
-.medical-records-table tbody tr:nth-child(even) {
-  background-color: var(--table-row-even); /* Alternate row color */
-}
-
-.medical-records-table tbody tr:hover {
-  background-color: var(--table-row-hover); /* Light blue hover effect */
-  transform: scale(1.005); /* Subtle zoom on hover */
-  box-shadow: var(--shadow-sm); /* Slight shadow on hover */
-}
-
-.medical-records-table td {
-  padding: 12px 20px;
-  text-align: left;
-  vertical-align: middle;
-  color: var(--text-medium);
-  white-space: nowrap;
-  max-width: 250px; /* Limit width */
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.medical-records-table .view-record-button {
+.view-record-button {
   display: inline-block;
   padding: 6px 12px;
-  background-color: var(--primary-color); /* Primary blue for view button */
+  background-color: var(--primary-color);
   color: var(--text-light);
   border: none;
   border-radius: 5px;
   text-decoration: none;
   font-weight: 500;
   font-size: 0.8rem;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  box-shadow: var(--shadow-sm);
+  transition: background-color 0.3s ease;
+  cursor: pointer;
 }
+.view-record-button:hover { background-color: var(--secondary-color); }
 
-.medical-records-table .view-record-button:hover {
-  background-color: var(--secondary-color);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
+/* Loading/Error States */
+.spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.info-message { text-align: center; padding: 20px; background-color: var(--bg-light); border-radius: 8px; color: var(--text-medium); margin-top: 20px; font-size: 1.1rem; }
+.info-message.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
-/* Spinner (Loading Indicator) Styles */
-.spinner {
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid var(--primary-color); /* Blue spinner */
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-    margin: 20px auto;
-}
+/* ====== Responsive Adjustments ====== */
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Info/Error Messages */
-.info-message {
-    text-align: center;
-    padding: 20px;
-    background-color: var(--bg-light);
-    border-radius: 8px;
-    color: var(--text-medium);
-    margin-top: 20px;
-    font-size: 1.1rem;
-    box-shadow: var(--shadow-sm);
-}
-
-.info-message.error {
-    background-color: #f8d7da; /* Light red for errors */
-    color: #721c24; /* Dark red text */
-    border: 1px solid #f5c6cb;
-}
-
-
-/* Responsive Adjustments */
 @media (max-width: 1024px) {
-  .app-container {
-    padding: var(--spacing-md);
-  }
-  .patient-detail-container {
-    padding: var(--spacing-lg);
-    gap: var(--spacing-md);
-  }
-  .detail-header h1 {
-    font-size: 2.2em;
-  }
-  .detail-header .actions {
-    gap: var(--spacing-sm);
-  }
-  .detail-section {
-    padding: var(--spacing-md);
-  }
-  .detail-section h2 {
-    font-size: 1.6em;
-  }
-  .detail-item {
-    font-size: 0.95em;
-  }
+  .app-container { padding: var(--spacing-md); }
+  .patient-detail-container { padding: var(--spacing-lg); }
+  .detail-header h1 { font-size: 2.2em; }
 }
 
-@media (max-width: 768px) {
-  .patient-detail-container {
-    padding: var(--spacing-md);
-    margin: var(--spacing-sm);
-    gap: var(--spacing-md);
-  }
+/* * CRITICAL FIX: I've reordered the media queries and made the mobile-specific 
+ * rules more explicit and high-priority to prevent them from being overridden.
+ */
+@media screen and (max-width: 768px) {
+  .patient-detail-container { padding: var(--spacing-md); }
+  
+  /* Buttons */
   .detail-header {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     gap: var(--spacing-sm);
   }
-  .detail-header h1 {
-    font-size: 2em;
-    width: 100%;
+  .detail-header h1 { 
+    font-size: 2em; 
+    text-align: center; 
+    margin-bottom: var(--spacing-md);
   }
   .detail-header .actions {
+    flex-direction: column;
+    align-items: center; /* Center the buttons within the container */
     width: 100%;
-    justify-content: flex-end; /* Align buttons to the right */
+    gap: var(--spacing-sm);
   }
-  /* Make all action buttons full width on small screens */
-  .back-button,
-  .edit-button,
-  .add-record-button,
-  .send-invoice-button, /* Apply to new buttons */
-  .send-receipt-button { /* Apply to new buttons */
-    width: 100%;
+  .back-button, .edit-button, .add-record-button, .send-invoice-button, .send-receipt-button {
+    width: 90%; /* Buttons are now a reasonable width, centered, and not full-width */
+    max-width: 300px;
     justify-content: center;
   }
-  .detail-item {
-    flex-direction: column; /* Stack label and value */
-    align-items: flex-start;
-    gap: 4px;
+  .back-button, .edit-button, .add-record-button, .send-invoice-button, .send-receipt-button {
+    padding: 12px 15px;
   }
-  .detail-item strong {
-    min-width: unset; /* Remove fixed width */
+
+  /* Demographic Info */
+  .detail-section { padding: var(--spacing-md); }
+  .detail-section h2 { font-size: 1.6em; }
+  .detail-grid {
+    flex-direction: column;
+    gap: 0;
+  }
+  .detail-item {
+    flex-basis: 100%;
+    font-size: 1em;
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+  }
+  .detail-item:last-child {
+    border-bottom: none;
+  }
+
+  /* Table */
+  .records-table-responsive {
+    overflow-x: hidden;
+    border: none;
+    box-shadow: none;
   }
   .medical-records-table {
-    min-width: 500px; /* Ensure scrollability */
+    min-width: unset;
   }
-  .medical-records-table th,
+  .medical-records-table thead {
+    display: none;
+  }
+  .medical-records-table,
+  .medical-records-table tbody,
+  .medical-records-table tr {
+    display: block;
+    width: 100%;
+  }
+  .medical-records-table tr {
+    margin-bottom: var(--spacing-md);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: var(--spacing-sm);
+    box-shadow: var(--shadow-sm);
+    background-color: var(--card-bg);
+  }
+  .medical-records-table tbody tr:nth-child(even) {
+    background-color: var(--card-bg);
+  }
   .medical-records-table td {
-    padding: 8px 12px;
-    font-size: 0.9em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: right;
+    padding: 10px 5px;
+    border-bottom: 1px dashed var(--border-color);
+    white-space: normal;
+    max-width: 100%;
+    overflow: visible;
+    text-overflow: clip;
+  }
+  .medical-records-table td:last-child {
+    border-bottom: none;
+  }
+  .medical-records-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--primary-color);
+    text-align: left;
+    margin-right: var(--spacing-md);
+  }
+  .medical-records-table td[data-label="Actions"] {
+    justify-content: center;
+    padding-top: var(--spacing-sm);
+  }
+  .medical-records-table td[data-label="Actions"]::before {
+    display: none;
   }
 }
 
 @media (max-width: 480px) {
-  .app-container {
-    padding: var(--spacing-sm);
-  }
-  .patient-detail-container {
-    padding: var(--spacing-sm);
-    margin: var(--spacing-xs);
-    gap: var(--spacing-sm);
-  }
-  .detail-header h1 {
-    font-size: 1.8em;
-  }
-  .back-button,
-  .edit-button,
-  .add-record-button,
-  .send-invoice-button, /* Apply to new buttons */
-  .send-receipt-button { /* Apply to new buttons */
-    padding: 8px 15px;
+  .app-container { padding: var(--spacing-sm); }
+  .patient-detail-container { padding: var(--spacing-sm); }
+  .detail-header h1 { font-size: 1.8em; }
+  .detail-section h2 { font-size: 1.4em; }
+
+  .back-button, .edit-button, .add-record-button, .send-invoice-button, .send-receipt-button {
+    padding: 12px 15px;
     font-size: 0.9em;
-  }
-  .detail-section {
-    padding: var(--spacing-sm);
-  }
-  .detail-section h2 {
-    font-size: 1.4em;
-  }
-  .medical-records-table {
-    min-width: 400px; /* Adjust as needed */
-  }
-  .medical-records-table th,
-  .medical-records-table td {
-    padding: 6px 8px;
-    font-size: 0.8em;
-  }
-  .medical-records-table .view-record-button {
-    padding: 5px 10px;
-    font-size: 0.7rem;
   }
 }
