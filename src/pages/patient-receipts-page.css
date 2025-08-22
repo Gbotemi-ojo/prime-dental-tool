@@ -240,7 +240,7 @@ body {
 
 .form-select:focus, .form-control:focus {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px var(--secondary-color);
+  box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.2);
   outline: none;
   background-color: var(--card-bg);
 }
@@ -571,14 +571,11 @@ body {
     border: 1px solid #f5c6cb;
 }
 
-/* Add to both patient-receipts-page.css and invoice-page.css */
-
 .service-selection {
   display: grid;
   grid-template-columns: 1fr auto auto; /* Service Name | Price | Button */
   gap: var(--spacing-sm);
   align-items: center;
-  flex-wrap: wrap; /* Fallback for smaller screens */
 }
 
 .service-selection .price-input-manual {
@@ -593,20 +590,148 @@ body {
 }
 
 .service-selection .form-control {
-    min-width: 200px; /* Ensure service name has enough space */
+    min-width: 200px;
 }
 
 .service-selection .add-service-button {
-    white-space: nowrap; /* Prevent button text from wrapping */
+    white-space: nowrap;
 }
 
 
-/* Responsive adjustments for the new grid layout */
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+
 @media (max-width: 768px) {
-  .service-selection {
-    grid-template-columns: 1fr; /* Stack on smaller screens */
-  }
-  .service-selection .price-input-manual {
-    width: 100%;
-  }
+    .receipts-container {
+        padding: var(--spacing-md);
+    }
+
+    .receipts-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-sm);
+    }
+
+    .receipts-header h1 {
+        font-size: 1.8em;
+    }
+
+    .receipts-header .actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+    
+    .receipts-header .actions .back-button,
+    .receipts-header .actions .generate-receipt-button {
+        flex-grow: 1;
+        text-align: center;
+        justify-content: center;
+    }
+    
+    .service-selection {
+        grid-template-columns: 1fr; /* Stack on smaller screens */
+    }
+    .service-selection .price-input-manual,
+    .service-selection .form-control {
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Responsive Table for Added Services */
+    .services-table {
+        border: none;
+        box-shadow: none;
+    }
+    
+    .services-table thead {
+        display: none;
+    }
+
+    .services-table tr {
+        display: block;
+        margin-bottom: var(--spacing-md);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: var(--spacing-sm);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .services-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: right;
+        padding: 8px 0;
+    }
+
+    /* Treat the service name like a header for the mobile card */
+    .services-table td[data-label="Service"] {
+        display: block;
+        text-align: left;
+        font-weight: bold;
+        font-size: 1.1em;
+        color: var(--primary-color);
+        padding-bottom: var(--spacing-sm);
+        margin-bottom: var(--spacing-sm);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    /* Hide the auto-label for the service name */
+    .services-table td[data-label="Service"]::before {
+        display: none;
+    }
+
+    /* Add the label text before the cell content */
+    .services-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        text-align: left;
+        color: var(--text-medium);
+        padding-right: 10px;
+    }
+
+    .services-table .price-input,
+    .services-table .quantity-input {
+        width: 120px;
+        padding: 6px;
+    }
+    
+    /* Payment Details adjustments */
+    .payment-method-selection, 
+    .amount-paid-input {
+        grid-template-columns: 1fr; /* Stack label and input */
+        gap: 8px;
+        text-align: left;
+    }
+
+    .payment-method-selection label, 
+    .amount-paid-input label {
+        justify-self: start;
+    }
+
+    .amount-paid-input .form-control {
+        text-align: left; /* Align input text left on mobile */
+    }
+
+    .receipt-display-area {
+        padding: var(--spacing-md);
+    }
+}
+
+
+/* Even smaller screens */
+@media (max-width: 480px) {
+    .receipts-header .actions {
+        flex-direction: column;
+    }
+    
+    .receipts-header .actions button {
+        width: 100%;
+    }
+
+    .services-table .price-input,
+    .services-table .quantity-input {
+        width: 100px;
+    }
 }
