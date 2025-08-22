@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import './patient-receipts-page.css';
 import API_BASE_URL from '../config/api';
+import { addressLine1, addressLine2, clinicName, phoneNumber } from '../config/info';
 
 export default function PatientReceiptsPage() {
     const { patientId } = useParams();
@@ -19,9 +20,10 @@ export default function PatientReceiptsPage() {
     const [isDebtPaymentMode, setIsDebtPaymentMode] = useState(false);
     const [debtContextDescription, setDebtContextDescription] = useState('');
 
-    // State for form inputs
+    // --- MODIFIED: State for form inputs to allow manual entry ---
     const [receiptItems, setReceiptItems] = useState([]);
-    const [selectedService, setSelectedService] = useState('');
+    const [serviceName, setServiceName] = useState('');
+    const [servicePrice, setServicePrice] = useState('');
     const [selectedHMO, setSelectedHMO] = useState('');
     const [hmoCoveredAmount, setHmoCoveredAmount] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('');
@@ -125,10 +127,12 @@ export default function PatientReceiptsPage() {
         { name: "NOOR", status: "ONBOARD", coverage: 0.74 },
         { name: "ALLENZA", status: "ONBOARD", coverage: 0.81 },
         { name: "UNITED HEALTH CARE", status: "ONBOARD", coverage: 0.94 },
-        { name: "QUEST", status: "ONBOARD", coverage: 0.8 }
+        { name: "QUEST", status: "ONBOARD", coverage: 0.8 },
+        { name: "HYGEIA", status: "ONBOARD", coverage: 0.75 },
+        { name: "NEM", status: "ONBOARD", coverage: 0.8 },
+        { name: "KENNEDIA", status: "ONBOARD", coverage: 0.85 }
     ];
 
-    // --- MODIFIED: Data Fetching and Mode Setting ---
     useEffect(() => {
         const fetchReceiptDetails = async () => {
             const token = localStorage.getItem('jwtToken');
@@ -155,7 +159,6 @@ export default function PatientReceiptsPage() {
             }
 
             try {
-                // 1. Fetch Patient Details
                 const patientResponse = await fetch(`${API_BASE_URL}/api/patients/${parsedPatientId}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -173,7 +176,6 @@ export default function PatientReceiptsPage() {
                     setSelectedHMO(patientData.hmo.name);
                 }
 
-                // 2. Fetch Dental Records for context (regardless of debt status)
                 let latestRecord = null;
                 const recordsResponse = await fetch(`${API_BASE_URL}/api/patients/${parsedPatientId}/dental-records`, {
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -192,19 +194,16 @@ export default function PatientReceiptsPage() {
                     console.warn(`Failed to fetch dental records. Status: ${recordsResponse.status}`);
                 }
 
-                // 3. CORE LOGIC: Check for outstanding balance and set mode
                 const outstandingBalance = parseFloat(patientData.outstanding);
                 if (outstandingBalance > 0) {
                     setIsDebtPaymentMode(true);
                     toast.info(`Patient has an outstanding balance of ₦${outstandingBalance.toFixed(2)}. Only debt payment is allowed.`);
                     setAmountPaid(outstandingBalance.toFixed(2));
                     
-                    // --- NEW: Set context description for the debt ---
                     if (latestRecord && latestRecord.treatmentPlan && Array.isArray(latestRecord.treatmentPlan) && latestRecord.treatmentPlan.length > 0) {
                         setDebtContextDescription(latestRecord.treatmentPlan.join(', '));
                     }
                 } else {
-                    // --- Normal Mode: Pre-populate services from the latest record ---
                     if (latestRecord && latestRecord.treatmentPlan && Array.isArray(latestRecord.treatmentPlan)) {
                         const preAddedItems = latestRecord.treatmentPlan.map((plan, index) => {
                             const serviceInfo = serviceOptions.find(s => s.name.toLowerCase() === plan.toLowerCase().trim());
@@ -233,15 +232,11 @@ export default function PatientReceiptsPage() {
     }, [patientId, navigate]);
 
 
-    // --- MODIFIED: Calculations now respect Debt Payment Mode ---
     const patientHasHMO = !!patient?.hmo?.name;
     const patientHMOName = patientHasHMO ? patient.hmo.name : '';
     const patientHmoCoverageRate = patientHasHMO ? (hmoOptions.find(hmo => hmo.name === patientHMOName)?.coverage || 0) : 0;
     
-    // HMO is only considered if NOT in debt payment mode.
     const isHmoCovered = !isDebtPaymentMode && patientHasHMO && selectedHMO === patientHMOName;
-
-    // Subtotal is 0 in debt mode, otherwise calculated from items.
     const subtotal = isDebtPaymentMode ? 0 : receiptItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     
     let calculatedCoveredAmount = 0;
@@ -249,56 +244,67 @@ export default function PatientReceiptsPage() {
         calculatedCoveredAmount = subtotal * patientHmoCoverageRate;
     }
     const manualHmoCovered = parseFloat(hmoCoveredAmount);
-    // Final covered amount is 0 in debt mode.
     const finalCoveredAmount = isDebtPaymentMode ? 0 : ((manualHmoCovered > 0) ? manualHmoCovered : calculatedCoveredAmount);
     
-    // Total due from THIS VISIT's services is 0 in debt mode.
     const totalDueFromPatient = isDebtPaymentMode ? 0 : (subtotal - finalCoveredAmount);
-
     const parsedAmountPaid = parseFloat(amountPaid) || 0;
     const patientOutstanding = parseFloat(patient?.outstanding) || 0;
     
-    // Balance change from this transaction. This works for both modes:
-    // - Normal Mode: (new bill) - (payment)
-    // - Debt Mode: 0 - (payment)
     const balanceChangeFromThisVisit = totalDueFromPatient - parsedAmountPaid;
-    
-    // The projected new total outstanding balance. This also works for both modes.
     const newTotalOutstanding = patientOutstanding + balanceChangeFromThisVisit;
 
-    // --- Auto-fill amount paid (only in normal mode) ---
     useEffect(() => {
         if (!showReceipt && !isDebtPaymentMode) {
             setAmountPaid(totalDueFromPatient >= 0 ? totalDueFromPatient.toFixed(2) : '0.00');
         }
     }, [totalDueFromPatient, showReceipt, isDebtPaymentMode]);
 
-    // --- Handler functions (Unchanged, but UI will prevent their use in Debt Mode) ---
-    const handleAddService = () => {
-        if (selectedService) {
-            const serviceInfo = serviceOptions.find(s => s.name === selectedService);
-            if (serviceInfo) {
-                setReceiptItems(prevItems => {
-                    const existingItem = prevItems.find(item => item.name === serviceInfo.name);
-                    if (existingItem) {
-                        toast.warn(`"${serviceInfo.name}" is already in the receipt. Adjust quantity if needed.`);
-                        return prevItems;
-                    }
-                    return [
-                        ...prevItems,
-                        {
-                            id: Date.now(),
-                            name: serviceInfo.name,
-                            price: serviceInfo.price,
-                            quantity: 1
-                        }
-                    ];
-                });
-                setSelectedService('');
-            }
+    // --- NEW: Handler to auto-fill price when a service is selected from the datalist ---
+    const handleServiceNameChange = (e) => {
+        const name = e.target.value;
+        setServiceName(name);
+
+        const service = serviceOptions.find(s => s.name === name);
+        if (service) {
+            setServicePrice(service.price.toString());
         } else {
-            toast.warn('Please select a service to add.');
+            // If they type a custom service, clear the price for manual entry
+            setServicePrice('');
         }
+    };
+
+    // --- MODIFIED: Handler to add a service (pre-filled or custom) ---
+    const handleAddService = () => {
+        if (!serviceName.trim()) {
+            toast.warn('Please enter a service name.');
+            return;
+        }
+        if (!servicePrice || parseFloat(servicePrice) < 0) {
+            toast.warn('Please enter a valid, non-negative price for the service.');
+            return;
+        }
+
+        const trimmedServiceName = serviceName.trim();
+
+        setReceiptItems(prevItems => {
+            if (prevItems.find(item => item.name.toLowerCase() === trimmedServiceName.toLowerCase())) {
+                toast.warn(`"${trimmedServiceName}" is already in the receipt. Adjust quantity if needed.`);
+                return prevItems;
+            }
+            return [
+                ...prevItems,
+                {
+                    id: Date.now(),
+                    name: trimmedServiceName,
+                    price: parseFloat(servicePrice),
+                    quantity: 1
+                }
+            ];
+        });
+
+        // Reset inputs for the next entry
+        setServiceName('');
+        setServicePrice('');
     };
 
     const handleRemoveService = (idToRemove) => {
@@ -327,7 +333,6 @@ export default function PatientReceiptsPage() {
         setHmoCoveredAmount('');
     };
 
-    // --- UI Flow Handlers ---
     const handleGenerateReceipt = () => {
         if (!isDebtPaymentMode && receiptItems.length === 0) {
             toast.error('Please add at least one service to generate a receipt.');
@@ -348,7 +353,6 @@ export default function PatientReceiptsPage() {
         window.print();
     };
 
-    // --- MODIFIED: Email sending logic builds payload based on mode ---
     const handleSendEmail = async () => {
         if (!patient || !patient.email) {
             toast.error('Patient email is missing. Cannot send receipt.');
@@ -372,7 +376,6 @@ export default function PatientReceiptsPage() {
 
         setIsSendingEmail(true);
 
-        // --- Payload construction now depends on the UI mode ---
         const payload = {
             patientId: patient.id,
             patientName: patient.name,
@@ -380,7 +383,6 @@ export default function PatientReceiptsPage() {
             receiptNumber: receiptNumber,
             receiptDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
             
-            // In debt mode, "items" just describe the payment. Otherwise, use actual services.
             items: isDebtPaymentMode
                 ? [{
                     description: `Payment towards outstanding balance${debtContextDescription ? ` (${debtContextDescription})` : ''}`,
@@ -395,7 +397,6 @@ export default function PatientReceiptsPage() {
                     totalPrice: item.price * item.quantity
                 })),
 
-            // In debt mode, new charges (subtotal, totalDue) are 0.
             subtotal: isDebtPaymentMode ? 0 : subtotal,
             isHmoCovered: isHmoCovered,
             hmoName: isHmoCovered ? selectedHMO : null,
@@ -436,7 +437,6 @@ export default function PatientReceiptsPage() {
         }
     };
 
-    // --- Loading/Error/Not Found States (Unchanged) ---
     if (loading) {
         return (
             <div className="receipts-container" style={{ textAlign: 'center', padding: '50px' }}>
@@ -468,7 +468,6 @@ export default function PatientReceiptsPage() {
         );
     }
     
-    // --- MODIFIED: Main component render with conditional UI ---
     return (
         <div className="receipts-container">
             <header className="receipts-header">
@@ -517,7 +516,6 @@ export default function PatientReceiptsPage() {
                         {patientHasHMO && (<p><strong>Registered HMO:</strong> {patientHMOName}</p>)}
                     </div>
 
-                    {/* Service and HMO sections are hidden in Debt Payment Mode */}
                     {!isDebtPaymentMode && (
                         <>
                             {latestDentalRecord && (
@@ -529,16 +527,29 @@ export default function PatientReceiptsPage() {
                             )}
 
                             <h2>Services Billed</h2>
+                            {/* --- MODIFIED: Replaced select with datalist input --- */}
                             <div className="service-selection">
-                                <select value={selectedService} onChange={(e) => setSelectedService(e.target.value)} className="form-select">
-                                    <option value="">Select a service</option>
+                                <input
+                                    type="text"
+                                    list="service-options"
+                                    value={serviceName}
+                                    onChange={handleServiceNameChange}
+                                    placeholder="Type or select a service"
+                                    className="form-control"
+                                />
+                                <datalist id="service-options">
                                     {serviceOptions.map((service, index) => (
-                                        <option key={index} value={service.name}>
-                                            {service.name} - ₦{service.price.toLocaleString()}
-                                        </option>
+                                        <option key={index} value={service.name} />
                                     ))}
-                                </select>
-                                <button onClick={handleAddService} className="add-service-button">Add Service</button>
+                                </datalist>
+                                <input
+                                    type="number"
+                                    value={servicePrice}
+                                    onChange={(e) => setServicePrice(e.target.value)}
+                                    placeholder="Price (₦)"
+                                    className="price-input-manual"
+                                />
+                                <button onClick={handleAddService} className="add-service-button">Add</button>
                             </div>
 
                             {receiptItems.length > 0 && (
@@ -549,7 +560,6 @@ export default function PatientReceiptsPage() {
                                             <tr>
                                                 <th>Service</th>
                                                 <th>Quantity</th>
-                                                {/* MODIFIED: Hide price columns for HMO patients */}
                                                 {!isHmoCovered && <th>Unit Price (₦)</th>}
                                                 {!isHmoCovered && <th>Total (₦)</th>}
                                                 <th>Actions</th>
@@ -562,7 +572,6 @@ export default function PatientReceiptsPage() {
                                                     <td>
                                                         <input type="number" value={item.quantity} onChange={(e) => handleQuantityChange(item.id, e.target.value)} className="quantity-input" min="1"/>
                                                     </td>
-                                                    {/* MODIFIED: Hide price inputs for HMO patients */}
                                                     {!isHmoCovered && (
                                                         <>
                                                             <td>
@@ -599,7 +608,6 @@ export default function PatientReceiptsPage() {
 
                     <h2>Payment Details</h2>
                     <div className="payment-summary-grid">
-                         {/* Subtotal and HMO Coverage are hidden in debt mode */}
                         {!isDebtPaymentMode && (
                              <>
                                 <div className="payment-summary-item"><span>Subtotal</span><span>₦{subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></div>
@@ -640,9 +648,10 @@ export default function PatientReceiptsPage() {
             ) : (
                 <div className="receipt-display-area printable-content">
                     <div className="receipt-company-info">
-                        <h2>{process.env.REACT_APP_CLINIC_NAME || 'Prime Dental Clinic'}</h2>
-                        <p>{process.env.REACT_APP_CLINIC_ADDRESS || 'local government, 104, New Ipaja/Egbeda Road, opposite prestige super-market, Alimosho, Ipaja Rd, Ipaja, Lagos 100006, Lagos'}</p>
-                        <p>Phone: {process.env.REACT_APP_CLINIC_PHONE || '0703 070 8877'}</p>
+                        <h2>{clinicName}</h2>
+                        <p>{addressLine1}</p>
+                        <p>{addressLine2}</p>
+                        <p>Phone: {phoneNumber}</p>
                     </div>
                     <div className="receipt-header-display">
                         <h2>Payment Receipt</h2>
@@ -663,7 +672,6 @@ export default function PatientReceiptsPage() {
                     <div className="receipt-services-rendered">
                         <h3>Services Rendered:</h3>
                         <table className="receipt-services-table">
-                            {/* MODIFIED: Table headers and content now respect HMO privacy and show debt context */}
                             <thead>
                                 <tr>
                                     <th>Description</th>
@@ -677,7 +685,6 @@ export default function PatientReceiptsPage() {
                                     <tr>
                                         <td>{`Payment towards outstanding balance${debtContextDescription ? ` (${debtContextDescription})` : ''}`}</td>
                                         <td>1</td>
-                                        {/* In debt mode, isHmoCovered is always false, so prices are shown. This is correct. */}
                                         <td>₦{parsedAmountPaid.toLocaleString()}</td>
                                         <td>₦{parsedAmountPaid.toLocaleString()}</td>
                                     </tr>
@@ -686,7 +693,6 @@ export default function PatientReceiptsPage() {
                                         <tr key={item.id}>
                                             <td>{item.name}</td>
                                             <td>{item.quantity}</td>
-                                            {/* Conditionally render price cells based on HMO coverage */}
                                             {!isHmoCovered && (
                                                 <>
                                                     <td>₦{item.price.toLocaleString()}</td>

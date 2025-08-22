@@ -19,27 +19,26 @@ const hmoOptions = [
     { name: "AVON" }, { name: "ANCHOR" }, { name: "LEADWAY" },
     { name: "NOOR" }, { name: "ALLENZA" }, { name: "UNITED HEALTH CARE" },
     { name: "LEADWAY" }, { name: "QUEST" }, { name: "AVON" },
-    { name: "CLEARLINE" }
+    { name: "CLEARLINE" }, { name: "HYGEIA" }, { name: "NEM" }, { name: "KENNEDIA" }
 ];
 
 export default function EditPatientBio() {
     const { patientId } = useParams();
     const navigate = useNavigate();
 
-    // State for the primary patient's data
+    // UPDATED: Added 'address' field to state
     const [formData, setFormData] = useState({
         name: '',
         sex: '',
         dateOfBirth: '',
         phoneNumber: '',
         email: '',
+        address: '',
         hmo: null,
-        isFamilyHead: false // Track if the patient is a family head
+        isFamilyHead: false
     });
     
-    // State for new family members to be added
     const [newMembers, setNewMembers] = useState([]);
-
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [message, setMessage] = useState('');
@@ -65,12 +64,14 @@ export default function EditPatientBio() {
                 });
                 const data = await response.json();
                 if (response.ok) {
+                    // UPDATED: Set address from fetched data
                     setFormData({
                         name: data.name || '',
                         sex: data.sex || '',
                         dateOfBirth: data.dateOfBirth ? formatDateForInput(data.dateOfBirth) : '',
                         phoneNumber: data.phoneNumber || '',
                         email: data.email || '',
+                        address: data.address || '',
                         hmo: data.hmo || null,
                         isFamilyHead: data.isFamilyHead || false,
                     });
@@ -86,7 +87,6 @@ export default function EditPatientBio() {
         fetchPatientData();
     }, [patientId, navigate]);
 
-    // Handlers for the primary patient form
     const handleChange = (e) => {
         const { name, value } = e.target;
         if (name === 'hmo') {
@@ -97,7 +97,6 @@ export default function EditPatientBio() {
         }
     };
     
-    // Handlers for the new family members form
     const handleMemberChange = (index, e) => {
         const { name, value } = e.target;
         const updatedMembers = [...newMembers];
@@ -121,7 +120,6 @@ export default function EditPatientBio() {
         setIsError(false);
         const token = localStorage.getItem('jwtToken');
 
-        // 1. Update the primary patient's bio
         try {
             const response = await fetch(`${API_BASE_URL}/api/patients/${patientId}`, {
                 method: 'PUT',
@@ -130,17 +128,16 @@ export default function EditPatientBio() {
             });
             const data = await response.json();
             if (!response.ok) {
-                throw new Error(data.message || 'Failed to update patient bio.');
+                throw new Error(data.error || 'Failed to update patient bio.');
             }
             setMessage('Patient bio updated successfully! ');
         } catch (err) {
             setMessage(`Error updating bio: ${err.message}`);
             setIsError(true);
             setSubmitting(false);
-            return; // Stop if bio update fails
+            return;
         }
 
-        // 2. Add new family members if any
         if (newMembers.length > 0) {
             let membersAddedCount = 0;
             for (const member of newMembers) {
@@ -164,11 +161,11 @@ export default function EditPatientBio() {
         }
 
         setSubmitting(false);
-        setTimeout(() => navigate('/patients'), 2000); // Navigate back after showing the message
+        setTimeout(() => navigate(`/patients/${patientId}`), 2000);
     };
 
     if (loading) return <div className="spinner-container"><div className="spinner"></div><p>Loading...</p></div>;
-    if (error) return <div className="edit-patient-bio-container"><p className="error-message">Error: {error}</p></div>;
+    if (error) return <div className="edit-patient-bio-container"><p className="message error">Error: {error}</p></div>;
 
     return (
         <div className="edit-patient-bio-container">
@@ -182,7 +179,6 @@ export default function EditPatientBio() {
             <form onSubmit={handleSubmit} className="edit-patient-bio-form">
                 <section className="form-section">
                     <h3>Patient Information</h3>
-                    {/* Patient Info Fields... */}
                     <div className="form-grid">
                         <div className="form-group">
                             <label htmlFor="name">Full Name *</label>
@@ -208,6 +204,19 @@ export default function EditPatientBio() {
                             <label htmlFor="email">Email Address</label>
                             <input id="email" name="email" type="email" value={formData.email} onChange={handleChange} disabled={!formData.isFamilyHead} title={!formData.isFamilyHead ? "Cannot edit for a family member" : ""} />
                         </div>
+                        {/* UPDATED: Added Address textarea, disabled for non-family heads */}
+                        <div className="form-group">
+                            <label htmlFor="address">Address</label>
+                            <textarea
+                                id="address"
+                                name="address"
+                                rows="3"
+                                value={formData.address}
+                                onChange={handleChange}
+                                disabled={!formData.isFamilyHead}
+                                title={!formData.isFamilyHead ? "Address is inherited from the family head" : "Address is shared by all family members"}
+                            />
+                        </div>
                         <div className="form-group">
                            <label htmlFor="hmo">HMO / Insurance</label>
                            <select id="hmo" name="hmo" value={formData.hmo ? formData.hmo.name : ''} onChange={handleChange} disabled={!formData.isFamilyHead} title={!formData.isFamilyHead ? "Cannot edit for a family member" : ""}>
@@ -218,7 +227,6 @@ export default function EditPatientBio() {
                     </div>
                 </section>
 
-                {/* --- Section to Add Family Members (only for family heads) --- */}
                 {formData.isFamilyHead && (
                     <section className="form-section members-section">
                         <h3>Add Family Members</h3>

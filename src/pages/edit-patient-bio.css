@@ -245,3 +245,21 @@ input:disabled {
     .edit-patient-bio-container { padding: 20px; }
     .form-grid { grid-template-columns: 1fr; }
 }
+
+/* In edit-patient-bio.css */
+
+input, select, textarea { /* Add textarea here */
+    /* ... existing styles ... */
+    font-family: 'Inter', sans-serif; /* Ensure font is inherited */
+    resize: vertical; /* Allow users to resize vertically */
+}
+
+input:focus, select:focus, textarea:focus { /* Add textarea:focus here */
+    /* ... existing styles ... */
+}
+
+input:disabled, textarea:disabled { /* Add textarea:disabled here */
+    background-color: #f1f1f1;
+    cursor: not-allowed;
+    opacity: 0.7;
+}

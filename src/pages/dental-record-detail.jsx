@@ -1,19 +1,12 @@
 // src/pages/dental-record-detail.jsx
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom'; // Import useNavigate
-import './dental-record-detail.css'; // Ensure this CSS file is in the same directory
-import API_BASE_URL from '../config/api'
+import { useParams, useNavigate } from 'react-router-dom';
+import './dental-record-detail.css';
+import API_BASE_URL from '../config/api';
 
-// This component is now ready to be used directly in your React Router setup.
-// Example: <Route path="/patients/:patientId/dental-records/:recordId" element={<DentalRecordDetail />} />
 export default function DentalRecordDetail() {
-  // useParams hook extracts parameters directly from the URL
   const { patientId, recordId } = useParams();
-  const navigate = useNavigate(); // Initialize useNavigate
-
-  // Parse IDs to integers, as URL parameters are strings
-  const parsedPatientId = parseInt(patientId);
-  const parsedRecordId = parseInt(recordId);
+  const navigate = useNavigate();
 
   const [record, setRecord] = useState(null);
   const [patientName, setPatientName] = useState('');
@@ -28,11 +21,12 @@ export default function DentalRecordDetail() {
       setUserRole(role);
 
       if (!token) {
-        navigate('/login'); // Use navigate for redirection
+        navigate('/login');
         return;
       }
 
-      // Validate parsed IDs
+      const parsedPatientId = parseInt(patientId);
+      const parsedRecordId = parseInt(recordId);
       if (isNaN(parsedPatientId) || isNaN(parsedRecordId)) {
         setError("Invalid Patient ID or Record ID provided in the URL.");
         setLoading(false);
@@ -40,7 +34,6 @@ export default function DentalRecordDetail() {
       }
 
       try {
-        // Fetch Patient Name (to display in header)
         const patientResponse = await fetch(`${API_BASE_URL}/api/patients/${parsedPatientId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -49,10 +42,8 @@ export default function DentalRecordDetail() {
           setPatientName(patientData.name);
         } else {
           console.error("Failed to fetch patient name for record detail.");
-          // You might set an error here too if patient name is crucial
         }
 
-        // Fetch Dental Record Details for the specific patient and record
         const recordResponse = await fetch(`${API_BASE_URL}/api/patients/${parsedPatientId}/dental-records/${parsedRecordId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -63,8 +54,8 @@ export default function DentalRecordDetail() {
         } else if (recordResponse.status === 404) {
           setError('Dental record not found.');
         } else if (recordResponse.status === 401 || recordResponse.status === 403) {
-          localStorage.clear(); // Clear token if unauthorized/forbidden
-          navigate('/login'); // Redirect to login
+          localStorage.clear();
+          navigate('/login');
         } else {
           const errorData = await recordResponse.json();
           setError(errorData.error || `Failed to fetch dental record details. Status: ${recordResponse.status}`);
@@ -78,12 +69,10 @@ export default function DentalRecordDetail() {
     };
 
     fetchRecordDetails();
-  }, [parsedPatientId, parsedRecordId, navigate]); // Add navigate to dependency array
+  }, [patientId, recordId, navigate]);
 
-  // Helper to render quadrant data in a structured way
   const renderQuadrantData = (data) => {
-    // Check if data is null/undefined or if all quadrant values are null
-    if (!data || (data.q1 === null && data.q2 === null && data.q3 === null && data.q4 === null)) {
+    if (!data || Object.values(data).every(v => v === null || v === '')) {
       return <div className="quadrant-grid-na">N/A</div>;
     }
     return (
@@ -98,7 +87,7 @@ export default function DentalRecordDetail() {
 
   if (loading) {
     return (
-      <div className="app-container"> {/* Keep app-container for consistent centering/margins */}
+      <div className="app-container">
         <div className="record-detail-container loading-state">
           <p className="info-message">Loading dental record details...</p>
           <div className="spinner"></div>
@@ -112,8 +101,7 @@ export default function DentalRecordDetail() {
       <div className="app-container">
         <div className="record-detail-container error-state">
           <p className="info-message error">Error: {error}</p>
-          {/* Use parsedPatientId for back link */}
-          <button onClick={() => navigate(`/patients/${parsedPatientId}`)} className="back-button">
+          <button onClick={() => navigate(`/patients/${patientId}`)} className="back-button">
             <i className="fas fa-arrow-left"></i> Back to Patient Details
           </button>
         </div>
@@ -126,8 +114,7 @@ export default function DentalRecordDetail() {
       <div className="app-container">
         <div className="record-detail-container no-record-state">
           <p className="info-message">Dental record not found.</p>
-          {/* Use parsedPatientId for back link */}
-          <button onClick={() => navigate(`/patients/${parsedPatientId}`)} className="back-button">
+          <button onClick={() => navigate(`/patients/${patientId}`)} className="back-button">
             <i className="fas fa-arrow-left"></i> Back to Patient Details
           </button>
         </div>
@@ -137,27 +124,21 @@ export default function DentalRecordDetail() {
 
   return (
     <div className="record-detail-container">
-      <header className="detail-header"> {/* This header will be sticky */}
+      <header className="detail-header">
         <h1>Dental Record for <span className="patient-name-highlight">{patientName || 'Patient'}</span></h1>
         <div className="actions">
-          {/* Back Button */}
-          <button onClick={() => navigate(`/patients/${parsedPatientId}`)} className="back-button">
+          <button onClick={() => navigate(`/patients/${patientId}`)} className="back-button">
             <i className="fas fa-arrow-left"></i> Back to Patient Details
           </button>
-
-          {/* Conditional buttons for owner/staff */}
-          {(userRole === 'owner' || userRole === 'staff') && (
+          {(userRole === 'owner' || userRole === 'staff' || userRole === 'doctor' || userRole === 'nurse') && (
             <>
-              <button onClick={() => navigate(`/patients/${parsedPatientId}/dental-records/${record?.id}/edit`)} className="edit-button">
+              <button onClick={() => navigate(`/patients/${patientId}/dental-records/${record?.id}/edit`)} className="edit-button">
                 <i className="fas fa-edit"></i> Edit Record
               </button>
-              {/* Send Invoice Button related to this record */}
-              {/* CORRECTED LINK: Navigates to /patients/:patientId/invoice */}
-              <button onClick={() => navigate(`/patients/${parsedPatientId}/invoice`)} className="send-invoice-button">
+              <button onClick={() => navigate(`/patients/${patientId}/invoice`)} className="send-invoice-button">
                   <i className="fas fa-paper-plane"></i> Send Invoice
               </button>
-              {/* Send Receipt Button related to this record */}
-              <button onClick={() => navigate(`/patients/${parsedPatientId}/receipts`)} className="send-receipt-button">
+              <button onClick={() => navigate(`/patients/${patientId}/receipts`)} className="send-receipt-button">
                   <i className="fas fa-envelope"></i> Send Receipt
               </button>
             </>
@@ -165,43 +146,25 @@ export default function DentalRecordDetail() {
         </div>
       </header>
 
-      {/* --- GENERAL INFORMATION --- */}
       <section className="detail-section">
         <h2>General Information</h2>
         <div className="detail-grid">
-          <div className="detail-item">
-            <strong>Record ID:</strong> <span>{record.id}</span>
-          </div>
-          <div className="detail-item">
-            {/* Display date nicely */}
-            <strong>Record Date:</strong> <span>{record.recordDate ? new Date(record.recordDate).toLocaleDateString() : 'N/A'}</span>
-          </div>
-          <div className="detail-item">
-            <strong>Doctor:</strong> <span>{record.doctorUsername || 'N/A'}</span>
-          </div>
-          <div className="detail-item full-width">
-            <strong>Chief Complaint:</strong> <span>{record.complaint || 'N/A'}</span>
-          </div>
+          <div className="detail-item"><strong>Record ID:</strong> <span>{record.id}</span></div>
+          <div className="detail-item"><strong>Record Date:</strong> <span>{record.createdAt ? new Date(record.createdAt).toLocaleDateString() : 'N/A'}</span></div>
+          <div className="detail-item"><strong>Doctor:</strong> <span>{record.doctorUsername || 'N/A'}</span></div>
+          <div className="detail-item full-width"><strong>Chief Complaint:</strong> <span>{record.complaint || 'N/A'}</span></div>
         </div>
       </section>
 
-      {/* --- HISTORY --- */}
       <section className="detail-section">
         <h2>History</h2>
         <div className="detail-grid">
-          <div className="detail-item full-width">
-            <strong>History of Present Complaint:</strong> <span>{record.historyOfPresentComplaint || 'N/A'}</span>
-          </div>
-          <div className="detail-item full-width">
-            <strong>Past Dental History:</strong> <span>{record.pastDentalHistory || 'N/A'}</span>
-          </div>
-          <div className="detail-item full-width">
-            <strong>Family & Social History:</strong> <span>{record.familySocialHistory || 'N/A'}</span>
-          </div>
+          <div className="detail-item full-width"><strong>History of Present Complaint:</strong> <span>{record.historyOfPresentComplaint || 'N/A'}</span></div>
+          <div className="detail-item full-width"><strong>Past Dental History:</strong> <span>{record.pastDentalHistory || 'N/A'}</span></div>
+          <div className="detail-item full-width"><strong>Family & Social History:</strong> <span>{record.familySocialHistory || 'N/A'}</span></div>
         </div>
       </section>
 
-      {/* --- MEDICAL HISTORY (MEDICATIONS) --- */}
       <section className="detail-section">
         <h2>Medical History (Medications)</h2>
         <div className="medication-tags-group">
@@ -213,81 +176,52 @@ export default function DentalRecordDetail() {
           {record.medicationPUD && <span className="medication-tag tag-pud">PUD (Peptic Ulcer Disease)</span>}
           {record.medicationBloodDisorder && <span className="medication-tag tag-blood">Blood Disorder</span>}
           {record.medicationAllergy && <span className="medication-tag tag-allergy">Allergy</span>}
-          {!record.medicationS && !record.medicationH && !record.medicationA && !record.medicationD &&
-           !record.medicationE && !record.medicationPUD && !record.medicationBloodDisorder && !record.medicationAllergy &&
+          {record.medicationHIV && <span className="medication-tag tag-hiv">HIV</span>}
+          {record.medicationHepatitis && <span className="medication-tag tag-hepatitis">Hepatitis</span>}
+          {!record.medicationS && !record.medicationH && !record.medicationA && !record.medicationD && !record.medicationE && !record.medicationPUD && !record.medicationBloodDisorder && !record.medicationAllergy && !record.medicationHIV && !record.medicationHepatitis &&
            <span className="info-message no-medications">No specific medications noted.</span>
           }
         </div>
       </section>
 
-      {/* --- CLINICAL EXAMINATIONS --- */}
       <section className="detail-section">
         <h2>Clinical Examinations</h2>
         <div className="detail-grid">
-          <div className="detail-item full-width">
-            <strong>Extra-Oral Examination:</strong> <span>{record.extraOralExamination || 'N/A'}</span>
-          </div>
-          <div className="detail-item full-width">
-            <strong>Intra-Oral Examination:</strong> <span>{record.intraOralExamination || 'N/A'}</span>
-          </div>
+          <div className="detail-item full-width"><strong>Extra-Oral Examination:</strong> <span>{record.extraOralExamination || 'N/A'}</span></div>
+          <div className="detail-item full-width"><strong>Intra-Oral Examination:</strong> <span>{record.intraOralExamination || 'N/A'}</span></div>
         </div>
-
         <h3>Oral Charting</h3>
         <div className="quadrant-display-area">
-          <div className="quadrant-category">
-            <h4>Teeth Present</h4>
-            {renderQuadrantData(record.teethPresent)}
-          </div>
-          <div className="quadrant-category">
-            <h4>Carious Cavity</h4>
-            {renderQuadrantData(record.cariousCavity)}
-          </div>
-          <div className="quadrant-category">
-            <h4>Filled Teeth</h4>
-            {renderQuadrantData(record.filledTeeth)}
-          </div>
-          <div className="quadrant-category">
-            <h4>Missing Teeth</h4>
-            {renderQuadrantData(record.missingTeeth)}
-          </div>
-          <div className="quadrant-category">
-            <h4>Fractured Teeth</h4>
-            {renderQuadrantData(record.fracturedTeeth)}
-          </div>
+          <div className="quadrant-category"><h4>Teeth Present</h4>{renderQuadrantData(record.teethPresent)}</div>
+          <div className="quadrant-category"><h4>Carious Cavity</h4>{renderQuadrantData(record.cariousCavity)}</div>
+          <div className="quadrant-category"><h4>Filled Teeth</h4>{renderQuadrantData(record.filledTeeth)}</div>
+          <div className="quadrant-category"><h4>Missing Teeth</h4>{renderQuadrantData(record.missingTeeth)}</div>
+          <div className="quadrant-category"><h4>Fractured Teeth</h4>{renderQuadrantData(record.fracturedTeeth)}</div>
         </div>
-
         <div className="detail-grid">
-          <div className="detail-item full-width">
-            <strong>Periodontal Condition:</strong> <span>{record.periodontalCondition || 'N/A'}</span>
-          </div>
-          <div className="detail-item">
-            <strong>Oral Hygiene:</strong> <span>{record.oralHygiene || 'N/A'}</span>
-          </div>
-          <div className="detail-item">
-            <strong>Calculus:</strong> <span>{record.calculus || 'N/A'}</span>
-          </div>
+          <div className="detail-item full-width"><strong>Periodontal Condition:</strong> <span>{record.periodontalCondition || 'N/A'}</span></div>
+          <div className="detail-item"><strong>Oral Hygiene:</strong> <span>{record.oralHygiene || 'N/A'}</span></div>
+          <div className="detail-item"><strong>Calculus:</strong> <span>{record.calculus || 'N/A'}</span></div>
         </div>
       </section>
 
-      {/* --- DIAGNOSIS & TREATMENT --- */}
       <section className="detail-section">
         <h2>Diagnosis & Treatment</h2>
         <div className="detail-grid">
-          <div className="detail-item full-width">
-            <strong>Investigations:</strong> <span>{record.investigations || 'N/A'}</span>
-          </div>
-          <div className="detail-item full-width">
-            <strong>X-ray Findings:</strong> <span>{record.xrayFindings || 'N/A'}</span>
-          </div>
-          <div className="detail-item full-width">
-            <strong>Provisional Diagnosis:</strong>
-            <span>{Array.isArray(record.provisionalDiagnosis) && record.provisionalDiagnosis.length > 0 ? record.provisionalDiagnosis.join(', ') : 'N/A'}</span>
-          </div>
-          <div className="detail-item full-width">
-            <strong>Treatment Plan:</strong>
-            <span>{Array.isArray(record.treatmentPlan) && record.treatmentPlan.length > 0 ? record.treatmentPlan.join(', ') : 'N/A'}</span>
-          </div>
+          <div className="detail-item full-width"><strong>Investigations:</strong> <span>{record.investigations || 'N/A'}</span></div>
+          <div className="detail-item full-width"><strong>X-ray Findings:</strong> <span>{record.xrayFindings || 'N/A'}</span></div>
+          <div className="detail-item full-width"><strong>Provisional Diagnosis:</strong><span>{Array.isArray(record.provisionalDiagnosis) && record.provisionalDiagnosis.length > 0 ? record.provisionalDiagnosis.join(', ') : 'N/A'}</span></div>
+          <div className="detail-item full-width"><strong>Treatment Plan:</strong><span>{Array.isArray(record.treatmentPlan) && record.treatmentPlan.length > 0 ? record.treatmentPlan.join(', ') : 'N/A'}</span></div>
+          <div className="detail-item full-width"><strong>Treatment Done:</strong><span>{record.treatmentDone || 'N/A'}</span></div>
         </div>
+        {record.xrayUrl && (
+          <div className="xray-image-section">
+            <h3>X-ray Image</h3>
+            <a href={record.xrayUrl} target="_blank" rel="noopener noreferrer" title="Click to view full image">
+              <img src={record.xrayUrl} alt={`X-ray for ${patientName}`} className="xray-image" />
+            </a>
+          </div>
+        )}
       </section>
     </div>
   );

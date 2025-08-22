@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import './patient-form.css'; // Import the CSS file
 import API_BASE_URL from '../config/api';
+import { clinicName, phoneNumber } from '../config/info';
+import { ClinicDescription } from '../config/info';
+import { addressLine1 } from '../config/info';
+import { addressLine2 } from '../config/info';
 
 // HMO Options for the dropdown, copied from InvoicePage.jsx for consistency
 const hmoOptions = [
@@ -17,7 +21,7 @@ const hmoOptions = [
     { name: "AXA MANSARD" }, { name: "BASTION" }, { name: "REDCARE" },
     { name: "AVON" }, { name: "ANCHOR" }, { name: "LEADWAY" },
     { name: "NOOR" }, { name: "ALLENZA" }, { name: "UNITED HEALTH CARE" },
-    { name: "QUEST" }
+    { name: "QUEST" },{ name: "HYGEIA" }, { name: "NEM" }, { name: "KENNEDIA" }
 ];
 
 // Main component to render the Patient Registration Portal
@@ -35,21 +39,22 @@ function PatientRegistrationPortal() {
   // State for the type of new account: 'none', 'individual', 'family'
   const [newAccountType, setNewAccountType] = useState('none');
 
-  // State for form data (used for individual patient or family head)
+  // UPDATED: Added 'address' to the initial state
   const [headPatientData, setHeadPatientData] = useState({
     name: '',
     sex: '',
     dateOfBirth: '',
     phoneNumber: '',
     email: '',
+    address: '',
     hmo: null,
   });
 
   // State for family members
   const [familyMembers, setFamilyMembers] = useState([{ name: '', sex: '', dateOfBirth: '' }]);
 
-  // State for returning patient phone number
-  const [returningPatientPhoneNumber, setReturningPatientPhoneNumber] = useState('');
+  // State for returning patient identifier (can be phone or email)
+  const [returningIdentifier, setReturningIdentifier] = useState('');
 
   // Unified state for loading, message, and error status
   const [submissionStatus, setSubmissionStatus] = useState({
@@ -60,11 +65,11 @@ function PatientRegistrationPortal() {
 
   // Clinic Information
   const clinicInfo = {
-    name: 'Prime Dental Clinic',
-    tagline: 'Your smile, our priority',
-    addressLine1: 'Local government, 104, New Ipaja/Egbeda Road,',
-    addressLine2: 'opposite prestige super-market, Alimosho, Ipaja Rd, Ipaja, Lagos 100006, Lagos',
-    phone: '0703 070 8877',
+    name: clinicName,
+    tagline: ClinicDescription,
+    addressLine1: addressLine1,
+    addressLine2: addressLine2,
+    phone: phoneNumber
   };
 
   // --- HANDLERS FOR HEAD/INDIVIDUAL PATIENT ---
@@ -96,10 +101,11 @@ function PatientRegistrationPortal() {
     }
   };
 
+  // UPDATED: Added 'address' to the reset state
   const resetFormState = () => {
-    setHeadPatientData({ name: '', sex: '', dateOfBirth: '', phoneNumber: '', email: '', hmo: null });
+    setHeadPatientData({ name: '', sex: '', dateOfBirth: '', phoneNumber: '', email: '', address: '', hmo: null });
     setFamilyMembers([{ name: '', sex: '', dateOfBirth: '' }]);
-    setReturningPatientPhoneNumber('');
+    setReturningIdentifier('');
   }
 
   // --- SUBMISSION HANDLERS ---
@@ -125,12 +131,12 @@ function PatientRegistrationPortal() {
       url = `${API_BASE_URL}/api/patients/guest-family-submit`;
       body = { ...headPatientData, members: familyMembers };
     } else if (accountType === 'returning') {
-        if (!returningPatientPhoneNumber) {
-            setSubmissionStatus({ loading: false, message: 'Please enter the phone number.', isError: true });
+        if (!returningIdentifier) {
+            setSubmissionStatus({ loading: false, message: 'Please enter your phone number or email.', isError: true });
             return;
         }
         url = `${API_BASE_URL}/api/patients/returning-guest-visit`;
-        body = { phoneNumber: returningPatientPhoneNumber };
+        body = { identifier: returningIdentifier };
     }
 
     try {
@@ -181,6 +187,18 @@ function PatientRegistrationPortal() {
       <div className="form-group">
         <label htmlFor="email">Email Address</label>
         <input type="email" id="email" name="email" value={headPatientData.email} onChange={handleHeadDataChange} placeholder="e.g., john.doe@example.com" />
+      </div>
+      {/* UPDATED: Added Address textarea */}
+      <div className="form-group">
+        <label htmlFor="address">Address</label>
+        <textarea
+          id="address"
+          name="address"
+          value={headPatientData.address}
+          onChange={handleHeadDataChange}
+          placeholder="e.g., 123 Main Street, Lagos"
+          rows="3"
+        ></textarea>
       </div>
       <div className="form-group">
         <label htmlFor="hmo">HMO / Insurance Provider</label>
@@ -288,11 +306,18 @@ function PatientRegistrationPortal() {
       {currentForm === 'returning' && (
         <div className="form-section returning-patient-section">
           <h2>Returning Patient Check-in</h2>
-          <p className="section-description">If you've visited us before, please enter your phone number to check-in.</p>
+          <p className="section-description">If you've visited us before, please enter your phone number or email to check-in.</p>
           <form onSubmit={(e) => handleSubmit(e, 'returning')}>
             <div className="form-group">
-              <label htmlFor="returningPhoneNumber">Phone Number *</label>
-              <input type="tel" id="returningPhoneNumber" value={returningPatientPhoneNumber} onChange={(e) => setReturningPatientPhoneNumber(e.target.value)} required placeholder="e.g., +1234567890" />
+              <label htmlFor="returningIdentifier">Phone Number or Email *</label>
+              <input 
+                type="text" 
+                id="returningIdentifier" 
+                value={returningIdentifier} 
+                onChange={(e) => setReturningIdentifier(e.target.value)} 
+                required 
+                placeholder="e.g., +1234567890 or name@example.com" 
+              />
             </div>
             <div className="form-actions">
               <button type="submit" disabled={submissionStatus.loading} className="returning-button">

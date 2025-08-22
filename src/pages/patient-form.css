@@ -455,3 +455,22 @@ button[type="submit"]:hover {
     font-size: 1.6em;
   }
 }
+
+/* In patient-form.css */
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="date"],
+textarea, /* Add this */
+select {
+  /* ... existing styles ... */
+  font-family: 'Inter', sans-serif; /* Ensure font is inherited */
+  resize: vertical; /* Allow users to resize vertically */
+}
+
+input:focus,
+textarea:focus, /* Add this */
+select:focus {
+  /* ... existing styles ... */
+}

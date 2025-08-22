@@ -1,44 +1,36 @@
 // src/pages/patient-detail.jsx
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom'; // Import useParams and useNavigate
-import './patient-detail.css'; // Import the CSS file for patient detail
+import { useParams, useNavigate } from 'react-router-dom';
+import './patient-detail.css';
 import API_BASE_URL from '../config/api';
 
-// This component is designed to be rendered by React Router
-// Example: <Route path="/patients/:patientId" element={<PatientDetail />} />
 export default function PatientDetail() {
-  // Directly get the patientId from the URL parameters as defined in App.jsx
-  const { patientId } = useParams(); // Destructuring 'patientId' directly
-  const navigate = useNavigate(); // Initialize navigate hook for programmatic redirection
+  const { patientId } = useParams();
+  const navigate = useNavigate();
 
   const [patient, setPatient] = useState(null);
   const [dentalRecords, setDentalRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [userRole, setUserRole] = useState(null); // To determine access for buttons
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       const token = localStorage.getItem('jwtToken');
       const role = localStorage.getItem('role');
-
-      setUserRole(role); // Set role state immediately from localStorage
+      setUserRole(role);
 
       if (!token) {
-        console.log("[PatientDetail] No JWT token found in localStorage. Redirecting to login.");
-        navigate('/login'); // Use navigate for redirection
+        navigate('/login');
         return;
       }
 
-      // Restriction 3: Only owner and doctor should be allowed on this page
-      if (role !== 'owner' && role !== 'doctor') {
-        console.log(`[PatientDetail] User role '${role}' not authorized to view this page. Redirecting to dashboard.`);
-        navigate('/dashboard'); // Redirect unauthorized users
+      if (role !== 'owner' && role !== 'doctor' && role !== 'staff' && role !== 'nurse') {
+        navigate('/dashboard');
         return;
       }
-
-      // Parse the patientId from URL string to integer for API calls
-      const parsedPatientId = parseInt(patientId); // Use 'patientId' directly from useParams
+      
+      const parsedPatientId = parseInt(patientId);
       if (isNaN(parsedPatientId)) {
         setError("Invalid Patient ID provided in the URL.");
         setLoading(false);
@@ -46,7 +38,6 @@ export default function PatientDetail() {
       }
 
       try {
-        // Fetch Patient Details
         const patientResponse = await fetch(`${API_BASE_URL}/api/patients/${parsedPatientId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -54,24 +45,17 @@ export default function PatientDetail() {
         if (patientResponse.ok) {
           const patientData = await patientResponse.json();
           setPatient(patientData);
-        } else if (patientResponse.status === 404) {
-          setError('Patient not found.');
-          setLoading(false);
-          return;
-        } else if (patientResponse.status === 401 || patientResponse.status === 403) {
-          console.error(`[PatientDetail] Authentication error (${patientResponse.status}):`, patientResponse.statusText);
-          localStorage.clear(); // Clear token if unauthorized/forbidden
-          navigate('/login'); // Redirect to login
-          return;
         } else {
           const errorData = await patientResponse.json();
-          setError(errorData.error || `Failed to fetch patient details. Status: ${patientResponse.status}`);
-          console.error('[PatientDetail] Patient API Error:', patientResponse.status, patientResponse.statusText, errorData);
+          setError(errorData.error || 'Failed to fetch patient details.');
+          if (patientResponse.status === 401 || patientResponse.status === 403) {
+            localStorage.clear();
+            navigate('/login');
+          }
           setLoading(false);
           return;
         }
 
-        // Fetch Dental Records for this patient
         const recordsResponse = await fetch(`${API_BASE_URL}/api/patients/${parsedPatientId}/dental-records`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -79,28 +63,19 @@ export default function PatientDetail() {
         if (recordsResponse.ok) {
           const recordsData = await recordsResponse.json();
           setDentalRecords(recordsData);
-        } else if (recordsResponse.status === 401 || recordsResponse.status === 403) {
-          console.error(`[PatientDetail] Authentication error (${recordsResponse.status}):`, recordsResponse.statusText);
-          localStorage.clear();
-          navigate('/login'); // Redirect to login
-          return;
         } else {
           const errorData = await recordsResponse.json();
-          setError(errorData.error || `Failed to fetch dental records. Status: ${recordsResponse.status}`);
-          console.error('[PatientDetail] Records API Error:', recordsResponse.status, recordsResponse.statusText, errorData);
+          setError(errorData.error || 'Failed to fetch dental records.');
         }
 
       } catch (err) {
-        setError('Network error. Could not connect to the server. Please ensure the backend is running and accessible.');
-        console.error('Network Error:', err);
+        setError('Network error. Could not connect to the server.');
       } finally {
         setLoading(false);
       }
     };
-
-    // Re-run effect if patientId or navigate function changes
     fetchData();
-  }, [patientId, navigate, userRole]); // Added userRole to dependency array to react to its changes
+  }, [patientId, navigate]);
 
   if (loading) {
     return (
@@ -118,7 +93,6 @@ export default function PatientDetail() {
       <div className="app-container">
         <div className="patient-detail-container">
           <p className="info-message error">Error: {error}</p>
-          {/* Link back to patient list */}
           <button onClick={() => navigate('/patients')} className="back-button" style={{ margin: '20px auto', display: 'block', width: 'fit-content' }}>
             <i className="fas fa-arrow-left"></i> Back to Patient List
           </button>
@@ -132,7 +106,6 @@ export default function PatientDetail() {
       <div className="app-container">
         <div className="patient-detail-container">
           <p className="info-message">Patient data not found.</p>
-          {/* Link back to patient list */}
           <button onClick={() => navigate('/patients')} className="back-button" style={{ margin: '20px auto', display: 'block', width: 'fit-content' }}>
             <i className="fas fa-arrow-left"></i> Back to Patient List
           </button>
@@ -146,26 +119,22 @@ export default function PatientDetail() {
       <header className="detail-header">
         <h1>Patient: {patient.name}</h1>
         <div className="actions">
-          {/* Back to List Button */}
           <button onClick={() => navigate('/patients')} className="back-button">
             <i className="fas fa-arrow-left"></i> Back to List
           </button>
-
-          {/* ADD DENTAL RECORD BUTTON - Now visible for owner, staff, nurse, and doctor */}
-          {(userRole === 'owner' || userRole === 'staff' || userRole === 'nurse' || userRole === 'doctor') && (
+          <button onClick={() => navigate(`/patients/${patient.id}/edit`)} className="edit-button">
+            <i className="fas fa-user-edit"></i> Edit Bio
+          </button>
+          {(userRole === 'owner' || userRole === 'doctor') && (
             <button onClick={() => navigate(`/patients/${patient.id}/dental-records/new`)} className="add-record-button">
               <i className="fas fa-plus-circle"></i> Add Dental Record
             </button>
           )}
-
-          {/* Buttons for Invoice and Receipt - Not visible for doctor */}
-          {(userRole === 'owner' || userRole === 'staff' || userRole === 'nurse') && ( // Restriction 1: Not visible for doctor
+          {(userRole === 'owner' || userRole === 'staff' || userRole === 'nurse') && (
             <>
-              {/* Send Invoice Button */}
               <button onClick={() => navigate(`/patients/${patient.id}/invoice`)} className="send-invoice-button">
                 <i className="fas fa-file-invoice"></i> Send Invoice
               </button>
-              {/* Send Receipt Button */}
               <button onClick={() => navigate(`/patients/${patient.id}/receipts`)} className="send-receipt-button">
                 <i className="fas fa-receipt"></i> Send Receipt
               </button>
@@ -176,26 +145,33 @@ export default function PatientDetail() {
 
       <section className="detail-section">
         <h2>Demographic Information</h2>
-        <div className="detail-grid"> {/* Apply detail-grid for proper layout */}
+        <div className="detail-grid">
           <div className="detail-item">
             <strong>Patient ID:</strong> <span>{patient.id}</span>
           </div>
           <div className="detail-item">
             <strong>Phone Number:</strong>{' '}
-            {/* Restriction 2: Conditional rendering for phone number */}
-            {(userRole === 'doctor') ? (
-              <span>null</span> // Display N/A for doctors
+            {(userRole === 'doctor' || userRole === 'nurse') ? (
+              <span className="restricted-info">Restricted</span>
             ) : (
-              <span>{patient.phoneNumber || 'null'}</span>
+              <span>{patient.phoneNumber || 'N/A'}</span>
             )}
           </div>
           <div className="detail-item">
             <strong>Email:</strong>{' '}
-            {/* Restriction 2: Conditional rendering for email */}
-            {(userRole === 'doctor') ? (
-              <span>null</span> // Display null for doctors
+            {(userRole === 'doctor' || userRole === 'nurse') ? (
+              <span className="restricted-info">Restricted</span>
             ) : (
-              <span>{patient.email || 'null'}</span>
+              <span>{patient.email || 'N/A'}</span>
+            )}
+          </div>
+          {/* UPDATED: Added Address field with role-based restriction */}
+          <div className="detail-item">
+            <strong>Address:</strong>{' '}
+            {(userRole === 'doctor' || userRole === 'nurse') ? (
+              <span className="restricted-info">Restricted</span>
+            ) : (
+              <span>{patient.address || 'N/A'}</span>
             )}
           </div>
           <div className="detail-item">
@@ -204,14 +180,15 @@ export default function PatientDetail() {
           <div className="detail-item">
             <strong>Sex:</strong> <span>{patient.sex}</span>
           </div>
-          {/* NEW: HMO Covered status display */}
           <div className="detail-item">
             <strong>HMO Covered:</strong>{' '}
             <span>
-              {patient.hmo && patient.hmo.name ? `Yes (${patient.hmo.name})` : 'No'}
+              {patient.hmo && patient.hmo.name ? 
+                <strong className="hmo-covered-yes">Yes ({patient.hmo.name})</strong> : 
+                <strong className="hmo-covered-no">No</strong>
+              }
             </span>
           </div>
-          {/* Add more patient details as needed */}
         </div>
       </section>
 
@@ -238,14 +215,15 @@ export default function PatientDetail() {
                   <tr key={record.id}>
                     <td>{record.id}</td>
                     <td>{record.createdAt ? new Date(record.createdAt).toLocaleDateString() : 'N/A'}</td>
-                    <td>{record.complaint || 'N/A'}</td>
-                    {/* Display Provisional Diagnosis as comma-separated string */}
-                    <td>{Array.isArray(record.provisionalDiagnosis) ? record.provisionalDiagnosis.join(', ') : record.provisionalDiagnosis || 'N/A'}</td>
-                    {/* Display Treatment Plan as comma-separated string */}
-                    <td>{Array.isArray(record.treatmentPlan) ? record.treatmentPlan.join(', ') : record.treatmentPlan || 'N/A'}</td>
+                    <td title={record.complaint || ''}>{record.complaint || 'N/A'}</td>
+                    <td title={Array.isArray(record.provisionalDiagnosis) ? record.provisionalDiagnosis.join(', ') : record.provisionalDiagnosis || ''}>
+                      {Array.isArray(record.provisionalDiagnosis) ? record.provisionalDiagnosis.join(', ') : record.provisionalDiagnosis || 'N/A'}
+                    </td>
+                    <td title={Array.isArray(record.treatmentPlan) ? record.treatmentPlan.join(', ') : record.treatmentPlan || ''}>
+                      {Array.isArray(record.treatmentPlan) ? record.treatmentPlan.join(', ') : record.treatmentPlan || 'N/A'}
+                    </td>
                     <td>{record.doctorUsername || 'N/A'}</td>
                     <td>
-                      {/* Link to dental record detail now includes patient.id */}
                       <button onClick={() => navigate(`/patients/${patient.id}/dental-records/${record.id}`)} className="view-record-button">
                         View
                       </button>

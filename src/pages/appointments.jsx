@@ -1,17 +1,16 @@
 // src/pages/appointments.jsx
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify'; // Import toast
-import 'react-toastify/dist/ReactToastify.css'; // Import toast CSS
-import API_BASE_URL from '../config/api'; // Import API base URL
-import './appointments.css'; // Import the dedicated CSS file
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import API_BASE_URL from '../config/api';
+import './appointments.css';
 
-const AppointmentCard = ({ patient, onSendReminder, onNavigate, sendingReminderId }) => {
+const AppointmentCard = ({ patient, onSendReminder, onNavigate, sendingReminderId, viewMode }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const hasOutstanding = parseFloat(patient.outstanding) > 0;
-    const isSending = sendingReminderId === patient.id; // Check if a reminder is being sent for this patient
+    const isSending = sendingReminderId === patient.id;
 
-    // Format the outstanding balance with commas
     const formattedOutstanding = hasOutstanding
         ? parseFloat(patient.outstanding).toLocaleString('en-US', {
               minimumFractionDigits: 2,
@@ -19,7 +18,6 @@ const AppointmentCard = ({ patient, onSendReminder, onNavigate, sendingReminderI
           })
         : '0.00';
     
-    // Safely parse JSON fields, providing a default value if parsing fails
     const parseJsonField = (jsonString) => {
         if (!jsonString) return 'N/A';
         try {
@@ -29,8 +27,14 @@ const AppointmentCard = ({ patient, onSendReminder, onNavigate, sendingReminderI
             }
             return parsed.name || JSON.stringify(parsed);
         } catch {
-            return jsonString; // Return original string if it's not valid JSON
+            return jsonString;
         }
+    };
+
+    const formatDate = (dateString) => {
+        if (!dateString) return 'No Date';
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString(undefined, options);
     };
 
     return (
@@ -39,6 +43,11 @@ const AppointmentCard = ({ patient, onSendReminder, onNavigate, sendingReminderI
                 <div className="patient-info">
                     <span className="patient-name" onClick={onNavigate}>{patient.name}</span>
                     <span className="patient-contact">{patient.phoneNumber || 'No contact info'}</span>
+                    {viewMode === 'all' && patient.nextAppointmentDate && (
+                        <span className="appointment-date-display">
+                            Appointment: {formatDate(patient.nextAppointmentDate)}
+                        </span>
+                    )}
                     {hasOutstanding && (
                          <div className="outstanding-badge">
                             Outstanding: ₦{formattedOutstanding}
@@ -92,11 +101,11 @@ const AppointmentCard = ({ patient, onSendReminder, onNavigate, sendingReminderI
 
 const AppointmentsPage = () => {
     const [allPatients, setAllPatients] = useState([]);
-    const [viewMode, setViewMode] = useState('today'); // 'today', 'tomorrow', or 'byDate'
+    const [viewMode, setViewMode] = useState('today');
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [sendingReminderId, setSendingReminderId] = useState(null); // Track which reminder is being sent
+    const [sendingReminderId, setSendingReminderId] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -109,7 +118,6 @@ const AppointmentsPage = () => {
 
             try {
                 setLoading(true);
-                // The backend now provides the latest treatment info with all patients
                 const response = await fetch(`${API_BASE_URL}/api/patients`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -145,28 +153,38 @@ const AppointmentsPage = () => {
 
     const appointments = useMemo(() => {
         if (!allPatients.length) return [];
-        const targetDateStr = toLocalISOString(selectedDate);
-        return allPatients.filter(patient => {
-            if (!patient.nextAppointmentDate) return false;
-            const appointmentDateStr = toLocalISOString(patient.nextAppointmentDate);
-            return appointmentDateStr === targetDateStr;
-        });
-    }, [allPatients, selectedDate]);
+
+        let filteredAppointments = [];
+
+        if (viewMode === 'all') {
+            filteredAppointments = allPatients.filter(patient => patient.nextAppointmentDate);
+            filteredAppointments.sort((a, b) => {
+                const dateA = new Date(a.nextAppointmentDate);
+                const dateB = new Date(b.nextAppointmentDate);
+                return dateA - dateB;
+            });
+        } else {
+            const targetDateStr = toLocalISOString(selectedDate);
+            filteredAppointments = allPatients.filter(patient => {
+                if (!patient.nextAppointmentDate) return false;
+                const appointmentDateStr = toLocalISOString(patient.nextAppointmentDate);
+                return appointmentDateStr === targetDateStr;
+            });
+        }
+        return filteredAppointments;
+    }, [allPatients, selectedDate, viewMode]);
 
     useEffect(() => {
-        const newDate = new Date();
-        if (viewMode === 'tomorrow') {
-            newDate.setDate(newDate.getDate() + 1);
-        } else if (viewMode === 'today') {
-            // ensure when we switch back to today, it is actually today.
-            setSelectedDate(new Date());
-            return;
+        if (viewMode === 'today' || viewMode === 'tomorrow') {
+            const newDate = new Date();
+            if (viewMode === 'tomorrow') {
+                newDate.setDate(newDate.getDate() + 1);
+            }
+            setSelectedDate(newDate);
         }
-        setSelectedDate(newDate);
     }, [viewMode]);
 
     const handleDateChange = (e) => {
-        // Correctly handle date selection to avoid timezone issues
         const date = new Date(e.target.value + 'T00:00:00');
         setSelectedDate(date);
         setViewMode('byDate');
@@ -174,7 +192,7 @@ const AppointmentsPage = () => {
 
     const handleSendReminder = async (patientId) => {
         const token = localStorage.getItem('jwtToken');
-        setSendingReminderId(patientId); // Set loading indicator for the specific button
+        setSendingReminderId(patientId);
         try {
             const response = await fetch(`${API_BASE_URL}/api/patients/${patientId}/send-reminder`, {
                 method: 'POST',
@@ -190,13 +208,14 @@ const AppointmentsPage = () => {
         } catch (err) {
             toast.error('Network error. Could not send reminder.', { theme: "colored" });
         } finally {
-            setSendingReminderId(null); // Remove loading indicator
+            setSendingReminderId(null);
         }
     };
     
     const getHeaderText = () => {
         if (viewMode === 'today') return "Today's";
         if (viewMode === 'tomorrow') return "Tomorrow's";
+        if (viewMode === 'all') return "All";
         return `Date: ${toLocalISOString(selectedDate)}`;
     }
 
@@ -238,6 +257,11 @@ const AppointmentsPage = () => {
                             onClick={() => setViewMode('byDate')}>
                             <i className="fas fa-calendar-alt"></i> Search by Date
                         </button>
+                        <button 
+                            className={`toggle-btn ${viewMode === 'all' ? 'active' : ''}`} 
+                            onClick={() => setViewMode('all')}>
+                            <i className="fas fa-list"></i> All Appointments
+                        </button>
                     </div>
                     {viewMode === 'byDate' && (
                         <div className="date-picker-wrapper">
@@ -271,6 +295,7 @@ const AppointmentsPage = () => {
                                     onSendReminder={() => handleSendReminder(patient.id)}
                                     onNavigate={() => navigate(`/patients/${patient.id}`)}
                                     sendingReminderId={sendingReminderId}
+                                    viewMode={viewMode} // Pass viewMode prop
                                 />
                             ))}
                         </ul>

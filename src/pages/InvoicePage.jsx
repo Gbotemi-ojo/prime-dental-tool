@@ -3,9 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import API_BASE_URL from '../config/api';
 import './invoice-page.css'; // New CSS file for this page
+import { addressLine1, addressLine2, clinicName, phoneNumber } from '../config/info';
 
-// Declare serviceOptions and hmoOptions outside the component
-// as they are static and do not depend on component state or props.
 const serviceOptions = [
     { name: "Registration & Consultation", price: 5000 },
     { name: "Registration & Consultation (family)", price: 10000 },
@@ -78,7 +77,9 @@ const hmoOptions = [
     { name: "REDCARE", status: "ONBOARD", coverage: 0.89 }, { name: "AVON", status: "ONBOARD", coverage: 0.9 },
     { name: "ANCHOR", status: "ONBOARD", coverage: 0.71 }, { name: "LEADWAY", status: "ONBOARD", coverage: 0.88 },
     { name: "NOOR", status: "ONBOARD", coverage: 0.74 }, { name: "ALLENZA", status: "ONBOARD", coverage: 0.81 },
-    { name: "UNITED HEALTH CARE", status: "ONBOARD", coverage: 0.94 }, { name: "QUEST", status: "ONBOARD", coverage: 0.8 }
+    { name: "UNITED HEALTH CARE", status: "ONBOARD", coverage: 0.94 }, { name: "QUEST", status: "ONBOARD", coverage: 0.8 },
+    { name: "HYGEIA", status: "ONBOARD", coverage: 0.75 }, { name: "NEM", status: "ONBOARD", coverage: 0.8 },
+    { name: "KENNEDIA", status: "ONBOARD", coverage: 0.85 }
 ];
 
 export default function InvoicePage() {
@@ -92,7 +93,9 @@ export default function InvoicePage() {
     const [userRole, setUserRole] = useState(null);
 
     const [invoiceItems, setInvoiceItems] = useState([]);
-    const [selectedService, setSelectedService] = useState('');
+    // --- MODIFIED: State for new manual service input ---
+    const [serviceName, setServiceName] = useState('');
+    const [servicePrice, setServicePrice] = useState('');
     const [selectedHMO, setSelectedHMO] = useState('');
     const [showInvoice, setShowInvoice] = useState(false);
     const [isSendingEmail, setIsSendingEmail] = useState(false);
@@ -115,7 +118,6 @@ export default function InvoicePage() {
                 return;
             }
 
-            // MODIFIED: Cleaner role check for accessing the page
             const allowedRoles = ['owner', 'staff', 'nurse'];
             if (!allowedRoles.includes(role)) {
                 toast.error('Access denied. You do not have permission to view this page.');
@@ -187,22 +189,43 @@ export default function InvoicePage() {
         fetchInvoiceDetails();
     }, [patientId, navigate]);
 
-    const handleAddService = () => {
-        if (selectedService) {
-            const serviceInfo = serviceOptions.find(s => s.name === selectedService);
-            if (serviceInfo) {
-                setInvoiceItems(prevItems => {
-                    if (prevItems.find(item => item.name === serviceInfo.name)) {
-                        toast.warn(`"${serviceInfo.name}" is already in the invoice.`);
-                        return prevItems;
-                    }
-                    return [...prevItems, { id: Date.now(), name: serviceInfo.name, price: serviceInfo.price, quantity: 1 }];
-                });
-                setSelectedService('');
-            }
+    // --- NEW: Handler to auto-fill price when a service is selected from the datalist ---
+    const handleServiceNameChange = (e) => {
+        const name = e.target.value;
+        setServiceName(name);
+
+        const service = serviceOptions.find(s => s.name === name);
+        if (service) {
+            setServicePrice(service.price.toString());
         } else {
-            toast.warn('Please select a service to add.');
+            setServicePrice('');
         }
+    };
+    
+    // --- MODIFIED: Handler to add a service (pre-filled or custom) ---
+    const handleAddService = () => {
+        if (!serviceName.trim()) {
+            toast.warn('Please enter a service name.');
+            return;
+        }
+        if (!servicePrice || parseFloat(servicePrice) < 0) {
+            toast.warn('Please enter a valid, non-negative price for the service.');
+            return;
+        }
+        
+        const trimmedServiceName = serviceName.trim();
+
+        setInvoiceItems(prevItems => {
+            if (prevItems.find(item => item.name.toLowerCase() === trimmedServiceName.toLowerCase())) {
+                toast.warn(`"${trimmedServiceName}" is already in the invoice.`);
+                return prevItems;
+            }
+            return [...prevItems, { id: Date.now(), name: trimmedServiceName, price: parseFloat(servicePrice), quantity: 1 }];
+        });
+
+        // Reset inputs
+        setServiceName('');
+        setServicePrice('');
     };
 
     const handleRemoveService = (idToRemove) => setInvoiceItems(prevItems => prevItems.filter(item => item.id !== idToRemove));
@@ -226,8 +249,6 @@ export default function InvoicePage() {
     const handlePrint = () => window.print();
 
     const handleSendEmail = async () => {
-        // MODIFIED: Allow nurses to send emails without having the email on the frontend.
-        // The backend will use the patientId to get the email.
         if (!patient || (!patient.email && userRole !== 'nurse')) {
             toast.error('Patient email is missing. Cannot send invoice.');
             return;
@@ -248,7 +269,7 @@ export default function InvoicePage() {
         const payload = {
             patientId: patient.id,
             patientName: patient.name,
-            patientEmail: patient.email, // This will be undefined for nurses, which is handled by the backend
+            patientEmail: patient.email,
             invoiceNumber: invoiceNumber, invoiceDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
             items: invoiceItems.map(item => ({
                 description: item.name, quantity: item.quantity,
@@ -257,9 +278,9 @@ export default function InvoicePage() {
             })),
             isHmoCovered: isInvoiceForHmoPatient, hmoName: isInvoiceForHmoPatient ? selectedHMO : null,
             coveredAmount: finalCoveredAmount, totalAmount: totalDue,
-            notes: "Thank you for your patronage", clinicName: process.env.REACT_APP_CLINIC_NAME || "Prime Dental Clinic",
-            clinicAddress: process.env.REACT_APP_CLINIC_ADDRESS || "local government, 104, New Ipaja/Egbeda Road, opposite prestige super-market, Alimosho, Ipaja Rd, Ipaja, Lagos 100006, Lagos",
-            clinicPhone: process.env.REACT_APP_CLINIC_PHONE || "0703 070 8877",
+            notes: "Thank you for your patronage", clinicName: clinicName,
+            clinicAddress: `${addressLine1} ${addressLine2}`,
+            clinicPhone: phoneNumber,
             latestDentalRecord: latestDentalRecord ? {
                 provisionalDiagnosis: Array.isArray(latestDentalRecord.provisionalDiagnosis) ? latestDentalRecord.provisionalDiagnosis.join(', ') : latestDentalRecord.provisionalDiagnosis || 'N/A',
                 treatmentPlan: Array.isArray(latestDentalRecord.treatmentPlan) ? latestDentalRecord.treatmentPlan.join(', ') : latestDentalRecord.treatmentPlan || 'N/A'
@@ -329,11 +350,28 @@ export default function InvoicePage() {
                     )}
 
                     <h2>Services to Bill</h2>
+                    {/* --- MODIFIED: Replaced select with datalist input --- */}
                     <div className="service-selection">
-                        <select value={selectedService} onChange={(e) => setSelectedService(e.target.value)} className="form-select">
-                            <option value="">Select a service...</option>
-                            {serviceOptions.map((s, i) => <option key={i} value={s.name}>{s.name} - ₦{s.price.toLocaleString()}</option>)}
-                        </select>
+                        <input
+                            type="text"
+                            list="service-options"
+                            value={serviceName}
+                            onChange={handleServiceNameChange}
+                            placeholder="Type or select a service"
+                            className="form-control"
+                        />
+                        <datalist id="service-options">
+                            {serviceOptions.map((service, index) => (
+                                <option key={index} value={service.name} />
+                            ))}
+                        </datalist>
+                        <input
+                            type="number"
+                            value={servicePrice}
+                            onChange={(e) => setServicePrice(e.target.value)}
+                            placeholder="Price (₦)"
+                            className="price-input-manual"
+                        />
                         <button onClick={handleAddService} className="add-service-button">Add</button>
                     </div>
 
@@ -377,8 +415,9 @@ export default function InvoicePage() {
             ) : (
                 <div className="invoice-display-area printable-content">
                     <div className="invoice-company-info">
-                        <h2>{process.env.REACT_APP_CLINIC_NAME || "Prime Dental Clinic"}</h2>
-                        <p>{process.env.REACT_APP_CLINIC_ADDRESS || "local government, 104, New Ipaja/Egbeda Road, opposite prestige super-market, Alimosho, Ipaja Rd, Ipaja, Lagos 100006, Lagos"}</p>
+                        <h2>{clinicName}</h2>
+                        <p>{addressLine1}</p>
+                        <p>{addressLine2}</p>
                     </div>
                     <div className="invoice-header-display">
                         <h2>INVOICE</h2>
@@ -414,7 +453,6 @@ export default function InvoicePage() {
                             </tbody>
                         </table>
                     </div>
-                    {/* --- MODIFIED: This entire summary is now conditional --- */}
                     <div className="invoice-summary">
                         {!isInvoiceForHmoPatient && (
                             <>

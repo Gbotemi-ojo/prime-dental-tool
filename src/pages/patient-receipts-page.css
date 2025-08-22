@@ -570,3 +570,43 @@ body {
     color: #721c24;
     border: 1px solid #f5c6cb;
 }
+
+/* Add to both patient-receipts-page.css and invoice-page.css */
+
+.service-selection {
+  display: grid;
+  grid-template-columns: 1fr auto auto; /* Service Name | Price | Button */
+  gap: var(--spacing-sm);
+  align-items: center;
+  flex-wrap: wrap; /* Fallback for smaller screens */
+}
+
+.service-selection .price-input-manual {
+    width: 150px;
+    padding: 10px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1em;
+    color: var(--text-dark);
+    background-color: var(--input-bg);
+    transition: all 0.3s ease;
+}
+
+.service-selection .form-control {
+    min-width: 200px; /* Ensure service name has enough space */
+}
+
+.service-selection .add-service-button {
+    white-space: nowrap; /* Prevent button text from wrapping */
+}
+
+
+/* Responsive adjustments for the new grid layout */
+@media (max-width: 768px) {
+  .service-selection {
+    grid-template-columns: 1fr; /* Stack on smaller screens */
+  }
+  .service-selection .price-input-manual {
+    width: 100%;
+  }
+}

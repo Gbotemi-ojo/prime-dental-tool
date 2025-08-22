@@ -519,3 +519,42 @@ textarea {
     font-size: 0.85em;
   }
 }
+
+.file-input {
+  border: 1px solid var(--border-color);
+  background-color: #fcfcfc;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-size: 0.95em;
+  color: var(--text-medium);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.file-input:hover {
+  border-color: var(--primary-blue);
+  background-color: var(--text-light);
+}
+
+.image-preview-container {
+  margin-top: 15px;
+  padding: 15px;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  background-color: #fdfdfd;
+}
+
+.image-preview-container p {
+  margin: 0 0 10px 0;
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+.image-preview {
+  max-width: 100%;
+  height: auto;
+  max-height: 250px; /* Limit preview height */
+  border-radius: 5px;
+  border: 1px solid #eee;
+  object-fit: contain; /* Ensure aspect ratio is maintained */
+}

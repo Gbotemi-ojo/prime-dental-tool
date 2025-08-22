@@ -630,3 +630,52 @@ button[type="submit"]:disabled {
         width: 100%; /* Make them full width */
     }
 }
+
+/* Add to edit-dental-record.css */
+
+/* ... existing styles ... */
+
+.full-width-grid-item {
+  grid-column: 1 / -1;
+}
+
+/* --- NEW STYLES for File Input and Image Preview --- */
+
+.file-input {
+  border: 1px solid var(--border-color);
+  background-color: var(--input-bg);
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 1em;
+  color: var(--text-medium);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.file-input:hover {
+  border-color: var(--primary-color);
+  background-color: var(--card-bg);
+}
+
+.image-preview-container {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px dashed var(--border-color);
+  border-radius: 10px;
+  background-color: var(--bg-light);
+}
+
+.image-preview-container p {
+  margin: 0 0 12px 0;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.image-preview {
+  max-width: 100%;
+  height: auto;
+  max-height: 300px; /* Slightly larger preview height in edit mode */
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  object-fit: contain;
+}

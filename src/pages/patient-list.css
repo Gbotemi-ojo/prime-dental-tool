@@ -99,8 +99,8 @@
 .role-badge.head { background-color: var(--primary-color); }
 .role-badge.member { background-color: var(--info-color); }
 
-/* --- NEW: Actions Dropdown --- */
-.actions-dropdown-container { position: relative; }
+/* --- Actions Dropdown --- */
+/* The container div in the JSX is now just for the button ref */
 .actions-dropdown-button {
     background-color: var(--secondary-color); color: var(--text-light);
     border: none; border-radius: 6px; padding: 8px 16px;
@@ -111,14 +111,18 @@
 .actions-dropdown-button .fa-chevron-down { transition: transform 0.2s ease; }
 .actions-dropdown-button .fa-chevron-down.open { transform: rotate(180deg); }
 
+/* --- THIS IS THE FIX --- */
+/* This class now styles the portal component */
 .actions-dropdown-menu {
-    position: absolute; right: 0; top: 100%;
-    margin-top: 8px; background-color: white;
-    border-radius: 8px; box-shadow: 0 4px 15px var(--shadow-medium);
-    z-index: 100; min-width: 180px;
-    overflow: hidden;
+    position: fixed; /* Use fixed positioning controlled by JS */
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); /* A bit stronger shadow */
+    z-index: 2000; /* High z-index to appear over all other content */
+    min-width: 180px;
     padding: 8px 0;
-    display: flex; flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }
 
 .actions-dropdown-item {
@@ -143,3 +147,36 @@
     border-radius: 8px; margin-top: 20px;
 }
 .info-message.error { background-color: #f8d7da; color: #721c24; }
+
+/* --- NEW: Visit Tag Styles --- */
+.patient-name-cell {
+    position: relative;
+    padding-top: 28px !important; /* Provide space for the tag */
+    vertical-align: top !important;
+}
+
+.visit-tag {
+    position: absolute;
+    top: 6px;
+    left: 20px; /* Aligns with cell padding */
+    padding: 3px 8px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-radius: 10px;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.visit-tag.new {
+    background-color: var(--success-color);
+}
+
+.visit-tag.returning {
+    background-color: var(--appointment-color);
+}
+
+/* Adjust tag position for indented family member cells */
+.indented-cell.patient-name-cell .visit-tag {
+    left: 45px; /* Matches the indentation */
+}
