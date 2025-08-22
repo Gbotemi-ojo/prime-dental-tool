@@ -233,7 +233,8 @@
   
     .patient-table tr {
         display: flex; /* Use flexbox for the row */
-        align-items: center; /* ALIGNMENT FIX */
+        justify-content: space-between; /* ALIGNMENT FIX: Pushes content to the edges */
+        align-items: center; /* ALIGNMENT FIX: Vertically centers items */
         padding: 15px 20px;
         margin-bottom: 10px;
         border: 1px solid var(--border-color);
@@ -253,12 +254,14 @@
   
     .table-actions-cell {
         padding: 0;
-        width: 130px; /* NEW: Give the cell a fixed width for consistent spacing */
-        flex-shrink: 0; /* NEW: Prevent it from shrinking */
+        flex-grow: 0; /* NEW: Prevents it from growing */
+        flex-shrink: 0; /* NEW: Prevents it from shrinking */
+        flex-basis: 130px; /* NEW: Use flex-basis to set a fixed width for consistent spacing */
     }
   
     .patient-name-cell {
         flex-grow: 1; /* Allow the name cell to take up available space */
+        flex-shrink: 1; /* Allow it to shrink if needed */
         padding-top: 15px !important; /* FIX: Adjust padding for mobile view */
         min-height: 40px; /* NEW: Ensure enough space for name and tag */
     }
@@ -278,4 +281,19 @@
     .indented-cell.patient-name-cell .visit-tag {
         left: 30px; /* FIX: Align with the new indentation */
     }
+}
+
+@media screen and (max-width: 800px) {
+    /* ... other mobile-specific rules ... */
+
+    .visit-tag {
+        top: 0;
+        font-size: 0.6rem; /* NEW: Reduced font size */
+        padding: 2px 6px; /* NEW: Reduced padding */
+    }
+
+    .indented-cell.patient-name-cell .visit-tag {
+        left: 30px;
+    }
+    
 }
