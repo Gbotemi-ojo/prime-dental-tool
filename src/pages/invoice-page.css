@@ -252,20 +252,6 @@ body {
     color: var(--text-dark);
 }
 
-.restricted-info {
-    color: var(--danger-color);
-    font-style: italic;
-    font-weight: 500;
-}
-
-.service-selection {
-    display: flex;
-    gap: var(--spacing-sm);
-    margin-bottom: var(--spacing-md);
-    flex-wrap: wrap;
-    align-items: center;
-}
-
 .form-select,
 .form-control {
     width: 100%;
@@ -284,11 +270,6 @@ body {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.2);
     outline: none;
-}
-
-.service-selection .form-select {
-    flex-grow: 1;
-    min-width: 200px;
 }
 
 .invoice-items-list {
@@ -369,19 +350,6 @@ body {
     margin-bottom: var(--spacing-xs);
     font-weight: 600;
     color: var(--text-dark);
-}
-
-.hmo-status-message {
-    margin-top: var(--spacing-sm);
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-radius: 5px;
-    font-size: 0.9em;
-    font-weight: 500;
-}
-
-.hmo-status-message.not-onboard {
-    background-color: #ffe0b2; /* Light orange */
-    color: #e65100; /* Dark orange text */
 }
 
 /* Invoice Display Area */
@@ -514,50 +482,6 @@ body {
     font-weight: 700;
 }
 
-/* NEW: Styles for HMO covered status in invoice summary */
-.invoice-summary .total-due.due-balance {
-    color: var(--warning-color); /* Use warning color for balance due */
-}
-
-.invoice-summary .total-due.fully-covered {
-    color: var(--accent-color); /* Use accent color (green) for fully covered */
-}
-
-
-.invoice-notes {
-    margin-top: var(--spacing-lg);
-    padding-top: var(--spacing-md);
-    border-top: 1px dashed var(--border-color);
-}
-
-.invoice-notes h3 {
-    color: var(--primary-color);
-    font-size: 1.2em;
-    margin-bottom: var(--spacing-sm);
-}
-
-.invoice-notes p {
-    color: var(--text-medium);
-    font-size: 0.95em;
-    margin-bottom: var(--spacing-xs);
-}
-
-.invoice-treatment-context {
-    background-color: var(--bg-light);
-    padding: var(--spacing-md);
-    border-radius: 8px;
-    border: 1px dashed var(--border-color);
-    margin-top: var(--spacing-md);
-}
-.invoice-treatment-context p {
-    margin: 0;
-    font-size: 0.9em;
-    color: var(--text-medium);
-}
-.invoice-treatment-context strong {
-    color: var(--text-dark);
-}
-
 .invoice-footer {
     text-align: center;
     margin-top: var(--spacing-xl);
@@ -604,188 +528,12 @@ body {
     border: 1px solid #f5c6cb;
 }
 
-/* Print Specific Styles */
-@media print {
-    body {
-        background: none; /* No background gradient on print */
-    }
-    .invoice-container {
-        box-shadow: none; /* No shadow on print */
-        max-width: 100%; /* Use full width for print */
-        padding: 0; /* No padding on print */
-    }
-    .invoice-header .actions, /* Hide buttons on print */
-    .invoice-form-section { /* Hide form section on print */
-        display: none;
-    }
-    .printable-content {
-        display: block !important; /* Ensure the invoice display area is visible */
-        width: 100%;
-        margin: 0;
-        padding: 20px; /* Add some padding back for the printed content */
-    }
-    .invoice-display-area {
-        box-shadow: none;
-        border-radius: 0;
-        gap: var(--spacing-md); /* Reduce gap for print */
-    }
-    .invoice-company-info,
-    .invoice-header-display,
-    .invoice-patient-info,
-    .invoice-services-rendered,
-    .invoice-summary,
-    .invoice-notes,
-    .invoice-footer {
-        margin-bottom: var(--spacing-md); /* Adjust margins for print */
-        padding-bottom: var(--spacing-sm);
-    }
-    .invoice-company-info {
-        border-bottom: 1px solid var(--primary-color);
-    }
-    .invoice-summary {
-        border-top: 1px solid var(--border-color);
-    }
-    .invoice-footer {
-        border-top: 1px solid var(--primary-color);
-    }
-}
-
-
-/* Responsive Adjustments */
-@media (max-width: 1024px) {
-    .app-container {
-        padding: var(--spacing-md);
-    }
-    .invoice-container {
-        padding: var(--spacing-lg);
-        gap: var(--spacing-md);
-    }
-    .invoice-header h1 {
-        font-size: 2em;
-    }
-    .invoice-header .actions {
-        gap: var(--spacing-sm);
-    }
-    .invoice-form-section h2 {
-        font-size: 1.6em;
-    }
-}
-
-@media (max-width: 768px) {
-    .invoice-container {
-        padding: var(--spacing-md);
-        margin: var(--spacing-sm);
-        gap: var(--spacing-md);
-    }
-    .invoice-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: var(--spacing-sm);
-    }
-    .invoice-header h1 {
-        font-size: 1.8em;
-        width: 100%;
-    }
-    .invoice-header .actions {
-        width: 100%;
-        justify-content: flex-end;
-    }
-    .back-button,
-    .generate-invoice-button,
-    .print-invoice-button,
-    .send-email-button, /* Added for responsiveness */
-    .add-service-button {
-        width: 100%;
-        justify-content: center;
-    }
-    .service-selection {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    .service-selection .form-select {
-        min-width: unset;
-        width: 100%;
-    }
-    .invoice-items-list h3 {
-        font-size: 1em;
-    }
-    .services-table,
-    .invoice-services-table {
-        min-width: 450px; /* Ensure scrollability */
-        font-size: 0.85rem;
-    }
-    .services-table th,
-    .services-table td,
-    .invoice-services-table th,
-    .invoice-services-table td {
-        padding: 8px 10px;
-    }
-    .quantity-input,
-    .price-input {
-        width: 60px;
-        font-size: 0.8em;
-    }
-    .remove-service-button {
-        padding: 6px 10px;
-        font-size: 0.75rem;
-    }
-    .invoice-display-area {
-        padding: var(--spacing-md);
-        gap: var(--spacing-md);
-    }
-    .invoice-company-info h2 {
-        font-size: 2em;
-    }
-    .invoice-header-display h2 {
-        font-size: 1.6em;
-    }
-    .invoice-patient-info h3,
-    .invoice-services-rendered h3,
-    .invoice-notes h3 {
-        font-size: 1.1em;
-    }
-    .invoice-summary .total-due {
-        font-size: 1.2em;
-    }
-}
-
-@media (max-width: 480px) {
-    .app-container {
-        padding: var(--spacing-sm);
-    }
-    .invoice-container {
-        padding: var(--spacing-sm);
-        margin: var(--spacing-xs);
-        gap: var(--spacing-sm);
-    }
-    .invoice-header h1 {
-        font-size: 1.6em;
-    }
-    .back-button,
-    .generate-invoice-button,
-    .print-invoice-button,
-    .send-email-button, /* Added for responsiveness */
-    .add-service-button {
-        padding: 8px 15px;
-        font-size: 0.9em;
-    }
-    .invoice-form-section h2 {
-        font-size: 1.4em;
-    }
-    .services-table,
-    .invoice-services-table {
-        min-width: 300px;
-    }
-}
-
-/* Add to both patient-receipts-page.css and invoice-page.css */
-
+/* Service Selection Grid Layout */
 .service-selection {
   display: grid;
   grid-template-columns: 1fr auto auto; /* Service Name | Price | Button */
   gap: var(--spacing-sm);
   align-items: center;
-  flex-wrap: wrap; /* Fallback for smaller screens */
 }
 
 .service-selection .price-input-manual {
@@ -807,13 +555,142 @@ body {
     white-space: nowrap; /* Prevent button text from wrapping */
 }
 
+/* Print Specific Styles */
+@media print {
+    body {
+        background: none;
+    }
+    .invoice-container, .app-container {
+        box-shadow: none;
+        max-width: 100%;
+        padding: 0;
+    }
+    .invoice-header, .invoice-form-section {
+        display: none;
+    }
+    .printable-content, .invoice-display-area {
+        display: block !important;
+        box-shadow: none;
+        border-radius: 0;
+        padding: 20px;
+    }
+}
 
-/* Responsive adjustments for the new grid layout */
+/* ==========================================================================
+   Responsive Adjustments
+   ========================================================================== */
+
 @media (max-width: 768px) {
-  .service-selection {
-    grid-template-columns: 1fr; /* Stack on smaller screens */
-  }
-  .service-selection .price-input-manual {
-    width: 100%;
-  }
+    .app-container {
+        padding: var(--spacing-sm);
+    }
+    .invoice-container {
+        padding: var(--spacing-md);
+        gap: var(--spacing-md);
+    }
+    .invoice-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-md);
+    }
+    .invoice-header h1 {
+        font-size: 1.8em;
+    }
+    .invoice-header .actions {
+        width: 100%;
+        flex-direction: column;
+    }
+    .back-button,
+    .generate-invoice-button,
+    .print-invoice-button,
+    .send-email-button,
+    .add-service-button {
+        width: 100%;
+        justify-content: center;
+    }
+    .service-selection {
+        grid-template-columns: 1fr;
+    }
+    .service-selection .price-input-manual {
+        width: 100%;
+    }
+
+    /* Responsive Table: Transform to Card Layout */
+    .services-table {
+        border: none;
+        box-shadow: none;
+    }
+    
+    .services-table thead {
+        display: none;
+    }
+
+    .services-table tr {
+        display: block;
+        margin-bottom: var(--spacing-md);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: var(--spacing-sm);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .services-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: right;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--bg-light);
+        white-space: normal;
+    }
+    
+    .services-table tr td:last-child {
+        border-bottom: none;
+    }
+
+    .services-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        text-align: left;
+        color: var(--text-medium);
+        padding-right: 10px;
+    }
+
+    .services-table td[data-label="Service"] {
+        display: block;
+        text-align: left;
+        font-weight: bold;
+        font-size: 1.1em;
+        color: var(--primary-color);
+        padding-bottom: var(--spacing-sm);
+        margin-bottom: var(--spacing-sm);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .services-table td[data-label="Service"]::before {
+        display: none;
+    }
+    
+    .quantity-input,
+    .price-input {
+        width: 100px;
+    }
+
+    .invoice-display-area {
+        padding: var(--spacing-md);
+    }
+    .invoice-company-info h2 { font-size: 2em; }
+    .invoice-header-display h2 { font-size: 1.6em; }
+    .invoice-patient-info h3,
+    .invoice-services-rendered h3 { font-size: 1.1em; }
+    .invoice-summary .total-due { font-size: 1.2em; }
+}
+
+@media (max-width: 480px) {
+    .invoice-header h1 {
+        font-size: 1.6em;
+    }
+    .invoice-form-section h2 {
+        font-size: 1.4em;
+    }
 }

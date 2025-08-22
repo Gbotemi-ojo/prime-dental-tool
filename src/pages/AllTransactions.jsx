@@ -107,20 +107,20 @@ export default function AllTransactions() {
                 <th>Notes</th>
               </tr>
             </thead>
-            <tbody>
+                        <tbody>
               {transactions.map((transaction) => (
                 <tr key={transaction.id}>
-                  <td>{transaction.id}</td>
-                  <td>{new Date(transaction.transactionDate).toLocaleString()}</td>
-                  <td>{transaction.itemName} ({transaction.itemUnit})</td>
-                  <td className={`transaction-type ${transaction.transactionType.toLowerCase().replace('_', '-')}`}>
+                  <td data-label="ID">{transaction.id}</td>
+                  <td data-label="Date">{new Date(transaction.transactionDate).toLocaleString()}</td>
+                  <td data-label="Item">{transaction.itemName} ({transaction.itemUnit})</td>
+                  <td data-label="Type" className={`transaction-type ${transaction.transactionType.toLowerCase().replace('_', '-')}`}>
                     {transaction.transactionType.replace('_', ' ')}
                   </td>
-                  <td className={transaction.quantity > 0 ? 'text-success' : 'text-danger'}>
+                  <td data-label="Quantity" className={transaction.quantity > 0 ? 'text-success' : 'text-danger'}>
                     {transaction.quantity > 0 ? '+' : ''}{transaction.quantity}
                   </td>
-                  <td>{transaction.username || 'N/A'}</td>
-                  <td>{transaction.notes || '-'}</td>
+                  <td data-label="Transacted By">{transaction.username || 'N/A'}</td>
+                  <td data-label="Notes">{transaction.notes || '-'}</td>
                 </tr>
               ))}
             </tbody>

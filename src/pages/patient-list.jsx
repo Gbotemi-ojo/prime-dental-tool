@@ -62,9 +62,15 @@ function PatientList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userRole, setUserRole] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 800);
   const navigate = useNavigate();
 
   useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 800);
+    };
+    window.addEventListener('resize', handleResize);
+
     const fetchData = async () => {
       setLoading(true);
       const token = localStorage.getItem('jwtToken');
@@ -100,6 +106,8 @@ function PatientList() {
     };
 
     fetchData();
+
+    return () => window.removeEventListener('resize', handleResize);
   }, [navigate]);
 
   const processedPatients = useMemo(() => {
@@ -203,12 +211,16 @@ function PatientList() {
               <thead>
               <tr>
                   <th>Name</th>
-                  <th>Role</th>
-                  <th>Contact</th>
-                  <th>Date of Birth</th>
-                  <th>Sex</th>
-                  <th>HMO</th>
-                  {showNextAppointmentColumn && <th>Next Appointment</th>}
+                  {!isMobile && (
+                    <>
+                        <th>Role</th>
+                        <th>Contact</th>
+                        <th>Date of Birth</th>
+                        <th>Sex</th>
+                        <th>HMO</th>
+                        {showNextAppointmentColumn && <th>Next Appointment</th>}
+                    </>
+                  )}
                   <th>Actions</th>
               </tr>
               </thead>
@@ -220,19 +232,23 @@ function PatientList() {
                           <GetVisitTag patient={family} selectedDate={selectedDate} />
                           {family.name}
                       </td>
-                      <td><span className="role-badge head">{family.isFamilyHead ? 'Head' : 'Individual'}</span></td>
-                      <td>
-                          {(!['nurse', 'doctor'].includes(userRole)) ? (
-                              <div className="contact-info">
-                                  <span>{family.phoneNumber || 'N/A'}</span>
-                                  <span>{family.email || 'N/A'}</span>
-                              </div>
-                          ) : '' /* Empty string for restricted roles */}
-                      </td>
-                      <td>{family.dateOfBirth ? new Date(family.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
-                      <td>{family.sex}</td>
-                      <td>{family.hmo ? 'Yes' : 'No'}</td>
-                      {showNextAppointmentColumn && <td>{family.nextAppointmentDate ? new Date(family.nextAppointmentDate).toLocaleDateString() : 'Not Set'}</td>}
+                      {!isMobile && (
+                        <>
+                            <td><span className="role-badge head">{family.isFamilyHead ? 'Head' : 'Individual'}</span></td>
+                            <td>
+                                {(!['nurse', 'doctor'].includes(userRole)) ? (
+                                    <div className="contact-info">
+                                        <span>{family.phoneNumber || 'N/A'}</span>
+                                        <span>{family.email || 'N/A'}</span>
+                                    </div>
+                                ) : '' /* Empty string for restricted roles */}
+                            </td>
+                            <td>{family.dateOfBirth ? new Date(family.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
+                            <td>{family.sex}</td>
+                            <td>{family.hmo ? 'Yes' : 'No'}</td>
+                            {showNextAppointmentColumn && <td>{family.nextAppointmentDate ? new Date(family.nextAppointmentDate).toLocaleDateString() : 'Not Set'}</td>}
+                        </>
+                      )}
                       <td className="table-actions-cell">
                       <PatientActions patient={family} userRole={userRole} navigate={navigate} />
                       </td>
@@ -243,18 +259,22 @@ function PatientList() {
                           <GetVisitTag patient={member} selectedDate={selectedDate} />
                           {member.name}
                       </td>
-                      <td><span className="role-badge member">Member</span></td>
-                      <td>
-                          {(!['nurse', 'doctor'].includes(userRole)) ? (
-                              <div className="contact-info inherited">
-                                  <span>Inherited</span>
-                              </div>
-                          ) : '' /* Empty string for restricted roles */}
-                      </td>
-                      <td>{member.dateOfBirth ? new Date(member.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
-                      <td>{member.sex}</td>
-                      <td>{member.hmo ? 'Yes' : 'No'}</td>
-                      {showNextAppointmentColumn && <td>{member.nextAppointmentDate ? new Date(member.nextAppointmentDate).toLocaleDateString() : 'Not Set'}</td>}
+                      {!isMobile && (
+                        <>
+                            <td><span className="role-badge member">Member</span></td>
+                            <td>
+                                {(!['nurse', 'doctor'].includes(userRole)) ? (
+                                    <div className="contact-info inherited">
+                                        <span>Inherited</span>
+                                    </div>
+                                ) : '' /* Empty string for restricted roles */}
+                            </td>
+                            <td>{member.dateOfBirth ? new Date(member.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
+                            <td>{member.sex}</td>
+                            <td>{member.hmo ? 'Yes' : 'No'}</td>
+                            {showNextAppointmentColumn && <td>{member.nextAppointmentDate ? new Date(member.nextAppointmentDate).toLocaleDateString() : 'Not Set'}</td>}
+                        </>
+                      )}
                       <td className="table-actions-cell">
                           <PatientActions patient={member} userRole={userRole} navigate={navigate} />
                       </td>

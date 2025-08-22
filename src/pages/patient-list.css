@@ -180,3 +180,102 @@
 .indented-cell.patient-name-cell .visit-tag {
     left: 45px; /* Matches the indentation */
 }
+
+/* Critical fixes for smaller screens */
+@media screen and (max-width: 800px) {
+    /* Main container fix: Make it fluid and centered */
+    .patient-list-container {
+        width: 95%;
+        padding: 15px;
+        margin: 10px auto;
+    }
+
+    .patient-list-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .patient-list-header .actions {
+        width: 100%;
+    }
+
+    .back-to-dashboard-button, .add-patient-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .search-filter-section {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .search-input, .date-input, .clear-date-button {
+        width: 100%;
+        min-width: unset;
+        box-sizing: border-box;
+    }
+
+    /* Table Fixes */
+    .patient-table {
+        min-width: unset; /* CRITICAL: Allows the table to shrink */
+    }
+
+    .patient-table thead {
+        display: none;
+    }
+
+    .patient-table,
+    .patient-table tbody,
+    .patient-table tr {
+        display: block;
+        width: 100%;
+    }
+  
+    .patient-table tr {
+        display: flex; /* Use flexbox for the row */
+        align-items: center; /* ALIGNMENT FIX */
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+    }
+  
+    /* Ensure the two visible cells are laid out properly */
+    .patient-table td {
+        display: block;
+        padding: 0;
+        border-bottom: none;
+    }
+
+    .patient-table tr > *:not(.patient-name-cell):not(.table-actions-cell) {
+        display: none;
+    }
+  
+    .table-actions-cell {
+        padding: 0;
+        width: 130px; /* NEW: Give the cell a fixed width for consistent spacing */
+        flex-shrink: 0; /* NEW: Prevent it from shrinking */
+    }
+  
+    .patient-name-cell {
+        flex-grow: 1; /* Allow the name cell to take up available space */
+        padding-top: 15px !important; /* FIX: Adjust padding for mobile view */
+        min-height: 40px; /* NEW: Ensure enough space for name and tag */
+    }
+
+    .family-member-row .indented-cell {
+        padding-left: 30px; /* Reduce indentation for small screens */
+    }
+
+    .family-member-row .indented-cell::before {
+        left: 10px;
+    }
+    
+    .visit-tag {
+        top: 0; /* FIX: Align tag to the top of the cell */
+    }
+  
+    .indented-cell.patient-name-cell .visit-tag {
+        left: 30px; /* FIX: Align with the new indentation */
+    }
+}

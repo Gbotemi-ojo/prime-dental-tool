@@ -139,3 +139,87 @@
   border: 1px solid #f5c6cb;
   margin-bottom: 20px;
 }
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    .all-transactions-container {
+        padding: 15px;
+        margin: 10px;
+    }
+
+    .all-transactions-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .all-transactions-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .all-transactions-header .header-actions {
+        width: 100%;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .all-transactions-container .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Remove horizontal scroll and apply card layout */
+    .table-responsive {
+        overflow-x: hidden;
+    }
+    
+    .all-transactions-table {
+        border: none;
+        box-shadow: none;
+    }
+
+    .all-transactions-table thead {
+        display: none;
+    }
+
+    .all-transactions-table tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 10px;
+        background-color: #ffffff;
+    }
+
+    .all-transactions-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: right;
+        padding: 8px 0;
+        border-bottom: 1px dotted #e9ecef;
+        white-space: normal;
+    }
+
+    .all-transactions-table tr td:last-child {
+        border-bottom: none;
+    }
+    
+    .all-transactions-table td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        text-align: left;
+        color: #495057;
+        padding-right: 10px;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 480px) {
+    .all-transactions-header h1 {
+        font-size: 1.5rem;
+    }
+}
