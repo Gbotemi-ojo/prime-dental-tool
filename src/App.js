@@ -30,6 +30,7 @@ const PatientReceiptsPage = lazy(() => import("./pages/PatientReceiptsPage"));
 const InvoicePage = lazy(() => import("./pages/InvoicePage"));
 const RevenueReportPage = lazy(() => import("./pages/RevenueReportPage"));
 const EditPatientBio = lazy(() => import("./pages/EditPatientBio"));
+const DoctorSchedule = lazy(() => import("./pages/doctor-schedule"));
 
 // NEW: Lazy-load Appointment components
 const AppointmentsPage = lazy(() => import("./pages/appointments"));
@@ -66,6 +67,9 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<ProfilePage />} />
+
+            {/* Doctor Schedule Route */}
+            <Route path="/doctor-schedule" element={<DoctorSchedule />} />
 
             {/* NEW: Appointments Route */}
             <Route path="/appointments" element={<AppointmentsPage />} />

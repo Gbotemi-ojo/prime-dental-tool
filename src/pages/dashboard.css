@@ -176,6 +176,7 @@ body {
 .nav-card.admin::before { background-color: #FF7043; } /* Orange */
 .nav-card.profile::before { background-color: #AB47BC; } /* Purple */
 .nav-card.revenue-report::before { background-color: #FFC107; } /* Amber for revenue */
+.nav-card.doctor-schedule::before { background-color: #7E57C2; } /* Deep Purple */
 
 
 .nav-card h3 {
@@ -208,6 +209,7 @@ body {
 .nav-card.admin .icon { color: #FF7043; }
 .nav-card.profile .icon { color: #AB47BC; }
 .nav-card.revenue-report .icon { color: #FFD54F; } /* Lighter amber for icon */
+.nav-card.doctor-schedule .icon { color: #7E57C2; }
 
 
 /* Responsive Adjustments */

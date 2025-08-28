@@ -103,6 +103,15 @@ export default function Dashboard() {
             <p>View, add, and manage patient demographic information and medical records.</p>
           </a>
         )}
+        
+        {/* Doctor's Schedule */}
+        {(isOwner || isStaff || isDoctor) && (
+            <a href="/doctor-schedule" className="nav-card doctor-schedule">
+                <i className="icon fas fa-user-md"></i>
+                <h3>Doctor's Schedule</h3>
+                <p>View and manage patient assignments for doctors.</p>
+            </a>
+        )}
 
         {/* Appointments (Accessible by Owner & Staff) */}
         {(isOwner || isStaff) && (
