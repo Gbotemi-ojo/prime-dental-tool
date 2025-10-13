@@ -13,25 +13,17 @@ export default function PatientDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userRole, setUserRole] = useState(null);
+  const [settings, setSettings] = useState(null); // ADDED: State for settings
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       const token = localStorage.getItem("jwtToken");
       const role = localStorage.getItem("role");
       setUserRole(role);
 
       if (!token) {
         navigate("/login");
-        return;
-      }
-
-      if (
-        role !== "owner" &&
-        role !== "doctor" &&
-        role !== "staff" &&
-        role !== "nurse"
-      ) {
-        navigate("/dashboard");
         return;
       }
 
@@ -43,46 +35,48 @@ export default function PatientDetail() {
       }
 
       try {
-        const patientResponse = await fetch(
-          `${API_BASE_URL}/api/patients/${parsedPatientId}`,
-          {
+        // MODIFIED: Fetch patient, records, and settings in parallel
+        const [patientResponse, recordsResponse, settingsResponse] = await Promise.all([
+          fetch(`${API_BASE_URL}/api/patients/${parsedPatientId}`, {
             headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+          }),
+          fetch(`${API_BASE_URL}/api/patients/${parsedPatientId}/dental-records`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch(`${API_BASE_URL}/api/settings`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+        ]);
 
         if (patientResponse.ok) {
           const patientData = await patientResponse.json();
           setPatient(patientData);
         } else {
           const errorData = await patientResponse.json();
-          setError(errorData.error || "Failed to fetch patient details.");
-          if (
-            patientResponse.status === 401 ||
-            patientResponse.status === 403
-          ) {
-            localStorage.clear();
-            navigate("/login");
-          }
-          setLoading(false);
-          return;
+          throw new Error(errorData.error || "Failed to fetch patient details.");
         }
-
-        const recordsResponse = await fetch(
-          `${API_BASE_URL}/api/patients/${parsedPatientId}/dental-records`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
 
         if (recordsResponse.ok) {
           const recordsData = await recordsResponse.json();
           setDentalRecords(recordsData);
         } else {
-          const errorData = await recordsResponse.json();
-          setError(errorData.error || "Failed to fetch dental records.");
+           const errorData = await recordsResponse.json();
+           console.warn("Could not fetch dental records:", errorData.error);
         }
+
+        if (settingsResponse.ok) {
+            const settingsData = await settingsResponse.json();
+            setSettings(settingsData);
+        } else {
+            throw new Error("Failed to fetch application settings.");
+        }
+
       } catch (err) {
-        setError("Network error. Could not connect to the server.");
+        setError(err.message || "Network error. Could not connect to the server.");
+        if (err.message?.includes('401') || err.message?.includes('403')) {
+            localStorage.clear();
+            navigate('/login');
+        }
       } finally {
         setLoading(false);
       }
@@ -90,7 +84,14 @@ export default function PatientDetail() {
     fetchData();
   }, [patientId, navigate]);
 
-  if (loading) {
+  // --- NEW: Permission checking helper function ---
+  const hasPermission = (permissionKey) => {
+    if (!userRole || !settings || !settings.patientManagement) return false;
+    if (userRole === 'owner') return true;
+    return settings.patientManagement[permissionKey]?.includes(userRole);
+  };
+
+  if (loading || !settings) { // MODIFIED: Wait for settings to load
     return (
       <div className="app-container">
         <div
@@ -145,81 +146,84 @@ export default function PatientDetail() {
       </div>
     );
   }
+  
+  const canSeeContact = hasPermission('canSeeContactDetails');
 
   return (
     <div className="patient-detail-container">
       <header className="detail-header">
         <h1>Patient: {patient.name}</h1>
+        {/* MODIFIED: Replaced hardcoded role checks with hasPermission */}
         <div className="actions">
           <button onClick={() => navigate("/patients")} className="back-button">
             <i className="fas fa-arrow-left"></i> Back to List
           </button>
-          <button
-            onClick={() => navigate(`/patients/${patient.id}/edit`)}
-            className="edit-button"
-          >
-            <i className="fas fa-user-edit"></i> Edit Bio
-          </button>
-          {(userRole === "owner" || userRole === "doctor") && (
+          {hasPermission('canEditBio') && (
+            <button
+              onClick={() => navigate(`/patients/${patient.id}/edit`)}
+              className="edit-button"
+            >
+              <i className="fas fa-user-edit"></i> Edit Bio
+            </button>
+          )}
+          {hasPermission('canAddDentalRecord') && (
             <button
               onClick={() =>
-                navigate(`/patients/${patient.id}/dental-records/new`)
+                navigate(`/patients/${patient.id}/records/new`) // CORRECTED ROUTE
               }
               className="add-record-button"
             >
               <i className="fas fa-plus-circle"></i> Add Dental Record
             </button>
           )}
-          {(userRole === "owner" ||
-            userRole === "staff" ||
-            userRole === "nurse") && (
-            <>
+          {hasPermission('canSendInvoice') && (
               <button
                 onClick={() => navigate(`/patients/${patient.id}/invoice`)}
                 className="send-invoice-button"
               >
                 <i className="fas fa-file-invoice"></i> Send Invoice
               </button>
+          )}
+          {hasPermission('canSendReceipt') && (
               <button
                 onClick={() => navigate(`/patients/${patient.id}/receipts`)}
                 className="send-receipt-button"
               >
                 <i className="fas fa-receipt"></i> Send Receipt
               </button>
-            </>
           )}
         </div>
       </header>
 
       <section className="detail-section">
         <h2>Demographic Information</h2>
+        {/* MODIFIED: Replaced hardcoded role checks with a single permission check */}
         <div className="detail-grid">
           <div className="detail-item">
             <strong>Patient ID:</strong> <span>{patient.id}</span>
           </div>
           <div className="detail-item">
             <strong>Phone Number:</strong>{" "}
-            {userRole === "doctor" || userRole === "nurse" ? (
-              <span className="restricted-info">Restricted</span>
-            ) : (
+            {canSeeContact ? (
               <span>{patient.phoneNumber || "N/A"}</span>
+            ) : (
+              <span className="restricted-info">Restricted</span>
             )}
           </div>
           <div className="detail-item">
             <strong>Email:</strong>{" "}
-            {userRole === "doctor" || userRole === "nurse" ? (
-              <span className="restricted-info">Restricted</span>
-            ) : (
+            {canSeeContact ? (
               <span>{patient.email || "N/A"}</span>
+            ) : (
+              <span className="restricted-info">Restricted</span>
             )}
           </div>
-          {/* UPDATED: Added Address field with role-based restriction */}
           <div className="detail-item">
             <strong>Address:</strong>{" "}
-            {userRole === "doctor" || userRole === "nurse" ? (
-              <span className="restricted-info">Restricted</span>
-            ) : (
+            {canSeeContact ? (
               <span>{patient.address || "N/A"}</span>
+            ) : (
+              <span className="restricted-info">Restricted</span>
             )}
           </div>
           <div className="detail-item">
@@ -271,7 +275,6 @@ export default function PatientDetail() {
               <tbody>
                 {dentalRecords.map((record) => (
                   <tr key={record.id}>
-                    {/* 👇 ADD data-label ATTRIBUTES TO EACH <td> LIKE THIS 👇 */}
                     <td data-label="Record ID">{record.id}</td>
                     <td data-label="Date">
                       {record.createdAt
@@ -312,7 +315,7 @@ export default function PatientDetail() {
                       <button
                         onClick={() =>
                           navigate(
-                            `/patients/${patient.id}/dental-records/${record.id}`
+                            `/patients/${patient.id}/records/${record.id}` // CORRECTED ROUTE
                           )
                         }
                         className="view-record-button"
@@ -330,3 +333,4 @@ export default function PatientDetail() {
     </div>
   );
 }
+

@@ -140,7 +140,16 @@
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     display: flex;
     flex-direction: column;
+    /* --- NEW STYLES FOR STACKING --- */
+    position: relative;
+    z-index: 1;
 }
+
+.appointment-card.dropdown-active {
+    /* --- NEW STYLE TO ELEVATE THE ACTIVE CARD --- */
+    z-index: 10;
+}
+
 
 .appointment-card:hover {
      transform: translateY(-5px);
@@ -177,6 +186,18 @@
     color: var(--text-medium);
     margin-top: 4px;
     display: block;
+}
+
+.appointment-date-display {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--primary-color);
+    font-weight: 500;
+    margin-top: 5px;
+    background-color: #e8eaf6;
+    padding: 3px 8px;
+    border-radius: 5px;
+    display: inline-block;
 }
 
 .outstanding-badge {
@@ -222,6 +243,68 @@
     cursor: not-allowed;
     transform: none;
 }
+
+/* --- NEW & UPDATED DROPDOWN STYLES --- */
+.reminder-dropdown-container {
+    position: relative;
+    display: inline-block;
+}
+
+.reminder-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 5px;
+    background-color: var(--background-card);
+    border-radius: 8px;
+    box-shadow: 0 8px 25px var(--shadow-medium);
+    border: 1px solid var(--border-color);
+    z-index: 100; /* High z-index relative to its parent card */
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.reminder-dropdown-menu button {
+    background-color: transparent;
+    border: none;
+    text-align: left;
+    padding: 12px 15px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-dark);
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.reminder-dropdown-menu button:hover {
+    background-color: #f1f3f9;
+    color: var(--primary-color);
+}
+
+.reminder-dropdown-menu button:disabled {
+    color: #90a4ae;
+    cursor: not-allowed;
+    background-color: transparent;
+}
+
 
 .card-details-toggle {
     padding: 20px 25px;

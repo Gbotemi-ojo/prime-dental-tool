@@ -26,22 +26,19 @@ const formatDateForInput = (date) => {
 
 // Helper component to render the "New" or "Returning" tag
 const GetVisitTag = ({ patient, selectedDate }) => {
+    // ... (no changes in this component)
     let visitInfo = null;
 
     if (selectedDate) {
-        // If a date is selected, find the relevant visit for that day.
-        // A person could be new and returning on the same day. Let's find all visits for the day.
         const formattedSelectedDate = formatDateForInput(selectedDate);
         const visitsOnDay = patient.allVisits
             .filter(v => formatDateForInput(v.date) === formattedSelectedDate)
-            .sort((a, b) => b.date - a.date); // Sort to get latest if multiple on same day
+            .sort((a, b) => b.date - a.date); 
 
         if (visitsOnDay.length > 0) {
-            // Prioritize 'Returning' type if it exists for that day, as it implies a subsequent action
             visitInfo = visitsOnDay.find(v => v.type === 'Returning') || visitsOnDay[0];
         }
     } else {
-        // If no date is selected, use the most recent visit overall.
         visitInfo = patient.mostRecentVisit;
     }
 
@@ -62,13 +59,12 @@ function PatientList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userRole, setUserRole] = useState(null);
+  const [settings, setSettings] = useState(null); // ADDED: State for settings
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 800);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 800);
-    };
+    const handleResize = () => setIsMobile(window.innerWidth <= 800);
     window.addEventListener('resize', handleResize);
 
     const fetchData = async () => {
@@ -83,66 +79,83 @@ function PatientList() {
       }
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/patients`, { 
+        // MODIFIED: Fetch patients and settings in parallel
+        const [patientsResponse, settingsResponse] = await Promise.all([
+          fetch(`${API_BASE_URL}/api/patients`, { 
             headers: { 'Authorization': `Bearer ${token}` } 
-        });
+          }),
+          fetch(`${API_BASE_URL}/api/settings`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+        ]);
 
-        if (response.ok) {
-          const patientsData = await response.json();
+        if (patientsResponse.ok) {
+          const patientsData = await patientsResponse.json();
           setAllPatients(patientsData);
         } else {
-          const errorMsg = `Failed to fetch data. Status: ${response.status}`;
-          setError(errorMsg);
-          if (response.status === 401 || response.status === 403) {
-            localStorage.clear();
-            navigate('/login');
-          }
+          throw new Error(`Failed to fetch patient data. Status: ${patientsResponse.status}`);
         }
+
+        if (settingsResponse.ok) {
+          const settingsData = await settingsResponse.json();
+          setSettings(settingsData);
+          // --- DEBUGGING: Log settings and role to verify ---
+          console.log("SETTINGS LOADED:", settingsData);
+          console.log("USER ROLE:", role);
+        } else {
+          throw new Error('Failed to fetch application settings.');
+        }
+
       } catch (err) {
-        setError('Network error. Could not connect to the server.');
+        setError(err.message || 'Network error. Could not connect to the server.');
+        if (err.message?.includes('401') || err.message?.includes('403')) {
+          localStorage.clear();
+          navigate('/login');
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-
     return () => window.removeEventListener('resize', handleResize);
   }, [navigate]);
 
+  // --- NEW: Permission checking helper function ---
+  const hasPermission = (permissionKey) => {
+    if (!userRole || !settings || !settings.patientManagement) return false;
+    if (userRole === 'owner') return true; // Owner always has access
+    return settings.patientManagement[permissionKey]?.includes(userRole);
+  };
+
   const processedPatients = useMemo(() => {
-    // 1. Augment patient data with visit information
+    // ... (no changes in this useMemo hook)
     let augmentedPatients = allPatients.map(p => {
         const allVisits = [];
-        // Add the initial registration as a "New" visit
         if (p.createdAt) {
             allVisits.push({ date: new Date(p.createdAt), type: 'New' });
         }
-        // Add all subsequent check-ins as "Returning" visits
         if (p.dailyVisits && Array.isArray(p.dailyVisits)) {
             p.dailyVisits.forEach(visit => {
                 allVisits.push({ date: new Date(visit.checkInTime), type: 'Returning' });
             });
         }
-
-        // Determine the most recent visit
         let mostRecentVisit = null;
         if (allVisits.length > 0) {
             mostRecentVisit = allVisits.reduce((latest, current) => 
                 current.date > latest.date ? current : latest
             );
         }
-
         return { ...p, allVisits, mostRecentVisit };
     });
 
-    // 2. Filter patients
     if (searchTerm) {
       const lowerCaseSearchTerm = searchTerm.toLowerCase();
       augmentedPatients = augmentedPatients.filter(p => {
           const nameMatch = p.name.toLowerCase().includes(lowerCaseSearchTerm);
-          const phoneMatch = !['nurse', 'doctor'].includes(userRole) && p.phoneNumber && p.phoneNumber.includes(lowerCaseSearchTerm);
-          const emailMatch = !['nurse', 'doctor'].includes(userRole) && p.email && p.email.toLowerCase().includes(lowerCaseSearchTerm);
+          // MODIFIED: Use permission to decide if phone/email are searchable
+          const phoneMatch = hasPermission('canSeeContactDetails') && p.phoneNumber && p.phoneNumber.includes(lowerCaseSearchTerm);
+          const emailMatch = hasPermission('canSeeContactDetails') && p.email && p.email.toLowerCase().includes(lowerCaseSearchTerm);
           return nameMatch || phoneMatch || emailMatch;
       });
     }
@@ -154,23 +167,16 @@ function PatientList() {
       );
     }
     
-    // 3. Sort patients by the most recent visit date
     augmentedPatients.sort((a, b) => {
         const dateA = a.mostRecentVisit ? a.mostRecentVisit.date.getTime() : 0;
         const dateB = b.mostRecentVisit ? b.mostRecentVisit.date.getTime() : 0;
         return dateB - dateA;
     });
 
-    // 4. Group by family structure for display
     const familyHeads = augmentedPatients.filter(p => p.isFamilyHead);
     const familyMap = new Map(familyHeads.map(p => [p.id, { ...p, familyMembers: [] }]));
-    
     const singlePatients = augmentedPatients.filter(p => !p.isFamilyHead && !p.familyId);
-    singlePatients.forEach(p => {
-        // Use a unique key to avoid clashes with family IDs
-        familyMap.set(`single-${p.id}`, { ...p, familyMembers: [] });
-    });
-
+    singlePatients.forEach(p => familyMap.set(`single-${p.id}`, { ...p, familyMembers: [] }));
     augmentedPatients.forEach(p => {
       if (!p.isFamilyHead && p.familyId && familyMap.has(p.familyId)) {
         familyMap.get(p.familyId).familyMembers.push(p);
@@ -178,11 +184,12 @@ function PatientList() {
     });
 
     return Array.from(familyMap.values());
-  }, [allPatients, searchTerm, selectedDate, userRole]);
+  }, [allPatients, searchTerm, selectedDate, userRole, settings]); // MODIFIED: Added settings to dependency array
 
-  const showNextAppointmentColumn = !['nurse', 'doctor'].includes(userRole);
+  // MODIFIED: Use permission to control column visibility
+  const showNextAppointmentColumn = hasPermission('canSeeNextAppointment');
 
-  if (loading) return <div className="spinner-container"><div className="spinner"></div><p>Loading patient data...</p></div>;
+  if (loading || !settings) return <div className="spinner-container"><div className="spinner"></div><p>Loading patient data...</p></div>;
   if (error) return <div className="app-container"><div className="patient-list-container"><p className="info-message error">Error: {error}</p></div></div>;
   
   return (
@@ -191,14 +198,15 @@ function PatientList() {
         <h1>Patient Directory</h1>
         <div className="actions">
           <button onClick={() => navigate('/dashboard')} className="back-to-dashboard-button"><i className="fas fa-arrow-left"></i> Back</button>
-          {(userRole === 'owner' || userRole === 'staff') && (
+          {/* Using permission for Add Patient button as an example of future extension */}
+          {(userRole === 'owner' || userRole === 'staff') && ( 
             <button onClick={() => navigate('/')} className="add-patient-button"><i className="fas fa-plus-circle"></i> Add New Patient</button>
           )}
         </div>
       </header>
       
       <section className="search-filter-section">
-          <input type="text" placeholder="Search by name, phone, or email..." className="search-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+          <input type="text" placeholder="Search by name..." className="search-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
           <input type="date" className="date-input" value={selectedDate ? formatDateForInput(selectedDate) : ''} onChange={(e) => setSelectedDate(e.target.value ? new Date(e.target.value) : null)} />
           {selectedDate && <button onClick={() => setSelectedDate(null)} className="clear-date-button"><i className="fas fa-times"></i> Clear</button>}
       </section>
@@ -214,7 +222,8 @@ function PatientList() {
                   {!isMobile && (
                     <>
                         <th>Role</th>
-                        <th>Contact</th>
+                        {/* MODIFIED: Show contact column based on permission */}
+                        {hasPermission('canSeeContactDetails') && <th>Contact</th>}
                         <th>Date of Birth</th>
                         <th>Sex</th>
                         <th>HMO</th>
@@ -235,14 +244,16 @@ function PatientList() {
                       {!isMobile && (
                         <>
                             <td><span className="role-badge head">{family.isFamilyHead ? 'Head' : 'Individual'}</span></td>
-                            <td>
-                                {(!['nurse', 'doctor'].includes(userRole)) ? (
-                                    <div className="contact-info">
-                                        <span>{family.phoneNumber || 'N/A'}</span>
-                                        <span>{family.email || 'N/A'}</span>
-                                    </div>
-                                ) : '' /* Empty string for restricted roles */}
-                            </td>
+                            {/* MODIFIED: Render contact details based on permission */}
+                            {hasPermission('canSeeContactDetails') && (
+                              <td>
+                                <div className="contact-info">
+                                  <span>{family.phoneNumber || 'N/A'}</span>
+                                  <span>{family.email || 'N/A'}</span>
+                                  <span>{family.address || 'N/A'}</span>
+                                </div>
+                              </td>
+                            )}
                             <td>{family.dateOfBirth ? new Date(family.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
                             <td>{family.sex}</td>
                             <td>{family.hmo ? 'Yes' : 'No'}</td>
@@ -250,7 +261,8 @@ function PatientList() {
                         </>
                       )}
                       <td className="table-actions-cell">
-                      <PatientActions patient={family} userRole={userRole} navigate={navigate} />
+                        {/* MODIFIED: Pass settings and permission checker to Actions component */}
+                        <PatientActions patient={family} userRole={userRole} navigate={navigate} hasPermission={hasPermission} />
                       </td>
                   </tr>
                   {family.familyMembers.map((member) => (
@@ -262,13 +274,16 @@ function PatientList() {
                       {!isMobile && (
                         <>
                             <td><span className="role-badge member">Member</span></td>
-                            <td>
-                                {(!['nurse', 'doctor'].includes(userRole)) ? (
-                                    <div className="contact-info inherited">
-                                        <span>Inherited</span>
-                                    </div>
-                                ) : '' /* Empty string for restricted roles */}
-                            </td>
+                            {/* --- FIX: Show Family Head's contact info for members --- */}
+                            {hasPermission('canSeeContactDetails') && (
+                              <td>
+                                <div className="contact-info inherited">
+                                  <span>{family.phoneNumber || 'N/A'} (Head)</span>
+                                  <span>{family.email || 'N/A'} (Head)</span>
+                                  <span>{family.address || 'N/A'} (Head)</span>
+                                </div>
+                              </td>
+                            )}
                             <td>{member.dateOfBirth ? new Date(member.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
                             <td>{member.sex}</td>
                             <td>{member.hmo ? 'Yes' : 'No'}</td>
@@ -276,7 +291,7 @@ function PatientList() {
                         </>
                       )}
                       <td className="table-actions-cell">
-                          <PatientActions patient={member} userRole={userRole} navigate={navigate} />
+                          <PatientActions patient={member} userRole={userRole} navigate={navigate} hasPermission={hasPermission} />
                       </td>
                       </tr>
                   ))}
@@ -291,12 +306,13 @@ function PatientList() {
 }
 
 
-function PatientActions({ patient, userRole, navigate }) {
+// MODIFIED: Accept hasPermission prop
+function PatientActions({ patient, userRole, navigate, hasPermission }) {
     const [isOpen, setIsOpen] = useState(false);
     const [style, setStyle] = useState({});
     const buttonRef = useRef(null);
     const menuRef = useRef(null);
-
+    // ... (handleToggle and useEffect hooks remain the same)
     const handleToggle = () => {
         if (buttonRef.current) {
             const rect = buttonRef.current.getBoundingClientRect();
@@ -337,16 +353,17 @@ function PatientActions({ patient, userRole, navigate }) {
         setIsOpen(false);
     };
 
+    // MODIFIED: Define actions with their required permission key
     const actionItems = [
-        // Ensure patient.id is used for navigation
-        { roles: ['owner', 'doctor', 'staff', 'nurse'], label: 'Details', icon: 'fa-eye', path: `/patients/${patient.id}` },
-        { roles: ['owner', 'staff', 'nurse', 'doctor'], label: 'Appointment', icon: 'fa-calendar-plus', path: `/patients/${patient.id}/set-appointment` },
-        { roles: ['owner', 'staff', 'nurse'], label: 'Invoice', icon: 'fa-file-invoice', path: `/patients/${patient.id}/invoice` },
-        { roles: ['owner', 'staff'], label: 'Receipts', icon: 'fa-receipt', path: `/patients/${patient.id}/receipts` },
-        { roles: ['owner', 'staff'], label: 'Edit Bio', icon: 'fa-user-edit', path: `/patients/${patient.id}/edit` }
+        { label: 'Details', icon: 'fa-eye', path: `/patients/${patient.id}`, permissionKey: null }, // Assume all roles can see details
+        { label: 'Set Appointment', icon: 'fa-calendar-plus', path: `/patients/${patient.id}/set-appointment`, permissionKey: 'canSetAppointment' },
+        { label: 'Send Invoice', icon: 'fa-file-invoice', path: `/patients/${patient.id}/invoice`, permissionKey: 'canSendInvoice' },
+        { label: 'Send Receipt', icon: 'fa-receipt', path: `/patients/${patient.id}/receipts`, permissionKey: 'canSendReceipt' },
+        { label: 'Edit Bio', icon: 'fa-user-edit', path: `/patients/${patient.id}/edit`, permissionKey: 'canEditBio' }
     ];
 
-    const availableActions = actionItems.filter(action => action.roles.includes(userRole));
+    // MODIFIED: Filter actions based on the permission checker
+    const availableActions = actionItems.filter(action => !action.permissionKey || hasPermission(action.permissionKey));
 
     return (
         <div ref={buttonRef}>

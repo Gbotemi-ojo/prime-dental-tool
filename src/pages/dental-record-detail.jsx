@@ -13,9 +13,11 @@ export default function DentalRecordDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userRole, setUserRole] = useState(null);
+  const [settings, setSettings] = useState(null); // ADDED: State for settings
 
   useEffect(() => {
     const fetchRecordDetails = async () => {
+      setLoading(true);
       const token = localStorage.getItem('jwtToken');
       const role = localStorage.getItem('role');
       setUserRole(role);
@@ -34,9 +36,19 @@ export default function DentalRecordDetail() {
       }
 
       try {
-        const patientResponse = await fetch(`${API_BASE_URL}/api/patients/${parsedPatientId}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        // MODIFIED: Fetch all data in parallel
+        const [patientResponse, recordResponse, settingsResponse] = await Promise.all([
+          fetch(`${API_BASE_URL}/api/patients/${parsedPatientId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }),
+          fetch(`${API_BASE_URL}/api/patients/${parsedPatientId}/dental-records/${parsedRecordId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }),
+          fetch(`${API_BASE_URL}/api/settings`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+        ]);
+
         if (patientResponse.ok) {
           const patientData = await patientResponse.json();
           setPatientName(patientData.name);
@@ -44,25 +56,29 @@ export default function DentalRecordDetail() {
           console.error("Failed to fetch patient name for record detail.");
         }
 
-        const recordResponse = await fetch(`${API_BASE_URL}/api/patients/${parsedPatientId}/dental-records/${parsedRecordId}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-
         if (recordResponse.ok) {
           const recordData = await recordResponse.json();
           setRecord(recordData);
         } else if (recordResponse.status === 404) {
-          setError('Dental record not found.');
-        } else if (recordResponse.status === 401 || recordResponse.status === 403) {
-          localStorage.clear();
-          navigate('/login');
+          throw new Error('Dental record not found.');
         } else {
           const errorData = await recordResponse.json();
-          setError(errorData.error || `Failed to fetch dental record details. Status: ${recordResponse.status}`);
+          throw new Error(errorData.error || `Failed to fetch dental record details.`);
         }
+        
+        if (settingsResponse.ok) {
+            const settingsData = await settingsResponse.json();
+            setSettings(settingsData);
+        } else {
+            throw new Error("Failed to fetch application settings.");
+        }
+
       } catch (err) {
-        setError('Network error. Could not connect to the server.');
-        console.error('Network Error:', err);
+        setError(err.message || 'Network error. Could not connect to the server.');
+        if (err.message?.includes('401') || err.message?.includes('403')) {
+            localStorage.clear();
+            navigate('/login');
+        }
       } finally {
         setLoading(false);
       }
@@ -70,6 +86,17 @@ export default function DentalRecordDetail() {
 
     fetchRecordDetails();
   }, [patientId, recordId, navigate]);
+
+  // --- NEW: Permission checking helper function ---
+  const hasPermission = (permissionKey) => {
+    if (!userRole || !settings || !settings.patientManagement) return false;
+    if (userRole === 'owner') return true;
+    // Assuming if a user can add a record, they can also edit it.
+    if (permissionKey === 'canEditDentalRecord') {
+      return settings.patientManagement['canAddDentalRecord']?.includes(userRole);
+    }
+    return settings.patientManagement[permissionKey]?.includes(userRole);
+  };
 
   const renderQuadrantData = (data) => {
     if (!data || Object.values(data).every(v => v === null || v === '')) {
@@ -85,7 +112,7 @@ export default function DentalRecordDetail() {
     );
   };
 
-  if (loading) {
+  if (loading || !settings) { // MODIFIED: Wait for settings to load
     return (
       <div className="app-container">
         <div className="record-detail-container loading-state">
@@ -126,22 +153,25 @@ export default function DentalRecordDetail() {
     <div className="record-detail-container">
       <header className="detail-header">
         <h1>Dental Record for <span className="patient-name-highlight">{patientName || 'Patient'}</span></h1>
+        {/* MODIFIED: Replaced hardcoded role checks with hasPermission */}
         <div className="actions">
           <button onClick={() => navigate(`/patients/${patientId}`)} className="back-button">
             <i className="fas fa-arrow-left"></i> Back to Patient Details
           </button>
-          {(userRole === 'owner' || userRole === 'staff' || userRole === 'doctor' || userRole === 'nurse') && (
-            <>
-              <button onClick={() => navigate(`/patients/${patientId}/dental-records/${record?.id}/edit`)} className="edit-button">
-                <i className="fas fa-edit"></i> Edit Record
-              </button>
-              <button onClick={() => navigate(`/patients/${patientId}/invoice`)} className="send-invoice-button">
-                  <i className="fas fa-paper-plane"></i> Send Invoice
-              </button>
-              <button onClick={() => navigate(`/patients/${patientId}/receipts`)} className="send-receipt-button">
-                  <i className="fas fa-envelope"></i> Send Receipt
-              </button>
-            </>
+          {hasPermission('canEditDentalRecord') && (
+            <button onClick={() => navigate(`/patients/${patientId}/records/${record?.id}/edit`)} className="edit-button">
+              <i className="fas fa-edit"></i> Edit Record
+            </button>
+          )}
+          {hasPermission('canSendInvoice') && (
+            <button onClick={() => navigate(`/patients/${patientId}/invoice`)} className="send-invoice-button">
+                <i className="fas fa-paper-plane"></i> Send Invoice
+            </button>
+          )}
+          {hasPermission('canSendReceipt') && (
+            <button onClick={() => navigate(`/patients/${patientId}/receipts`)} className="send-receipt-button">
+                <i className="fas fa-envelope"></i> Send Receipt
+            </button>
           )}
         </div>
       </header>

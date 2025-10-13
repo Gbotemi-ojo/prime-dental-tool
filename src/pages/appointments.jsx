@@ -1,15 +1,19 @@
 // src/pages/appointments.jsx
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import API_BASE_URL from '../config/api';
 import './appointments.css';
 
-const AppointmentCard = ({ patient, onSendReminder, onNavigate, sendingReminderId, viewMode }) => {
+const AppointmentCard = ({ patient, onSendReminder, onNavigate, sendingState, viewMode }) => {
     const [isExpanded, setIsExpanded] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
+
     const hasOutstanding = parseFloat(patient.outstanding) > 0;
-    const isSending = sendingReminderId === patient.id;
+
+    const isSending = (type) => sendingState?.patientId === patient.id && sendingState?.type === type;
 
     const formattedOutstanding = hasOutstanding
         ? parseFloat(patient.outstanding).toLocaleString('en-US', {
@@ -37,8 +41,20 @@ const AppointmentCard = ({ patient, onSendReminder, onNavigate, sendingReminderI
         return new Date(dateString).toLocaleDateString(undefined, options);
     };
 
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+
     return (
-        <li className="appointment-card">
+        <li className={`appointment-card ${isDropdownOpen ? 'dropdown-active' : ''}`}>
             <div className="card-main-content">
                 <div className="patient-info">
                     <span className="patient-name" onClick={onNavigate}>{patient.name}</span>
@@ -55,22 +71,32 @@ const AppointmentCard = ({ patient, onSendReminder, onNavigate, sendingReminderI
                     )}
                 </div>
                 <div className="card-actions">
-                    <button 
-                        className="send-reminder-btn"
-                        onClick={onSendReminder}
-                        disabled={!patient.email || isSending}
-                        title={!patient.email ? "Patient has no email address" : "Send reminder email"}
-                    >
-                        {isSending ? (
-                            <>
-                                <i className="fas fa-spinner fa-spin"></i> Sending...
-                            </>
-                        ) : (
-                            <>
-                                <i className="fas fa-envelope"></i> Send Reminder
-                            </>
+                    <div className="reminder-dropdown-container" ref={dropdownRef}>
+                        <button 
+                            className="send-reminder-btn"
+                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                            disabled={!patient.email}
+                            title={!patient.email ? "Patient has no email address" : "Send reminder email"}
+                        >
+                            <i className="fas fa-envelope"></i> Send Reminder <i className={`fas fa-chevron-${isDropdownOpen ? 'up' : 'down'}`}></i>
+                        </button>
+                        {isDropdownOpen && (
+                             <div className="reminder-dropdown-menu">
+                                <button onClick={() => { onSendReminder(patient.id, 'general'); setIsDropdownOpen(false); }} disabled={isSending('general')}>
+                                    {isSending('general') ? <><i className="fas fa-spinner fa-spin"></i> Sending...</> : 'Generic Reminder'}
+                                </button>
+                                <button onClick={() => { onSendReminder(patient.id, 'scaling'); setIsDropdownOpen(false); }} disabled={isSending('scaling')}>
+                                    {isSending('scaling') ? <><i className="fas fa-spinner fa-spin"></i> Sending...</> : 'Scaling & Polishing'}
+                                </button>
+                                <button onClick={() => { onSendReminder(patient.id, 'extraction'); setIsDropdownOpen(false); }} disabled={isSending('extraction')}>
+                                     {isSending('extraction') ? <><i className="fas fa-spinner fa-spin"></i> Sending...</> : 'Post-Extraction'}
+                                </button>
+                                <button onClick={() => { onSendReminder(patient.id, 'rootCanal'); setIsDropdownOpen(false); }} disabled={isSending('rootCanal')}>
+                                     {isSending('rootCanal') ? <><i className="fas fa-spinner fa-spin"></i> Sending...</> : 'Root Canal'}
+                                </button>
+                             </div>
                         )}
-                    </button>
+                    </div>
                 </div>
             </div>
              <div 
@@ -105,7 +131,7 @@ const AppointmentsPage = () => {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [sendingReminderId, setSendingReminderId] = useState(null);
+    const [sendingState, setSendingState] = useState({ patientId: null, type: null }); // MODIFIED
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -190,11 +216,19 @@ const AppointmentsPage = () => {
         setViewMode('byDate');
     };
 
-    const handleSendReminder = async (patientId) => {
+    const handleSendReminder = async (patientId, type = 'general') => {
         const token = localStorage.getItem('jwtToken');
-        setSendingReminderId(patientId);
+        setSendingState({ patientId, type });
+
+        let url;
+        if (type === 'general') {
+            url = `${API_BASE_URL}/api/patients/${patientId}/send-reminder`;
+        } else {
+            url = `${API_BASE_URL}/api/patients/${patientId}/reminders/${type}`;
+        }
+        
         try {
-            const response = await fetch(`${API_BASE_URL}/api/patients/${patientId}/send-reminder`, {
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -203,12 +237,12 @@ const AppointmentsPage = () => {
             if (response.ok) {
                 toast.success(data.message, { theme: "colored" });
             } else {
-                toast.error(data.error || 'Failed to send reminder.', { theme: "colored" });
+                toast.error(data.error || `Failed to send ${type} reminder.`, { theme: "colored" });
             }
         } catch (err) {
-            toast.error('Network error. Could not send reminder.', { theme: "colored" });
+            toast.error(`Network error. Could not send ${type} reminder.`, { theme: "colored" });
         } finally {
-            setSendingReminderId(null);
+            setSendingState({ patientId: null, type: null });
         }
     };
     
@@ -292,10 +326,10 @@ const AppointmentsPage = () => {
                                 <AppointmentCard 
                                     key={patient.id} 
                                     patient={patient}
-                                    onSendReminder={() => handleSendReminder(patient.id)}
+                                    onSendReminder={handleSendReminder}
                                     onNavigate={() => navigate(`/patients/${patient.id}`)}
-                                    sendingReminderId={sendingReminderId}
-                                    viewMode={viewMode} // Pass viewMode prop
+                                    sendingState={sendingState}
+                                    viewMode={viewMode}
                                 />
                             ))}
                         </ul>

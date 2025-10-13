@@ -1,30 +1,30 @@
 // src/pages/edit-item.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify'; // For sleek notifications
-import './edit-item.css'; // Import the dedicated CSS file
+import { toast } from 'react-toastify';
+import './edit-item.css';
 import API_BASE_URL from '../config/api'
 
-// This component allows owners to edit details of an existing inventory item.
 export default function EditItem() {
-  const { itemId } = useParams(); // Get itemId from the URL
+  const { itemId } = useParams();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     name: '',
     category: '',
-    currentStock: '', // Matches schema: currentStock
-    unitPrice: '',    // Matches schema: unitPrice
-    costPerUnit: '',  // Matches schema: costPerUnit
-    reorderLevel: '', // Matches schema: reorderLevel
-    unitOfMeasure: '',// Matches schema: unitOfMeasure
-    supplier: '',     // Matches schema: supplier
+    currentStock: '',
+    unitPrice: '',
+    costPerUnit: '',
+    reorderLevel: '',
+    unitOfMeasure: '',
+    supplier: '',
     description: '',
   });
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [userRole, setUserRole] = useState(null);
+  const [settings, setSettings] = useState(null); // State for settings
 
   useEffect(() => {
     const token = localStorage.getItem('jwtToken');
@@ -32,66 +32,75 @@ export default function EditItem() {
     setUserRole(role);
 
     if (!token) {
-      console.log("[EditItem] No JWT token found. Redirecting to login.");
       navigate('/login');
-      return;
-    }
-
-    if (role !== 'owner') {
-      console.warn("[EditItem] Unauthorized access: User is not an owner.");
-      toast.error("You don't have permission to edit inventory items.");
-      navigate('/dashboard'); // Redirect unauthorized users
       return;
     }
 
     const parsedItemId = parseInt(itemId);
     if (isNaN(parsedItemId)) {
-      setError("Invalid Inventory Item ID provided in the URL.");
+      setError("Invalid Inventory Item ID in URL.");
       setLoading(false);
       return;
     }
 
-    const fetchItemDetails = async () => {
+    const fetchInitialData = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/inventory/items/${parsedItemId}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const [itemResponse, settingsResponse] = await Promise.all([
+          fetch(`${API_BASE_URL}/api/inventory/items/${parsedItemId}`, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`${API_BASE_URL}/api/settings`, { headers: { 'Authorization': `Bearer ${token}` } })
+        ]);
 
-        if (response.ok) {
-          const data = await response.json();
-          // Ensure numbers are parsed for form fields that expect them
+        // --- Permission Check ---
+        if (!settingsResponse.ok) throw new Error("Failed to fetch settings.");
+        const settingsData = await settingsResponse.json();
+        setSettings(settingsData);
+        
+        const canEdit = settingsData.inventoryManagement?.canEditItem?.includes(role) || role === 'owner';
+        if (!canEdit) {
+            toast.error("You don't have permission to edit inventory items.", { toastId: 'edit-item-denied' });
+            navigate('/inventory/items'); // Redirect unauthorized users
+            return;
+        }
+
+        // --- Item Data Fetching ---
+        if (itemResponse.ok) {
+          const data = await itemResponse.json();
           setFormData({
             name: data.name || '',
             category: data.category || '',
             currentStock: data.currentStock !== undefined ? String(data.currentStock) : '',
-            unitPrice: data.unitPrice !== undefined ? String(parseFloat(data.unitPrice).toFixed(2)) : '', // Ensure two decimal places for display
-            costPerUnit: data.costPerUnit !== undefined ? String(parseFloat(data.costPerUnit).toFixed(2)) : '', // Ensure two decimal places for display
+            unitPrice: data.unitPrice !== undefined ? String(parseFloat(data.unitPrice).toFixed(2)) : '',
+            costPerUnit: data.costPerUnit !== undefined ? String(parseFloat(data.costPerUnit).toFixed(2)) : '',
             reorderLevel: data.reorderLevel !== undefined ? String(data.reorderLevel) : '',
             unitOfMeasure: data.unitOfMeasure || '',
             supplier: data.supplier || '',
             description: data.description || '',
           });
-        } else if (response.status === 401 || response.status === 403) {
-          console.error(`[EditItem] Authentication error (${response.status}):`, response.statusText);
-          localStorage.clear();
-          navigate('/login');
-        } else if (response.status === 404) {
-          setError('Inventory item not found.');
+        } else if (itemResponse.status === 404) {
+          throw new Error('Inventory item not found.');
         } else {
-          const errorData = await response.json();
-          setError(errorData.error || `Failed to fetch item details. Status: ${response.status}`);
-          console.error('[EditItem] API Error:', response.status, response.statusText, errorData);
+          throw new Error(`Failed to fetch item details. Status: ${itemResponse.status}`);
         }
       } catch (err) {
-        setError('Network error. Could not connect to the server. Please ensure the backend is running.');
-        console.error('[EditItem] Network Error:', err);
+        setError(err.message);
+        if (String(err.message).includes('401') || String(err.message).includes('403')) {
+          toast.error("Session expired. Please log in again.");
+          localStorage.clear();
+          navigate('/login');
+        }
       } finally {
         setLoading(false);
       }
     };
 
-    fetchItemDetails();
-  }, [itemId, navigate]); // Depend on itemId and navigate
+    fetchInitialData();
+  }, [itemId, navigate]);
+
+  const hasPermission = (permissionKey) => {
+    if (userRole === 'owner') return true;
+    if (!userRole || !settings || !settings.inventoryManagement) return false;
+    return settings.inventoryManagement[permissionKey]?.includes(userRole);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -103,74 +112,47 @@ export default function EditItem() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!hasPermission('canEditItem')) {
+      toast.error("You no longer have permission to perform this action.");
+      return;
+    }
+    
     setSubmitting(true);
     setError(null);
-    toast.dismiss(); // Clear existing toasts
+    toast.dismiss();
 
     const token = localStorage.getItem('jwtToken');
     if (!token) {
       toast.error("Authentication expired. Please log in.");
       navigate('/login');
-      setSubmitting(false);
       return;
     }
-
-    // Basic validation
-    if (!formData.name || !formData.category || formData.currentStock === '' || formData.unitPrice === '' || formData.unitOfMeasure === '') {
-      setError("Name, Category, Current Stock, Unit Price, and Unit of Measure are required.");
-      toast.error("Please fill in all required fields.");
-      setSubmitting(false);
-      return;
-    }
-
-    const parsedCurrentStock = parseInt(formData.currentStock);
-    const parsedUnitPrice = parseFloat(formData.unitPrice);
-    const parsedCostPerUnit = parseFloat(formData.costPerUnit);
-    const parsedReorderLevel = parseInt(formData.reorderLevel);
-
-    if (isNaN(parsedCurrentStock) || parsedCurrentStock < 0) {
-      setError('Current Stock must be a non-negative number.');
-      toast.error('Current Stock must be a non-negative number.');
-      setSubmitting(false);
-      return;
-    }
-    if (isNaN(parsedUnitPrice) || parsedUnitPrice < 0) {
-      setError('Unit Price must be a non-negative number.');
-      toast.error('Unit Price must be a non-negative number.');
-      setSubmitting(false);
-      return;
-    }
-    if (isNaN(parsedCostPerUnit) || parsedCostPerUnit < 0) {
-      setError('Cost Per Unit must be a non-negative number.');
-      toast.error('Cost Per Unit must be a non-negative number.');
-      setSubmitting(false);
-      return;
-    }
-    if (isNaN(parsedReorderLevel) || parsedReorderLevel < 0) {
-      setError('Reorder Level must be a non-negative number.');
-      toast.error('Reorder Level must be a non-negative number.');
-      setSubmitting(false);
-      return;
+    
+    // Validation for required fields
+    const requiredFields = ['name', 'category', 'currentStock', 'unitPrice', 'unitOfMeasure'];
+    for (const field of requiredFields) {
+        if (!formData[field]) {
+            toast.error(`${field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} is required.`);
+            setSubmitting(false);
+            return;
+        }
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/inventory/items/${itemId}`, {
+      // FIX: Corrected API endpoint URL to include '/api'
+      const response = await fetch(`${API_BASE_URL}/api/inventory/items/${itemId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
-          name: formData.name,
-          category: formData.category,
-          currentStock: parsedCurrentStock,
-          unitPrice: parsedUnitPrice,
-          costPerUnit: parsedCostPerUnit,
-          reorderLevel: parsedReorderLevel,
-          unitOfMeasure: formData.unitOfMeasure,
-          supplier: formData.supplier || null,
-          description: formData.description || null,
-          updatedAt: new Date(), // Update timestamp on modification
+          ...formData,
+          currentStock: parseInt(formData.currentStock, 10),
+          unitPrice: parseFloat(formData.unitPrice),
+          costPerUnit: formData.costPerUnit ? parseFloat(formData.costPerUnit) : null,
+          reorderLevel: formData.reorderLevel ? parseInt(formData.reorderLevel, 10) : null,
+          updatedAt: new Date(),
         }),
       });
 
@@ -178,24 +160,14 @@ export default function EditItem() {
 
       if (response.ok) {
         toast.success(data.message || 'Inventory item updated successfully!', {
-          onClose: () => navigate(`/inventory/items/${itemId}`), // Redirect on toast close
+          onClose: () => navigate(`/inventory/items/${itemId}`),
           autoClose: 2000,
         });
-      } else if (response.status === 401 || response.status === 403) {
-        toast.error(data.error || "Authorization failed. Please log in again.");
-        localStorage.clear();
-        navigate('/login');
-      } else if (response.status === 409) {
-        // Conflict, e.g., duplicate name
-        setError(data.error || 'Conflict: An item with this name might already exist.');
-        toast.error(data.error || 'An inventory item with this name already exists.');
-      }
-       else {
-        setError(data.error || `Failed to update inventory item. Status: ${response.status}`);
-        toast.error(data.error || 'Failed to update inventory item.');
+      } else {
+        toast.error(data.error || `Failed to update. Status: ${response.status}`);
+        if (response.status === 401 || response.status === 403) navigate('/login');
       }
     } catch (err) {
-      console.error('Error updating inventory item:', err);
       setError('Network error. Could not connect to the server.');
       toast.error('Network error. Please try again.');
     } finally {
@@ -203,18 +175,18 @@ export default function EditItem() {
     }
   };
 
-  if (loading) {
+  if (loading || !settings) {
     return (
       <div className="app-container">
         <div className="edit-item-container loading-state">
-          <p className="info-message">Loading item details for editing...</p>
+          <p className="info-message">Loading item details...</p>
           <div className="spinner"></div>
         </div>
       </div>
     );
   }
 
-  if (error && !submitting) { // Only show error if not currently submitting
+  if (error) {
     return (
       <div className="app-container">
         <div className="edit-item-container error-state">
@@ -227,21 +199,6 @@ export default function EditItem() {
     );
   }
 
-  // Prevent rendering form if not owner or item not found
-  if (userRole !== 'owner' || !formData.name) {
-      return (
-        <div className="app-container">
-          <div className="edit-item-container info-state">
-            <p className="info-message">Access denied or item not found.</p>
-            <button onClick={() => navigate('/inventory/items')} className="cancel-button">
-              <i className="fas fa-arrow-left"></i> Back to Inventory List
-            </button>
-          </div>
-        </div>
-      );
-  }
-
-
   return (
     <div className="edit-item-container">
       <header className="edit-item-header">
@@ -253,134 +210,43 @@ export default function EditItem() {
 
       <form onSubmit={handleSubmit} className="edit-item-form">
         <div className="form-grid">
-          {/* Item Name */}
           <div className="form-group">
             <label htmlFor="name">Item Name *</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              placeholder="e.g., Dental Floss"
-            />
+            <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} required />
           </div>
-
-          {/* Category */}
           <div className="form-group">
             <label htmlFor="category">Category *</label>
-            <input
-              type="text"
-              id="category"
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              required
-              placeholder="e.g., Consumables"
-            />
+            <input type="text" id="category" name="category" value={formData.category} onChange={handleChange} required />
           </div>
-
-          {/* Current Stock */}
           <div className="form-group">
             <label htmlFor="currentStock">Current Stock *</label>
-            <input
-              type="number"
-              id="currentStock"
-              name="currentStock"
-              value={formData.currentStock}
-              onChange={handleChange}
-              required
-              min="0"
-              placeholder="e.g., 100"
-            />
+            <input type="number" id="currentStock" name="currentStock" value={formData.currentStock} onChange={handleChange} required min="0" />
           </div>
-
-          {/* Unit Price */}
           <div className="form-group">
             <label htmlFor="unitPrice">Unit Price (₦) *</label>
-            <input
-              type="number"
-              id="unitPrice"
-              name="unitPrice"
-              value={formData.unitPrice}
-              onChange={handleChange}
-              required
-              min="0"
-              step="0.01"
-              placeholder="e.g., 5.99"
-            />
+            <input type="number" id="unitPrice" name="unitPrice" value={formData.unitPrice} onChange={handleChange} required min="0" step="0.01" />
           </div>
-
-          {/* Cost Per Unit */}
           <div className="form-group">
-            <label htmlFor="costPerUnit">Cost Per Unit ($)</label>
-            <input
-              type="number"
-              id="costPerUnit"
-              name="costPerUnit"
-              value={formData.costPerUnit}
-              onChange={handleChange}
-              min="0"
-              step="0.01"
-              placeholder="e.g., 3.50"
-            />
+            <label htmlFor="costPerUnit">Cost Per Unit (₦)</label>
+            <input type="number" id="costPerUnit" name="costPerUnit" value={formData.costPerUnit} onChange={handleChange} min="0" step="0.01" />
           </div>
-
-          {/* Reorder Level */}
           <div className="form-group">
             <label htmlFor="reorderLevel">Reorder Level</label>
-            <input
-              type="number"
-              id="reorderLevel"
-              name="reorderLevel"
-              value={formData.reorderLevel}
-              onChange={handleChange}
-              min="0"
-              placeholder="e.g., 10"
-            />
+            <input type="number" id="reorderLevel" name="reorderLevel" value={formData.reorderLevel} onChange={handleChange} min="0" />
           </div>
-
-          {/* Unit of Measure */}
           <div className="form-group">
             <label htmlFor="unitOfMeasure">Unit of Measure *</label>
-            <input
-              type="text"
-              id="unitOfMeasure"
-              name="unitOfMeasure"
-              value={formData.unitOfMeasure}
-              onChange={handleChange}
-              required
-              placeholder="e.g., pcs, boxes, ml"
-            />
+            <input type="text" id="unitOfMeasure" name="unitOfMeasure" value={formData.unitOfMeasure} onChange={handleChange} required />
           </div>
-
-          {/* Supplier */}
           <div className="form-group">
             <label htmlFor="supplier">Supplier</label>
-            <input
-              type="text"
-              id="supplier"
-              name="supplier"
-              value={formData.supplier}
-              onChange={handleChange}
-              placeholder="e.g., ABC Medical Supplies"
-            />
+            <input type="text" id="supplier" name="supplier" value={formData.supplier} onChange={handleChange} />
           </div>
-
-          {/* Description - full width */}
           <div className="form-group full-width">
             <label htmlFor="description">Description</label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows="4"
-              placeholder="Detailed description of the item."
-            ></textarea>
+            <textarea id="description" name="description" value={formData.description} onChange={handleChange} rows="4"></textarea>
           </div>
-        </div> {/* End of form-grid */}
+        </div>
 
         <div className="form-actions">
           <button type="submit" className="save-button" disabled={submitting}>

@@ -1,28 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './patient-form.css'; // Import the CSS file
 import API_BASE_URL from '../config/api';
 import { clinicName, phoneNumber } from '../config/info';
 import { ClinicDescription } from '../config/info';
 import { addressLine1 } from '../config/info';
 import { addressLine2 } from '../config/info';
-
-// HMO Options for the dropdown, copied from InvoicePage.jsx for consistency
-const hmoOptions = [
-    { name: "IHMS" }, { name: "HEALTH PARTNERS" }, { name: "ZENOR" },
-    { name: "PHILIPS" }, { name: "PRO HEALTH" }, { name: "FOUNTAIN HEALTH" },
-    { name: "DOT HMO" }, { name: "CLEARLINE" }, { name: "STERLING HEALTH" },
-    { name: "OCEANIC" }, { name: "SUNU" }, { name: "LIFEWORTH" },
-    { name: "CKLINE" }, { name: "WELLNESS" }, { name: "RELIANCE" },
-    { name: "FIRST GUARANTEE" }, { name: "THT" }, { name: "DOHEEC" },
-    { name: "GNI" }, { name: "MH" }, { name: "AIICO MULTISHIELD" },
-    { name: "GREENBAY" }, { name: "MARINA" }, { name: "EAGLE" },
-    { name: "MEDIPLAN" }, { name: "METROHEALTH" }, { name: "RONSBERGER" },
-    { name: "WELPRO" }, { name: "GORAH" }, { name: "SMATHEALTH" },
-    { name: "AXA MANSARD" }, { name: "BASTION" }, { name: "REDCARE" },
-    { name: "AVON" }, { name: "ANCHOR" }, { name: "LEADWAY" },
-    { name: "NOOR" }, { name: "ALLENZA" }, { name: "UNITED HEALTH CARE" },
-    { name: "QUEST" },{ name: "HYGEIA" }, { name: "NEM" }, { name: "KENNEDIA" }
-];
 
 // Main component to render the Patient Registration Portal
 export default function PatientHomePage() {
@@ -39,7 +21,9 @@ function PatientRegistrationPortal() {
   // State for the type of new account: 'none', 'individual', 'family'
   const [newAccountType, setNewAccountType] = useState('none');
 
-  // UPDATED: Added 'address' to the initial state
+  // --- NEW: State for dynamically fetched HMO list ---
+  const [hmoOptions, setHmoOptions] = useState([]);
+
   const [headPatientData, setHeadPatientData] = useState({
     name: '',
     sex: '',
@@ -63,6 +47,25 @@ function PatientRegistrationPortal() {
     isError: false,
   });
 
+  // --- NEW: useEffect to fetch HMO data from the server ---
+  useEffect(() => {
+    const fetchHmoOptions = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/billing/options`);
+        if (response.ok) {
+          const data = await response.json();
+          setHmoOptions(data.hmos || []); // Set the fetched HMOs into state
+        } else {
+          console.error("Failed to fetch HMO options from the server.");
+        }
+      } catch (error) {
+        console.error("Error fetching HMO options:", error);
+      }
+    };
+
+    fetchHmoOptions();
+  }, []); // The empty array ensures this runs only once when the component mounts
+
   // Clinic Information
   const clinicInfo = {
     name: clinicName,
@@ -76,6 +79,7 @@ function PatientRegistrationPortal() {
   const handleHeadDataChange = (e) => {
     const { name, value } = e.target;
     if (name === 'hmo') {
+      // Find the full HMO object from the state
       const selectedHMO = hmoOptions.find(hmo => hmo.name === value);
       setHeadPatientData((prevData) => ({ ...prevData, hmo: selectedHMO || null }));
     } else {
@@ -101,7 +105,6 @@ function PatientRegistrationPortal() {
     }
   };
 
-  // UPDATED: Added 'address' to the reset state
   const resetFormState = () => {
     setHeadPatientData({ name: '', sex: '', dateOfBirth: '', phoneNumber: '', email: '', address: '', hmo: null });
     setFamilyMembers([{ name: '', sex: '', dateOfBirth: '' }]);
@@ -188,7 +191,6 @@ function PatientRegistrationPortal() {
         <label htmlFor="email">Email Address</label>
         <input type="email" id="email" name="email" value={headPatientData.email} onChange={handleHeadDataChange} placeholder="e.g., john.doe@example.com" />
       </div>
-      {/* UPDATED: Added Address textarea */}
       <div className="form-group">
         <label htmlFor="address">Address</label>
         <textarea
@@ -204,7 +206,7 @@ function PatientRegistrationPortal() {
         <label htmlFor="hmo">HMO / Insurance Provider</label>
         <select id="hmo" name="hmo" value={headPatientData.hmo ? headPatientData.hmo.name : ''} onChange={handleHeadDataChange}>
           <option value="">Select HMO (Optional)</option>
-          {hmoOptions.map((hmo, index) => <option key={index} value={hmo.name}>{hmo.name}</option>)}
+          {hmoOptions.map((hmo) => <option key={hmo.id} value={hmo.name}>{hmo.name}</option>)}
         </select>
       </div>
 

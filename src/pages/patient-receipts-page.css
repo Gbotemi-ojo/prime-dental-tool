@@ -174,6 +174,52 @@ body {
   font-size: 1.1rem;
 }
 
+/* NEW and MODIFIED styles for debt warning */
+.debt-payment-warning {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background-color: #FFF3E0; /* Light orange */
+  border-left: 5px solid var(--warning-color);
+  padding: var(--spacing-md);
+  border-radius: 8px;
+  margin-bottom: var(--spacing-lg);
+  color: #856404;
+}
+.debt-payment-warning i.fa-exclamation-triangle {
+  font-size: 1.8rem;
+  color: var(--warning-color);
+}
+.add-debt-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 15px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  box-shadow: var(--shadow-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  outline: none;
+  margin-top: 15px;
+  background: linear-gradient(135deg, var(--warning-color) 0%, #FFA000 100%);
+  color: var(--text-dark); /* Dark text on yellow is more readable */
+}
+.add-debt-button:hover {
+    background: linear-gradient(135deg, #FFA000 0%, #FF8F00 100%);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+.add-debt-button i {
+    margin-right: 8px;
+    font-size: 1rem;
+    color: var(--text-dark);
+}
+
+
 .receipt-form-section {
   background-color: var(--card-bg);
   border-radius: 10px;

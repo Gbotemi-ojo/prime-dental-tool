@@ -275,7 +275,7 @@ export default function EditDentalRecord() {
       } else {
         toast.success('Record updated and appointment scheduled successfully!');
       }
-      setTimeout(() => navigate(`/patients/${patientId}/dental-records/${recordId}`), 2000);
+      setTimeout(() => navigate(`/patients/${patientId}/records/${recordId}`), 2000); // CORRECTED ROUTE
 
     } catch (err) {
       console.error('Submission error:', err);
@@ -301,9 +301,10 @@ export default function EditDentalRecord() {
             <div className="app-container">
                 <div className="edit-record-container">
                     <p className="info-message error">Error: {error}</p>
-                    <a href={`/patients/${patientId}/dental-records/${recordId}`} className="back-button" style={{ margin: '20px auto', display: 'block', width: 'fit-content' }}>
+                    {/* CORRECTED ROUTE */}
+                    <button onClick={() => navigate(`/patients/${patientId}/records/${recordId}`)} className="back-button" style={{ margin: '20px auto', display: 'block', width: 'fit-content' }}>
                         <i className="fas fa-arrow-left"></i> Back to Record Details
-                    </a>
+                    </button>
                 </div>
             </div>
         );
@@ -314,9 +315,10 @@ export default function EditDentalRecord() {
       <header className="record-form-header">
         <h1>Edit Dental Record for {patientName}</h1>
         <div className="actions">
-          <a href={`/patients/${patientId}/dental-records/${recordId}`} className="back-button">
+          {/* CORRECTED ROUTE */}
+          <button onClick={() => navigate(`/patients/${patientId}/records/${recordId}`)} className="back-button">
             <i className="fas fa-arrow-left"></i> Back to Record Details
-          </a>
+          </button>
         </div>
       </header>
 

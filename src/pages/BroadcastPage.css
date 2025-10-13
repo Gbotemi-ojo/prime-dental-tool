@@ -1,0 +1,277 @@
+/* src/pages/BroadcastPage.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+
+:root {
+    --bg-color: #1a202c;
+    --card-bg: rgba(38, 48, 69, 0.6);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --text-primary: #edf2f7;
+    --text-secondary: #a0aec0;
+    --accent-blue: #4299e1;
+    --accent-pink: #ed64a6;
+    --accent-green: #48bb78;
+}
+
+.broadcast-container {
+    padding: 2rem;
+    background-color: var(--bg-color);
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
+}
+
+.broadcast-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.broadcast-header h1 {
+    font-size: 2.25rem;
+    font-weight: 700;
+}
+
+.back-button-broadcast {
+    background: var(--card-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.back-button-broadcast:hover {
+    background-color: var(--accent-blue);
+    border-color: var(--accent-blue);
+    transform: scale(1.1);
+}
+
+.broadcast-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 1.5rem;
+}
+
+.broadcast-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.broadcast-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.3);
+}
+
+.broadcast-card.wide-card {
+    grid-column: span 1; /* Default for mobile */
+}
+
+@media (min-width: 1024px) {
+    .broadcast-card.wide-card {
+        grid-column: span 2;
+    }
+    .broadcast-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .birthday-card {
+        grid-column: span 2; /* Make birthday card full width on large screens */
+    }
+}
+
+@media (min-width: 1280px) {
+     .broadcast-grid {
+        grid-template-columns: 1fr 2fr;
+    }
+    .birthday-card {
+        grid-column: span 1; 
+    }
+}
+
+
+.card-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    color: #fff;
+    margin: 0 auto 1.5rem auto;
+}
+
+.card-icon.birthday { background: linear-gradient(45deg, #f68080, var(--accent-pink)); }
+.card-icon.custom { background: linear-gradient(45deg, #4299e1, #3182ce); }
+.card-icon.phones { background: linear-gradient(45deg, #48bb78, #38a169); }
+
+.broadcast-card h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.broadcast-card p {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.broadcast-button {
+    width: 100%;
+    padding: 14px 20px;
+    border-radius: 10px;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background-size: 200% auto;
+    margin-top: auto; /* Pushes button to bottom */
+}
+
+.broadcast-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.birthday-card .broadcast-button { background-image: linear-gradient(to right, #f68080 0%, var(--accent-pink) 51%, #f68080 100%); }
+.custom-broadcast-form .broadcast-button { background-image: linear-gradient(to right, #4299e1 0%, #3182ce 51%, #4299e1 100%); }
+.wide-card .broadcast-button { background-image: linear-gradient(to right, #48bb78 0%, #38a169 51%, #48bb78 100%); }
+.copy-button { background-image: linear-gradient(to right, #a0aec0 0%, #718096 51%, #a0aec0 100%) !important; }
+
+.broadcast-button:hover:not(:disabled) {
+    background-position: right center;
+    transform: scale(1.02);
+}
+
+.custom-broadcast-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.custom-broadcast-form input,
+.custom-broadcast-form textarea {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background-color: rgba(0,0,0,0.2);
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    color: var(--text-primary);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.custom-broadcast-form input::placeholder,
+.custom-broadcast-form textarea::placeholder {
+    color: var(--text-secondary);
+}
+
+.custom-broadcast-form input:focus,
+.custom-broadcast-form textarea:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3);
+}
+
+.phone-numbers-result {
+    width: 100%;
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.phone-numbers-result textarea {
+    width: 100%;
+    background-color: rgba(0,0,0,0.2);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 10px;
+    font-family: monospace;
+    color: var(--text-secondary);
+    resize: vertical;
+}
+
+/* Birthday List Styles */
+.birthday-list-container {
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    min-height: 150px;
+    max-height: 250px;
+    overflow-y: auto;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.birthday-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+}
+
+.birthday-list li {
+    padding: 0.75rem 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.birthday-list li:last-child {
+    border-bottom: none;
+}
+
+.no-birthdays {
+    color: var(--text-secondary);
+    font-style: italic;
+    align-self: center;
+}
+
+.loader {
+    font-size: 2rem;
+    color: var(--accent-blue);
+    text-align: center;
+}
+
+/* Scrollbar styling */
+.birthday-list-container::-webkit-scrollbar {
+    width: 8px;
+}
+.birthday-list-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+.birthday-list-container::-webkit-scrollbar-thumb {
+    background-color: var(--accent-blue);
+    border-radius: 10px;
+    border: 2px solid var(--card-bg);
+}

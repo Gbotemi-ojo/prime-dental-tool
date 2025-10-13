@@ -1,12 +1,12 @@
-// src/App.jsx
+// src/App.js
 import { lazy, Suspense } from "react";
-import "bootstrap/dist/css/bootstrap.min.css"; // Ensure Bootstrap CSS is available
+import "bootstrap/dist/css/bootstrap.min.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Loader from "./components/Loader/Loader"; // Assuming you have a Loader component for Suspense fallback
-import { ToastContainer } from "react-toastify"; // For notifications
-import "react-toastify/dist/ReactToastify.css"; // CSS for react-toastify
+import Loader from "./components/Loader/Loader";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-// Lazy-loaded page components for better performance
+// Lazy-loaded page components
 const Home = lazy(() => import("./pages/Home"));
 const Login = lazy(() => import("./pages/login"));
 const Dashboard = lazy(() => import("./pages/dashboard"));
@@ -24,68 +24,53 @@ const AddStaff = lazy(() => import("./pages/add-staff"));
 const StaffDetail = lazy(() => import("./pages/staff-detail"));
 const EditStaff = lazy(() => import("./pages/edit-staff"));
 const ProfilePage = lazy(() => import("./pages/profile-page"));
+const Appointments = lazy(() => import("./pages/appointments"));
+const DoctorSchedule = lazy(() => import("./pages/doctor-schedule"));
+const EditPatientBio = lazy(() => import("./pages/EditPatientBio"));
+const SetAppointmentPage = lazy(() => import("./pages/set-appointment"));
 const RecordTransaction = lazy(() => import("./pages/RecordTransaction"));
 const AllTransactions = lazy(() => import("./pages/AllTransactions"));
-const PatientReceiptsPage = lazy(() => import("./pages/PatientReceiptsPage"));
 const InvoicePage = lazy(() => import("./pages/InvoicePage"));
+const PatientReceiptsPage = lazy(() => import("./pages/PatientReceiptsPage"));
 const RevenueReportPage = lazy(() => import("./pages/RevenueReportPage"));
-const EditPatientBio = lazy(() => import("./pages/EditPatientBio"));
-const DoctorSchedule = lazy(() => import("./pages/doctor-schedule"));
-
-// NEW: Lazy-load Appointment components
-const AppointmentsPage = lazy(() => import("./pages/appointments"));
-const SetAppointmentPage = lazy(() => import("./pages/set-appointment"));
-
+const SettingsPage = lazy(() => import("./pages/settings"));
+const AnalyticsPage = lazy(() => import("./pages/analytics-page"));
+const BroadcastPage = lazy(() => import("./pages/BroadcastPage")); // Add this line
 
 function App() {
   return (
-    // Suspense provides a fallback (Loader) while lazy-loaded components are loading
     <Suspense fallback={<Loader />}>
       <Router>
-        {/* ToastContainer for displaying notifications (e.g., success/error messages) */}
         <ToastContainer
           position="top-right"
-          autoClose={1000} // Close after 1 second
+          autoClose={5000}
           hideProgressBar={false}
           newestOnTop={false}
           closeOnClick
+          rtl={false}
           pauseOnFocusLoss
           draggable
           pauseOnHover
-          theme="light"
         />
-
-        {/* main-content-offset can be used to push content below a fixed header/navbar */}
-        <div className="main-content-offset">
+        <div className="App">
           <Routes>
-            {/* Define all your application routes here */}
-
-            {/* Home Page */}
             <Route path="/" element={<Home />} />
-
-            {/* Authentication & Dashboard */}
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<ProfilePage />} />
-
-            {/* Doctor Schedule Route */}
+            <Route path="/appointments" element={<Appointments />} />
             <Route path="/doctor-schedule" element={<DoctorSchedule />} />
-
-            {/* NEW: Appointments Route */}
-            <Route path="/appointments" element={<AppointmentsPage />} />
-
-            {/* Patient Management Routes */}
+            
+            {/* Patient Routes */}
             <Route path="/patients" element={<PatientList />} />
             <Route path="/patients/:patientId" element={<PatientDetail />} />
-            <Route path="/patients/:patientId/dental-records/new" element={<AddDentalRecord />} />
-            <Route path="/patients/:patientId/dental-records/:recordId" element={<DentalRecordDetail />} />
-            <Route path="/patients/:patientId/dental-records/:recordId/edit" element={<EditDentalRecord />} />
+            <Route path="/patients/:patientId/records/new" element={<AddDentalRecord />} />
+            <Route path="/patients/:patientId/records/:recordId" element={<DentalRecordDetail />} />
+            <Route path="/patients/:patientId/records/:recordId/edit" element={<EditDentalRecord />} />
             <Route path="/patients/:patientId/receipts" element={<PatientReceiptsPage />} />
             <Route path="/patients/:patientId/invoice" element={<InvoicePage />} />
             <Route path="/patients/:patientId/edit" element={<EditPatientBio />} />
-            {/* NEW: Set Appointment Route */}
             <Route path="/patients/:patientId/set-appointment" element={<SetAppointmentPage />} />
-
 
             {/* Inventory Management Routes */}
             <Route path="/inventory/items" element={<InventoryList />} />
@@ -97,19 +82,26 @@ function App() {
             <Route path="/inventory/transactions/record" element={<RecordTransaction />} />
             <Route path="/inventory/transactions" element={<AllTransactions />} />
 
-
             {/* Staff Management Routes */}
             <Route path="/admin/staff-management" element={<StaffList />} />
             <Route path="/admin/staff-management/new" element={<AddStaff />} />
             <Route path="/admin/staff-management/:userId" element={<StaffDetail />} />
             <Route path="/admin/staff-management/:userId/edit" element={<EditStaff />} />
 
-            {/* NEW: Revenue Report Route */}
+            {/* Revenue Report Route */}
             <Route path="/revenue-report" element={<RevenueReportPage />} />
+
+            {/* Settings Route */}
+            <Route path="/settings" element={<SettingsPage />} />
+
+            {/* Analytics Route */}
+            <Route path="/analytics" element={<AnalyticsPage />} />
+
+            {/* Broadcast Route */}
+            <Route path="/broadcast" element={<BroadcastPage />} />
 
           </Routes>
         </div>
-
       </Router>
     </Suspense>
   );

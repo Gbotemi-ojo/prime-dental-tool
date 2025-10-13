@@ -3,30 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import './edit-patient-bio.css'; 
 import API_BASE_URL from '../config/api';
 
-// HMO Options for the dropdown
-const hmoOptions = [
-    { name: "IHMS" }, { name: "HEALTH PARTNERS" }, { name: "ZENOR" },
-    { name: "PHILIPS" }, { name: "PRO HEALTH" }, { name: "FOUNTAIN HEALTH" },
-    { name: "DOT HMO" }, { name: "CLEARLINE" }, { name: "STERLING HEALTH" },
-    { name: "OCEANIC" }, { name: "SUNU" }, { name: "LIFEWORTH" },
-    { name: "CKLINE" }, { name: "WELLNESS" }, { name: "RELIANCE" },
-    { name: "FIRST GUARANTEE" }, { name: "THT" }, { name: "DOHEEC" },
-    { name: "GNI" }, { name: "MH" }, { name: "AIICO MULTISHIELD" },
-    { name: "GREENBAY" }, { name: "MARINA" }, { name: "EAGLE" },
-    { name: "MEDIPLAN" }, { name: "METROHEALTH" }, { name: "RONSBERGER" },
-    { name: "WELPRO" }, { name: "GORAH" }, { name: "SMATHEALTH" },
-    { name: "AXA MANSARD" }, { name: "BASTION" }, { name: "REDCARE" },
-    { name: "AVON" }, { name: "ANCHOR" }, { name: "LEADWAY" },
-    { name: "NOOR" }, { name: "ALLENZA" }, { name: "UNITED HEALTH CARE" },
-    { name: "LEADWAY" }, { name: "QUEST" }, { name: "AVON" },
-    { name: "CLEARLINE" }, { name: "HYGEIA" }, { name: "NEM" }, { name: "KENNEDIA" }
-];
-
 export default function EditPatientBio() {
     const { patientId } = useParams();
     const navigate = useNavigate();
 
-    // UPDATED: Added 'address' field to state
     const [formData, setFormData] = useState({
         name: '',
         sex: '',
@@ -38,6 +18,9 @@ export default function EditPatientBio() {
         isFamilyHead: false
     });
     
+    // --- NEW: State for dynamically fetched HMO list ---
+    const [hmoOptions, setHmoOptions] = useState([]);
+
     const [newMembers, setNewMembers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -52,31 +35,46 @@ export default function EditPatientBio() {
     };
 
     useEffect(() => {
-        const fetchPatientData = async () => {
+        const fetchInitialData = async () => {
             const token = localStorage.getItem('jwtToken');
             if (!token) {
                 navigate('/login');
                 return;
             }
             try {
-                const response = await fetch(`${API_BASE_URL}/api/patients/${patientId}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await response.json();
-                if (response.ok) {
-                    // UPDATED: Set address from fetched data
+                // Fetch patient data and HMO list in parallel for efficiency
+                const [patientResponse, hmoResponse] = await Promise.all([
+                    fetch(`${API_BASE_URL}/api/patients/${patientId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }),
+                    fetch(`${API_BASE_URL}/api/billing/options`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    })
+                ]);
+
+                // Handle HMO data
+                if (hmoResponse.ok) {
+                    const hmoData = await hmoResponse.json();
+                    setHmoOptions(hmoData.hmos || []);
+                } else {
+                    console.error("Failed to fetch HMO list.");
+                }
+
+                // Handle patient data
+                const patientData = await patientResponse.json();
+                if (patientResponse.ok) {
                     setFormData({
-                        name: data.name || '',
-                        sex: data.sex || '',
-                        dateOfBirth: data.dateOfBirth ? formatDateForInput(data.dateOfBirth) : '',
-                        phoneNumber: data.phoneNumber || '',
-                        email: data.email || '',
-                        address: data.address || '',
-                        hmo: data.hmo || null,
-                        isFamilyHead: data.isFamilyHead || false,
+                        name: patientData.name || '',
+                        sex: patientData.sex || '',
+                        dateOfBirth: patientData.dateOfBirth ? formatDateForInput(patientData.dateOfBirth) : '',
+                        phoneNumber: patientData.phoneNumber || '',
+                        email: patientData.email || '',
+                        address: patientData.address || '',
+                        hmo: patientData.hmo || null,
+                        isFamilyHead: patientData.isFamilyHead || false,
                     });
                 } else {
-                    setError(data.error || 'Failed to fetch patient data.');
+                    setError(patientData.error || 'Failed to fetch patient data.');
                 }
             } catch (err) {
                 setError('Network error or server is unreachable.');
@@ -84,7 +82,7 @@ export default function EditPatientBio() {
                 setLoading(false);
             }
         };
-        fetchPatientData();
+        fetchInitialData();
     }, [patientId, navigate]);
 
     const handleChange = (e) => {
@@ -204,7 +202,6 @@ export default function EditPatientBio() {
                             <label htmlFor="email">Email Address</label>
                             <input id="email" name="email" type="email" value={formData.email} onChange={handleChange} disabled={!formData.isFamilyHead} title={!formData.isFamilyHead ? "Cannot edit for a family member" : ""} />
                         </div>
-                        {/* UPDATED: Added Address textarea, disabled for non-family heads */}
                         <div className="form-group">
                             <label htmlFor="address">Address</label>
                             <textarea
@@ -221,7 +218,7 @@ export default function EditPatientBio() {
                            <label htmlFor="hmo">HMO / Insurance</label>
                            <select id="hmo" name="hmo" value={formData.hmo ? formData.hmo.name : ''} onChange={handleChange} disabled={!formData.isFamilyHead} title={!formData.isFamilyHead ? "Cannot edit for a family member" : ""}>
                                <option value="">Select HMO</option>
-                               {hmoOptions.map((hmo, i) => <option key={i} value={hmo.name}>{hmo.name}</option>)}
+                               {hmoOptions.map((hmo) => <option key={hmo.id} value={hmo.name}>{hmo.name}</option>)}
                            </select>
                         </div>
                     </div>

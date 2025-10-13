@@ -1,91 +1,99 @@
 // src/pages/inventory-list.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './inventory-list.css'; // Import the dedicated CSS file
+import './inventory-list.css';
 import API_BASE_URL from '../config/api';
+import { toast } from 'react-toastify';
 
-// This component displays a list of inventory items.
 export default function InventoryList() {
   const [inventoryItems, setInventoryItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [userRole, setUserRole] = useState(null); // To determine access for 'Add Item'
+  const [userRole, setUserRole] = useState(null);
+  const [settings, setSettings] = useState(null);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchInventoryItems = async () => {
+    const fetchInventoryData = async () => {
+      setLoading(true);
       const token = localStorage.getItem('jwtToken');
       const role = localStorage.getItem('role');
-      setUserRole(role); // Set user role from local storage
+      setUserRole(role);
 
       if (!token) {
-        console.log("[InventoryList] No JWT token found. Redirecting to login.");
         navigate('/login');
         return;
       }
 
-      // IMPORTANT CHANGE: Redirect 'nurse' role away from this page
-      if (role === 'nurse') {
-        console.warn("[InventoryList] Unauthorized access: User is a nurse. Redirecting to patient management.");
-        navigate('/patient-management'); // Redirect nurses to patient management
-        return; // Stop further execution of this useEffect
-      }
-
       try {
-        const response = await fetch(`${API_BASE_URL}/api/inventory/items`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+        const settingsResponse = await fetch(`${API_BASE_URL}/api/settings`, {
+          headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          // Parse unitPrice to a number when fetching data
+        if (!settingsResponse.ok) throw new Error("Failed to fetch settings.");
+        const settingsData = await settingsResponse.json();
+        setSettings(settingsData);
+        
+        const canViewPage = settingsData.dashboard?.canSeeInventoryManagement?.includes(role) || role === 'owner';
+        if (!canViewPage) {
+            toast.error("Access denied. You don't have permission to view inventory.", { toastId: 'inventory-access-denied' });
+            navigate('/dashboard');
+            return;
+        }
+
+        const itemsResponse = await fetch(`${API_BASE_URL}/api/inventory/items`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (itemsResponse.ok) {
+          const data = await itemsResponse.json();
           const processedItems = data.map(item => ({
             ...item,
-            unitPrice: parseFloat(item.unitPrice) // Ensure unitPrice is a number
+            unitPrice: parseFloat(item.unitPrice)
           }));
           setInventoryItems(processedItems);
-        } else if (response.status === 401 || response.status === 403) {
-          console.error(`[InventoryList] Authentication error (${response.status}):`, response.statusText);
-          localStorage.clear();
-          navigate('/login');
         } else {
-          const errorData = await response.json();
-          setError(errorData.error || `Failed to fetch inventory items. Status: ${response.status}`);
-          console.error('[InventoryList] API Error:', response.status, response.statusText, errorData);
+            throw new Error(`Failed to fetch inventory items. Status: ${itemsResponse.status}`);
         }
       } catch (err) {
-        setError('Network error. Could not connect to the server. Please ensure the backend is running.');
-        console.error('[InventoryList] Network Error:', err);
+        setError(err.message || 'Network error. Could not connect to the server.');
+        if (String(err.message).includes('401') || String(err.message).includes('403')) {
+            toast.error("Your session has expired. Please log in again.");
+            localStorage.clear();
+            navigate('/login');
+        }
       } finally {
         setLoading(false);
       }
     };
 
-    fetchInventoryItems();
-  }, [navigate]); // Add navigate to dependency array
+    fetchInventoryData();
+  }, [navigate]);
 
-  // Filter items based on search term (removed SKU from filter)
+  const hasPermission = (permissionKey) => {
+    // FIX: The owner role check must come first to grant universal access.
+    if (userRole === 'owner') {
+      return true;
+    }
+    // For other roles, we can then safely check the settings structure.
+    if (!userRole || !settings || !settings.inventoryManagement) {
+      return false;
+    }
+    return settings.inventoryManagement[permissionKey]?.includes(userRole);
+  };
+
   const filteredItems = inventoryItems.filter(item =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.category.toLowerCase().includes(searchTerm.toLowerCase())
-    // item.sku.toLowerCase().includes(searchTerm.toLowerCase()) // Removed SKU from search
   );
 
-  // If userRole is nurse, prevent rendering the component.
-  // The useEffect above will handle the redirection.
-  if (userRole === 'nurse') {
-    return null;
-  }
-
-  if (loading) {
+  if (loading || !settings) {
     return (
       <div className="app-container">
         <div className="inventory-list-container loading-state">
-          <p className="info-message">Loading inventory data...</p>
+          <p className="info-message">Loading...</p>
           <div className="spinner"></div>
         </div>
       </div>
@@ -97,9 +105,9 @@ export default function InventoryList() {
       <div className="app-container">
         <div className="inventory-list-container error-state">
           <p className="info-message error">Error: {error}</p>
-          <a href="/dashboard" className="back-to-dashboard-button">
+          <button onClick={() => navigate('/dashboard')} className="back-to-dashboard-button">
             <i className="fas fa-arrow-left"></i> Back to Dashboard
-          </a>
+          </button>
         </div>
       </div>
     );
@@ -110,14 +118,13 @@ export default function InventoryList() {
       <header className="inventory-list-header">
         <h1>Inventory Management</h1>
         <div className="actions">
-          <a href="/dashboard" className="back-to-dashboard-button">
+          <button onClick={() => navigate('/dashboard')} className="back-to-dashboard-button">
             <i className="fas fa-arrow-left"></i> Back to Dashboard
-          </a>
-          {/* Only show 'Add New Item' if user is owner or staff */}
-          {(userRole === 'owner' || userRole === 'staff') && (
-            <a href="/inventory/items/new" className="add-item-button">
+          </button>
+          {hasPermission('canAddItem') && (
+            <button onClick={() => navigate('/inventory/items/new')} className="add-item-button">
               <i className="fas fa-plus-circle"></i> Add New Item
-            </a>
+            </button>
           )}
         </div>
       </header>
@@ -125,7 +132,7 @@ export default function InventoryList() {
       <section className="search-filter-section">
         <input
           type="text"
-          placeholder="Search items by name or category..." // Updated placeholder
+          placeholder="Search items by name or category..."
           className="search-input"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -137,25 +144,21 @@ export default function InventoryList() {
       ) : (
         <div className="inventory-grid">
           {filteredItems.map((item) => (
-            <div key={item.id} className="inventory-card">
+            <div key={item.id} className="inventory-card" onClick={() => navigate(`/inventory/items/${item.id}`)}>
               <div className="card-header">
                 <h3>{item.name}</h3>
-                {/* Assuming 'currentStock' is the correct property for quantity */}
-                <span className={`status-badge ${item.currentStock > 0 ? 'in-stock' : 'out-of-stock'}`}>
-                  {item.currentStock > 0 ? 'In Stock' : 'Out of Stock'}
+                <span className={`status-badge ${item.currentStock > item.reorderLevel ? 'in-stock' : 'low-stock'}`}>
+                  {item.currentStock > item.reorderLevel ? 'In Stock' : 'Low Stock'}
                 </span>
               </div>
-              {/* Removed SKU display */}
-              {/* <p><strong>SKU:</strong> {item.sku}</p> */}
               <p><strong>Category:</strong> {item.category}</p>
-              <p><strong>Quantity:</strong> {item.currentStock}</p> {/* Display currentStock */}
-              {/* unitPrice is now guaranteed to be a number after parseFloat */}
+              <p><strong>Quantity:</strong> {item.currentStock}</p>
               <p><strong>Unit Price:</strong> ₦{item.unitPrice !== null && item.unitPrice !== undefined ? item.unitPrice.toFixed(2) : 'N/A'}</p>
               <p><strong>Last Updated:</strong> {item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : 'N/A'}</p>
               <div className="card-actions">
-                <a href={`/inventory/items/${item.id}`} className="view-details-button">
+                <span className="view-details-button">
                   View Details <i className="fas fa-arrow-right"></i>
-                </a>
+                </span>
               </div>
             </div>
           ))}
