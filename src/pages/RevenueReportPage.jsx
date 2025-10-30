@@ -4,6 +4,48 @@ import { toast } from 'react-toastify';
 import API_BASE_URL from '../config/api';
 import './revenue-report-page.css'; // Import the new CSS file
 
+// --- HELPER FUNCTIONS FOR UTC DATES ---
+/**
+ * Gets the current date in YYYY-MM-DD format based on UTC.
+ * @returns {string}
+ */
+const getTodayUTCString = () => {
+    const today = new Date();
+    const year = today.getUTCFullYear();
+    const month = String(today.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(today.getUTCDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+/**
+ * Gets the current month in YYYY-MM format based on UTC.
+ * @returns {string}
+ */
+const getCurrentUTCMonthString = () => {
+    const today = new Date();
+    const year = today.getUTCFullYear();
+    const month = String(today.getUTCMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
+};
+
+/**
+ * Gets the start of the week (Sunday) for a given date in UTC.
+ * @param {Date} date The input date object.
+ * @returns {Date} A new Date object representing the start of the week in UTC.
+ */
+const getStartOfWeekUTC = (date) => {
+    // Create a new date to avoid modifying the original
+    const d = new Date(date.getTime()); 
+    // Get the day of the week in UTC (0 for Sunday, 6 for Saturday)
+    const dayOfWeekUTC = d.getUTCDay();
+    // Calculate the date of the last Sunday
+    d.setUTCDate(d.getUTCDate() - dayOfWeekUTC);
+    // Set time to the beginning of the day in UTC
+    d.setUTCHours(0, 0, 0, 0);
+    return d;
+};
+
+
 export default function RevenueReportPage() {
     const navigate = useNavigate();
     const [allReceipts, setAllReceipts] = useState([]);
@@ -12,7 +54,8 @@ export default function RevenueReportPage() {
     const [userRole, setUserRole] = useState(null);
 
     const [selectedPeriod, setSelectedPeriod] = useState('month');
-    const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0].substring(0, 7));
+    // MODIFIED: Initialize filterDate with UTC-based month string
+    const [filterDate, setFilterDate] = useState(getCurrentUTCMonthString());
     const [totalRevenue, setTotalRevenue] = useState(0);
 
     // NEW: State for outstanding payments
@@ -115,6 +158,7 @@ export default function RevenueReportPage() {
         fetchOutstandingData();
     }, []); // Runs once on component mount
 
+    // MODIFIED: This entire effect now uses UTC for all date comparisons.
     useEffect(() => {
         if (allReceipts.length === 0) {
             setTotalRevenue(0);
@@ -122,8 +166,10 @@ export default function RevenueReportPage() {
         }
 
         let sum = 0;
-        const currentFilterDateObj = filterDate ? new Date(filterDate) : null;
-
+        // IMPORTANT: Interpret the filter date string as a UTC date. 
+        // Appending 'T00:00:00.000Z' prevents the local timezone from being applied.
+        const currentFilterDateObj = filterDate ? new Date(`${filterDate}T00:00:00.000Z`) : null;
+        
         allReceipts.forEach(row => {
             const rowDateStr = row[DATE_COLUMN_INDEX];
             const rowAmountStr = row[AMOUNT_COLUMN_INDEX];
@@ -131,9 +177,17 @@ export default function RevenueReportPage() {
             if (!rowDateStr || rowDateStr === 'N/A' || !rowAmountStr || rowAmountStr === 'N/A') {
                 return;
             }
-
+            
+            // This will parse the date string from the sheet. JS date parsing can be tricky,
+            // but subsequent operations will be in UTC. Assumes a format like 'MM/DD/YYYY' or 'YYYY-MM-DD'.
             const rowDate = new Date(rowDateStr);
             const amount = parseFloat(rowAmountStr);
+
+            // Check if rowDate is a valid date
+            if (isNaN(rowDate.getTime())) {
+                console.warn(`Invalid date found in row: "${rowDateStr}". Skipping.`);
+                return;
+            }
 
             if (isNaN(amount)) {
                 console.warn(`Invalid amount found in row: "${rowAmountStr}". Skipping.`);
@@ -145,22 +199,16 @@ export default function RevenueReportPage() {
             switch (selectedPeriod) {
                 case 'day':
                     if (currentFilterDateObj &&
-                        rowDate.getFullYear() === currentFilterDateObj.getFullYear() &&
-                        rowDate.getMonth() === currentFilterDateObj.getMonth() &&
-                        rowDate.getDate() === currentFilterDateObj.getDate()) {
+                        rowDate.getUTCFullYear() === currentFilterDateObj.getUTCFullYear() &&
+                        rowDate.getUTCMonth() === currentFilterDateObj.getUTCMonth() &&
+                        rowDate.getUTCDate() === currentFilterDateObj.getUTCDate()) {
                         includeRow = true;
                     }
                     break;
                 case 'week':
                     if (currentFilterDateObj) {
-                        const getStartOfWeek = (date) => {
-                            const d = new Date(date);
-                            d.setHours(0, 0, 0, 0);
-                            d.setDate(d.getDate() - d.getDay());
-                            return d;
-                        };
-                        const startOfWeekRow = getStartOfWeek(rowDate);
-                        const startOfWeekFilter = getStartOfWeek(currentFilterDateObj);
+                        const startOfWeekRow = getStartOfWeekUTC(rowDate);
+                        const startOfWeekFilter = getStartOfWeekUTC(currentFilterDateObj);
                         if (startOfWeekRow.getTime() === startOfWeekFilter.getTime()) {
                             includeRow = true;
                         }
@@ -168,13 +216,13 @@ export default function RevenueReportPage() {
                     break;
                 case 'month':
                     if (currentFilterDateObj &&
-                        rowDate.getMonth() === currentFilterDateObj.getMonth() &&
-                        rowDate.getFullYear() === currentFilterDateObj.getFullYear()) {
+                        rowDate.getUTCMonth() === currentFilterDateObj.getUTCMonth() &&
+                        rowDate.getUTCFullYear() === currentFilterDateObj.getUTCFullYear()) {
                         includeRow = true;
                     }
                     break;
                 case 'year':
-                    if (currentFilterDateObj && rowDate.getFullYear() === currentFilterDateObj.getFullYear()) {
+                    if (currentFilterDateObj && rowDate.getUTCFullYear() === currentFilterDateObj.getUTCFullYear()) {
                         includeRow = true;
                     }
                     break;
@@ -191,16 +239,18 @@ export default function RevenueReportPage() {
         setTotalRevenue(sum);
     }, [allReceipts, selectedPeriod, filterDate]);
 
+    // MODIFIED: Uses UTC helper functions to set the default filter dates.
     const handlePeriodChange = (e) => {
         const newPeriod = e.target.value;
         setSelectedPeriod(newPeriod);
-        const today = new Date();
+        
         switch (newPeriod) {
-            case 'day': setFilterDate(today.toISOString().split('T')[0]); break;
-            case 'month': setFilterDate(today.toISOString().split('T')[0].substring(0, 7)); break;
-            case 'year': setFilterDate(today.getFullYear().toString()); break;
+            case 'day': setFilterDate(getTodayUTCString()); break;
+            case 'week': setFilterDate(getTodayUTCString()); break; // Default to today for week selection
+            case 'month': setFilterDate(getCurrentUTCMonthString()); break;
+            case 'year': setFilterDate(new Date().getUTCFullYear().toString()); break;
             case 'all': setFilterDate(''); break;
-            default: setFilterDate(today.toISOString().split('T')[0]); break;
+            default: setFilterDate(getTodayUTCString()); break;
         }
     };
 
@@ -286,7 +336,7 @@ export default function RevenueReportPage() {
                 <p className="period-display">
                     For the
                     {selectedPeriod === 'day' && ` day of ${filterDate}`}
-                    {selectedPeriod === 'week' && ` week of ${filterDate ? new Date(filterDate).toLocaleDateString() : ''}`}
+                    {selectedPeriod === 'week' && ` week of ${filterDate ? new Date(`${filterDate}T00:00:00.000Z`).toLocaleDateString() : ''}`}
                     {selectedPeriod === 'month' && ` month of ${filterDate}`}
                     {selectedPeriod === 'year' && ` year ${filterDate}`}
                     {selectedPeriod === 'all' && ` All Time`}

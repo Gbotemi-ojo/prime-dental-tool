@@ -6,7 +6,87 @@ import 'react-toastify/dist/ReactToastify.css';
 import API_BASE_URL from '../config/api';
 import './appointments.css';
 
-const AppointmentCard = ({ patient, onSendReminder, onNavigate, sendingState, viewMode }) => {
+// NEW: Modal component for sending custom emails
+const CustomEmailModal = ({ patient, isOpen, onClose, onSend }) => {
+    const [subject, setSubject] = useState('');
+    const [message, setMessage] = useState('');
+    const [isSending, setIsSending] = useState(false);
+    const modalRef = useRef(null);
+
+    // Reset fields when the patient changes
+    useEffect(() => {
+        setSubject('');
+        setMessage('');
+    }, [patient]);
+
+    // Close modal on outside click
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (isOpen && modalRef.current && !modalRef.current.contains(event.target)) {
+                onClose();
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isOpen, onClose]);
+
+    const handleSendClick = async () => {
+        if (!subject.trim() || !message.trim()) {
+            toast.warn('Subject and message cannot be empty.', { theme: 'colored' });
+            return;
+        }
+        setIsSending(true);
+        await onSend(patient.id, subject, message);
+        setIsSending(false);
+        onClose(); // Close modal after sending
+    };
+
+    if (!isOpen || !patient) return null;
+
+    return (
+        <div className="modal-overlay">
+            <div className="modal-content" ref={modalRef}>
+                <header className="modal-header">
+                    <h3>Compose Email to {patient.name}</h3>
+                    <button className="modal-close-btn" onClick={onClose}>&times;</button>
+                </header>
+                <div className="modal-body">
+                    <div className="form-group">
+                        <label htmlFor="email-subject">Subject</label>
+                        <input
+                            type="text"
+                            id="email-subject"
+                            value={subject}
+                            onChange={(e) => setSubject(e.target.value)}
+                            placeholder="Enter email subject"
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="email-message">Message</label>
+                        <textarea
+                            id="email-message"
+                            rows="10"
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                            placeholder="Type your message here..."
+                        ></textarea>
+                    </div>
+                </div>
+                <footer className="modal-footer">
+                    <button className="modal-cancel-btn" onClick={onClose} disabled={isSending}>
+                        Cancel
+                    </button>
+                    <button className="modal-send-btn" onClick={handleSendClick} disabled={isSending}>
+                        {isSending ? <><i className="fas fa-spinner fa-spin"></i> Sending...</> : 'Send Email'}
+                    </button>
+                </footer>
+            </div>
+        </div>
+    );
+};
+
+
+const AppointmentCard = ({ patient, onSendReminder, onComposeEmail, onNavigate, sendingState, viewMode }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
@@ -94,6 +174,10 @@ const AppointmentCard = ({ patient, onSendReminder, onNavigate, sendingState, vi
                                 <button onClick={() => { onSendReminder(patient.id, 'rootCanal'); setIsDropdownOpen(false); }} disabled={isSending('rootCanal')}>
                                      {isSending('rootCanal') ? <><i className="fas fa-spinner fa-spin"></i> Sending...</> : 'Root Canal'}
                                 </button>
+                                <hr style={{margin: '4px 0', border: 'none', borderTop: '1px solid var(--border-color)'}} />
+                                <button onClick={() => { onComposeEmail(patient); setIsDropdownOpen(false); }}>
+                                    Compose Custom Email...
+                                </button>
                              </div>
                         )}
                     </div>
@@ -131,8 +215,12 @@ const AppointmentsPage = () => {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [sendingState, setSendingState] = useState({ patientId: null, type: null }); // MODIFIED
+    const [sendingState, setSendingState] = useState({ patientId: null, type: null });
     const navigate = useNavigate();
+
+    // NEW: State for custom email modal
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedPatientForEmail, setSelectedPatientForEmail] = useState(null);
 
     useEffect(() => {
         const fetchPatients = async () => {
@@ -216,6 +304,43 @@ const AppointmentsPage = () => {
         setViewMode('byDate');
     };
 
+    const handleOpenModal = (patient) => {
+        setSelectedPatientForEmail(patient);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedPatientForEmail(null);
+    };
+    
+    // NEW: Function to send the custom email
+    const handleSendCustomEmail = async (patientId, subject, message) => {
+        const token = localStorage.getItem('jwtToken');
+        const url = `${API_BASE_URL}/api/patients/${patientId}/send-custom-email`;
+        
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ subject, message })
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                toast.success(data.message, { theme: "colored" });
+            } else {
+                toast.error(data.error || `Failed to send email.`, { theme: "colored" });
+            }
+        } catch (err) {
+            toast.error(`Network error. Could not send email.`, { theme: "colored" });
+        }
+    };
+    
+    // Function for pre-defined reminders
     const handleSendReminder = async (patientId, type = 'general') => {
         const token = localStorage.getItem('jwtToken');
         setSendingState({ patientId, type });
@@ -266,6 +391,14 @@ const AppointmentsPage = () => {
                 draggable
                 pauseOnHover
              />
+             
+             <CustomEmailModal 
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                patient={selectedPatientForEmail}
+                onSend={handleSendCustomEmail}
+             />
+
             <div className="appointments-container">
                 <header className="appointments-header">
                     <h1>Appointments Schedule</h1>
@@ -327,6 +460,7 @@ const AppointmentsPage = () => {
                                     key={patient.id} 
                                     patient={patient}
                                     onSendReminder={handleSendReminder}
+                                    onComposeEmail={handleOpenModal}
                                     onNavigate={() => navigate(`/patients/${patient.id}`)}
                                     sendingState={sendingState}
                                     viewMode={viewMode}

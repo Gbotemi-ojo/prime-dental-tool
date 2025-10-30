@@ -160,7 +160,6 @@ export default function PatientReceiptsPage() {
   
   const subtotal = isPureDebtPaymentMode ? 0 : receiptItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  // The final covered amount is now ONLY what is entered manually.
   const finalCoveredAmount = isPureDebtPaymentMode ? 0 : (parseFloat(hmoCoveredAmount) || 0);
 
   const totalDueFromPatient = isPureDebtPaymentMode ? 0 : subtotal - finalCoveredAmount;
@@ -170,9 +169,7 @@ export default function PatientReceiptsPage() {
   const balanceChangeFromThisVisit = totalDueFromPatient - parsedAmountPaid;
   const newTotalOutstanding = patientOutstanding + balanceChangeFromThisVisit;
 
-  // MODIFIED: Update amountPaid when switching modes or when totalDue changes.
   useEffect(() => {
-    // If we are NOT in pure debt payment mode, auto-fill amountPaid with the amount due for this visit.
     if (!showReceipt && !isPureDebtPaymentMode) {
       setAmountPaid(totalDueFromPatient >= 0 ? totalDueFromPatient.toFixed(2) : "0.00");
     }
@@ -236,18 +233,37 @@ export default function PatientReceiptsPage() {
       amountPaid: parsedAmountPaid, paymentMethod: paymentMethod,
       latestDentalRecord: latestDentalRecord ? { provisionalDiagnosis: Array.isArray(latestDentalRecord.provisionalDiagnosis) ? latestDentalRecord.provisionalDiagnosis.join(", ") : latestDentalRecord.provisionalDiagnosis || "N/A", treatmentPlan: Array.isArray(latestDentalRecord.treatmentPlan) ? latestDentalRecord.treatmentPlan.join(", ") : latestDentalRecord.treatmentPlan || "N/A" } : null,
     };
-
+    
     try {
       const response = await fetch(`${API_BASE_URL}/api/receipts/send`, {
-        method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        method: "POST", 
+        headers: { 
+          "Content-Type": "application/json", 
+          Authorization: `Bearer ${token}`,
+          // No longer sending a client-generated Idempotency-Key
+        },
         body: JSON.stringify({ receiptData: payload, senderUserId: parseInt(senderUserId) }),
       });
+
       if (response.ok) {
         toast.success("Receipt email sent successfully!");
-        navigate(0);
-      } else { const errorData = await response.json(); toast.error(`Failed to send receipt email: ${errorData.error || response.statusText}`); }
-    } catch (error) { toast.error("Network error. Could not send receipt email."); } 
-    finally { setIsSendingEmail(false); }
+        navigate(0); // Reload to prevent resubmission
+      } else { 
+        const errorData = await response.json();
+        // Handle the specific duplicate error
+        if (response.status === 409) {
+          toast.error(`Duplicate Receipt: ${errorData.error}`);
+        } else {
+          toast.error(`Failed to send receipt email: ${errorData.error || response.statusText}`);
+        }
+      }
+    } catch (error) { 
+      toast.error("Network error. Could not send receipt email."); 
+    } 
+    finally { 
+      // This block ensures the button is re-enabled even if the API call fails
+      setIsSendingEmail(false); 
+    }
   };
 
   if (loading || dataLoading || !settings) {
@@ -298,7 +314,6 @@ export default function PatientReceiptsPage() {
         </div>
       </header>
 
-      {/* MODIFIED: Debt warning now includes a button to add more services */}
       {isPureDebtPaymentMode && !showReceipt && (
         <div className="debt-payment-warning">
           <i className="fas fa-exclamation-triangle"></i>
@@ -327,7 +342,6 @@ export default function PatientReceiptsPage() {
             {patientHasHMO && (<p><strong>Registered HMO:</strong> {patientHMOName}</p>)}
           </div>
 
-          {/* MODIFIED: Show service section if not in PURE debt payment mode */}
           {!isPureDebtPaymentMode && (
             <>
               {latestDentalRecord && (

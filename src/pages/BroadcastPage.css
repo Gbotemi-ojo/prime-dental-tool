@@ -11,6 +11,7 @@
     --accent-blue: #4299e1;
     --accent-pink: #ed64a6;
     --accent-green: #48bb78;
+    --accent-purple: #9f7aea; /* New color for direct message */
 }
 
 .broadcast-container {
@@ -58,8 +59,14 @@
 
 .broadcast-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    grid-template-columns: 1fr;
     gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+    .broadcast-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 .broadcast-card {
@@ -82,30 +89,14 @@
 }
 
 .broadcast-card.wide-card {
-    grid-column: span 1; /* Default for mobile */
+    grid-column: span 1;
 }
 
 @media (min-width: 1024px) {
     .broadcast-card.wide-card {
         grid-column: span 2;
     }
-    .broadcast-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    .birthday-card {
-        grid-column: span 2; /* Make birthday card full width on large screens */
-    }
 }
-
-@media (min-width: 1280px) {
-     .broadcast-grid {
-        grid-template-columns: 1fr 2fr;
-    }
-    .birthday-card {
-        grid-column: span 1; 
-    }
-}
-
 
 .card-icon {
     width: 60px;
@@ -122,6 +113,7 @@
 .card-icon.birthday { background: linear-gradient(45deg, #f68080, var(--accent-pink)); }
 .card-icon.custom { background: linear-gradient(45deg, #4299e1, #3182ce); }
 .card-icon.phones { background: linear-gradient(45deg, #48bb78, #38a169); }
+.card-icon.direct-message { background: linear-gradient(45deg, var(--accent-purple), #805ad5); } /* New icon style */
 
 .broadcast-card h3 {
     font-size: 1.5rem;
@@ -160,6 +152,7 @@
 
 .birthday-card .broadcast-button { background-image: linear-gradient(to right, #f68080 0%, var(--accent-pink) 51%, #f68080 100%); }
 .custom-broadcast-form .broadcast-button { background-image: linear-gradient(to right, #4299e1 0%, #3182ce 51%, #4299e1 100%); }
+.direct-message-form .broadcast-button { background-image: linear-gradient(to right, var(--accent-purple) 0%, #805ad5 51%, var(--accent-purple) 100%); }
 .wide-card .broadcast-button { background-image: linear-gradient(to right, #48bb78 0%, #38a169 51%, #48bb78 100%); }
 .copy-button { background-image: linear-gradient(to right, #a0aec0 0%, #718096 51%, #a0aec0 100%) !important; }
 
@@ -168,7 +161,7 @@
     transform: scale(1.02);
 }
 
-.custom-broadcast-form {
+.custom-broadcast-form, .direct-message-form {
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -176,7 +169,9 @@
 }
 
 .custom-broadcast-form input,
-.custom-broadcast-form textarea {
+.custom-broadcast-form textarea,
+.direct-message-form input,
+.direct-message-form textarea {
     width: 100%;
     padding: 14px;
     border-radius: 10px;
@@ -188,16 +183,78 @@
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 .custom-broadcast-form input::placeholder,
-.custom-broadcast-form textarea::placeholder {
+.custom-broadcast-form textarea::placeholder,
+.direct-message-form input::placeholder,
+.direct-message-form textarea::placeholder {
     color: var(--text-secondary);
 }
 
 .custom-broadcast-form input:focus,
-.custom-broadcast-form textarea:focus {
+.custom-broadcast-form textarea:focus,
+.direct-message-form input:focus,
+.direct-message-form textarea:focus {
     outline: none;
     border-color: var(--accent-blue);
     box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3);
 }
+
+/* --- NEW STYLES for Direct Message Search --- */
+.search-container {
+    position: relative;
+    width: 100%;
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+}
+
+.search-input {
+    padding-left: 40px !important;
+}
+
+.search-input:disabled {
+    background-color: rgba(0,0,0,0.4) !important;
+    cursor: not-allowed;
+}
+
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0 0 10px 10px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    z-index: 10;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.search-results li {
+    padding: 12px 15px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    text-align: left;
+}
+
+.search-results li:hover {
+    background-color: var(--accent-purple);
+}
+
+.direct-message-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+/* --- END NEW STYLES --- */
 
 .phone-numbers-result {
     width: 100%;

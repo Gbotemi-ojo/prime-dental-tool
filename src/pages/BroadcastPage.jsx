@@ -1,5 +1,5 @@
 // src/pages/BroadcastPage.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import API_BASE_URL from '../config/api';
@@ -10,14 +10,24 @@ export default function BroadcastPage() {
   const [message, setMessage] = useState('');
   const [phoneNumbers, setPhoneNumbers] = useState('');
   const [birthdayPatients, setBirthdayPatients] = useState([]);
+  
+  // State for Direct Message feature
+  const [allPatients, setAllPatients] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [directSubject, setDirectSubject] = useState('');
+  const [directMessage, setDirectMessage] = useState('');
+
   const [loading, setLoading] = useState({
     birthday: false,
     custom: false,
     phones: false,
-    list: true, // Initially true while fetching the birthday list
+    direct: false,
+    list: true, // Initially true while fetching the birthday list and all patients
   });
   const navigate = useNavigate();
 
+  // Generic API handler
   const handleApiCall = async (endpoint, method, body, loadingKey) => {
     const token = localStorage.getItem('jwtToken');
     if (!token) {
@@ -28,7 +38,7 @@ export default function BroadcastPage() {
 
     setLoading(prev => ({ ...prev, [loadingKey]: true }));
     try {
-      const response = await fetch(`${API_BASE_URL}/api/broadcast/${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method,
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -54,22 +64,32 @@ export default function BroadcastPage() {
     }
   };
   
-  const fetchBirthdayList = async () => {
-    const data = await handleApiCall('birthday-list', 'GET', null, 'list');
-    if (data && data.patients) {
-      setBirthdayPatients(data.patients);
-    } else {
-      setBirthdayPatients([]); // Clear list on error
-    }
-  };
-
+  // Fetch initial data (birthdays and all patients for search)
   useEffect(() => {
-    fetchBirthdayList();
+    const fetchInitialData = async () => {
+      // Fetch birthday list
+      const birthdayData = await handleApiCall('/api/broadcast/birthday-list', 'GET', null, 'list');
+      if (birthdayData && birthdayData.patients) {
+        setBirthdayPatients(birthdayData.patients);
+      } else {
+        setBirthdayPatients([]);
+      }
+      // Fetch all patients for the direct message search
+      const patientsData = await handleApiCall('/api/patients', 'GET', null, 'list'); // reuse 'list' loading state
+      if (patientsData) {
+        setAllPatients(patientsData);
+      }
+    };
+    fetchInitialData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSendBirthdayWishes = async () => {
-    await handleApiCall('birthday', 'POST', null, 'birthday');
-    fetchBirthdayList(); // Refresh the list after sending
+    await handleApiCall('/api/broadcast/birthday', 'POST', null, 'birthday');
+    // Refresh the list after sending
+    const data = await handleApiCall('/api/broadcast/birthday-list', 'GET', null, 'list');
+    if (data && data.patients) {
+        setBirthdayPatients(data.patients);
+    }
   };
   
   const handleSendCustomBroadcast = (e) => {
@@ -78,13 +98,35 @@ export default function BroadcastPage() {
       toast.warn('Please provide both a subject and a message.');
       return;
     }
-    handleApiCall('custom', 'POST', { subject, message }, 'custom');
+    handleApiCall('/api/broadcast/custom', 'POST', { subject, message }, 'custom');
   };
   
   const handleFetchPhoneNumbers = async () => {
-    const data = await handleApiCall('phone-numbers', 'GET', null, 'phones');
+    const data = await handleApiCall('/api/broadcast/phone-numbers', 'GET', null, 'phones');
     if (data && data.phoneNumbers) {
       setPhoneNumbers(data.phoneNumbers);
+    }
+  };
+
+  const handleSendDirectMessage = async (e) => {
+    e.preventDefault();
+    if (!selectedPatient) {
+        toast.warn('Please select a patient first.');
+        return;
+    }
+    if (!directSubject.trim() || !directMessage.trim()) {
+        toast.warn('Please provide both a subject and a message.');
+        return;
+    }
+    const endpoint = `/api/broadcast/direct-message/${selectedPatient.id}`;
+    const body = { subject: directSubject, message: directMessage };
+    const result = await handleApiCall(endpoint, 'POST', body, 'direct');
+    if (result && result.success) {
+        // Clear form on success
+        setSelectedPatient(null);
+        setSearchQuery('');
+        setDirectSubject('');
+        setDirectMessage('');
     }
   };
 
@@ -95,6 +137,11 @@ export default function BroadcastPage() {
         .catch(() => toast.error('Failed to copy text.'));
     }
   };
+
+  const filteredPatients = useMemo(() => {
+    if (!searchQuery) return [];
+    return allPatients.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 5); // Show top 5 matches
+  }, [searchQuery, allPatients]);
 
   return (
     <div className="broadcast-container">
@@ -133,6 +180,68 @@ export default function BroadcastPage() {
           >
             {loading.birthday ? <><i className="fas fa-spinner fa-spin"></i> Sending...</> : <><i className="fas fa-paper-plane"></i> Send Wishes</>}
           </button>
+        </div>
+
+        {/* Direct Message Card - NEW */}
+        <div className="broadcast-card wide-card">
+            <div className="card-icon direct-message"><i className="fas fa-user-edit"></i></div>
+            <h3>Direct Patient Message</h3>
+            <p>Search for a patient by name and send them a personal email.</p>
+
+            <form onSubmit={handleSendDirectMessage} className="direct-message-form">
+                <div className="search-container">
+                    <i className="fas fa-search search-icon"></i>
+                    <input
+                        type="text"
+                        placeholder="Search patient name..."
+                        value={searchQuery}
+                        onChange={(e) => {
+                            setSearchQuery(e.target.value);
+                            if (selectedPatient) setSelectedPatient(null); // Deselect if user starts typing again
+                        }}
+                        disabled={!!selectedPatient}
+                        className="search-input"
+                    />
+                     {searchQuery && !selectedPatient && (
+                        <ul className="search-results">
+                            {filteredPatients.length > 0 ? (
+                                filteredPatients.map(p => (
+                                    <li key={p.id} onClick={() => {
+                                        setSelectedPatient(p);
+                                        setSearchQuery(p.name);
+                                    }}>
+                                        {p.name}
+                                    </li>
+                                ))
+                            ) : (
+                                <li className="no-results">No patients found</li>
+                            )}
+                        </ul>
+                    )}
+                </div>
+
+                {selectedPatient && (
+                    <div className="direct-message-fields">
+                        <input
+                            type="text"
+                            placeholder="Email Subject"
+                            value={directSubject}
+                            onChange={(e) => setDirectSubject(e.target.value)}
+                            required
+                        />
+                        <textarea
+                            placeholder={`Type your message to ${selectedPatient.name}...`}
+                            rows="5"
+                            value={directMessage}
+                            onChange={(e) => setDirectMessage(e.target.value)}
+                            required
+                        ></textarea>
+                    </div>
+                )}
+                 <button type="submit" disabled={loading.direct || !selectedPatient} className="broadcast-button">
+                    {loading.direct ? <><i className="fas fa-spinner fa-spin"></i> Sending...</> : <><i className="fas fa-paper-plane"></i> Send Direct Message</>}
+                </button>
+            </form>
         </div>
 
         {/* Custom Broadcast Card */}
