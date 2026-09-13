@@ -100,7 +100,6 @@
 .role-badge.member { background-color: var(--info-color); }
 
 /* --- Actions Dropdown --- */
-/* The container div in the JSX is now just for the button ref */
 .actions-dropdown-button {
     background-color: var(--secondary-color); color: var(--text-light);
     border: none; border-radius: 6px; padding: 8px 16px;
@@ -111,14 +110,12 @@
 .actions-dropdown-button .fa-chevron-down { transition: transform 0.2s ease; }
 .actions-dropdown-button .fa-chevron-down.open { transform: rotate(180deg); }
 
-/* --- THIS IS THE FIX --- */
-/* This class now styles the portal component */
 .actions-dropdown-menu {
-    position: fixed; /* Use fixed positioning controlled by JS */
+    position: fixed; 
     background-color: white;
     border-radius: 8px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); /* A bit stronger shadow */
-    z-index: 2000; /* High z-index to appear over all other content */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    z-index: 2000;
     min-width: 180px;
     padding: 8px 0;
     display: flex;
@@ -133,6 +130,7 @@
 }
 .actions-dropdown-item:hover { background-color: #f0f2f5; }
 .actions-dropdown-item i { width: 16px; text-align: center; color: var(--text-medium); }
+.actions-dropdown-item-none { padding: 12px 20px; color: var(--text-medium); font-style: italic; }
 
 /* --- Loading & Error States --- */
 .spinner-container { text-align: center; padding: 50px; }
@@ -148,17 +146,67 @@
 }
 .info-message.error { background-color: #f8d7da; color: #721c24; }
 
-/* --- NEW: Visit Tag Styles --- */
+/* =========================================
+   UPDATED PATIENT NAME CELL STYLES
+   ========================================= */
+
 .patient-name-cell {
     position: relative;
-    padding-top: 28px !important; /* Provide space for the tag */
+    padding-top: 32px !important; 
     vertical-align: top !important;
+}
+
+.patient-info-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.patient-main-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.name-text {
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.record-icon {
+    color: var(--primary-color);
+    font-size: 0.85rem;
+    background-color: rgba(63, 81, 181, 0.1);
+    padding: 5px;
+    border-radius: 50%;
+    margin-left: 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+}
+
+.patient-sub-info {
+    font-size: 0.8rem;
+    color: var(--info-color);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.patient-sub-info i {
+    font-size: 0.75rem;
+    opacity: 0.7;
 }
 
 .visit-tag {
     position: absolute;
     top: 6px;
-    left: 20px; /* Aligns with cell padding */
+    left: 20px;
     padding: 3px 8px;
     font-size: 0.7rem;
     font-weight: 700;
@@ -168,124 +216,191 @@
     letter-spacing: 0.5px;
 }
 
-.visit-tag.new {
-    background-color: var(--success-color);
+.visit-tag.new { background-color: var(--success-color); }
+.visit-tag.returning { background-color: var(--appointment-color); }
+
+.hmo-tag {
+    position: absolute;
+    top: 6px;
+    right: 20px;
+    padding: 3px 8px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid transparent;
 }
 
-.visit-tag.returning {
-    background-color: var(--appointment-color);
+.hmo-tag.private {
+    background-color: #f8f9fa;
+    color: var(--text-medium);
+    border-color: #dee2e6;
 }
 
-/* Adjust tag position for indented family member cells */
+.hmo-tag.hmo {
+    background-color: rgba(0, 188, 212, 0.15); 
+    color: var(--accent-dark);
+    border-color: rgba(0, 188, 212, 0.3);
+}
+
 .indented-cell.patient-name-cell .visit-tag {
-    left: 45px; /* Matches the indentation */
+    left: 45px; 
 }
 
-/* Critical fixes for smaller screens */
+
+/* --- Mobile Media Queries --- */
 @media screen and (max-width: 800px) {
-    /* Main container fix: Make it fluid and centered */
     .patient-list-container {
         width: 95%;
         padding: 15px;
         margin: 10px auto;
     }
 
-    .patient-list-header {
-        flex-direction: column;
-        align-items: stretch;
-    }
+    .patient-list-header { flex-direction: column; align-items: stretch; }
+    .patient-list-header .actions { width: 100%; }
+    .back-to-dashboard-button, .add-patient-button { width: 100%; justify-content: center; }
 
-    .patient-list-header .actions {
-        width: 100%;
-    }
+    .search-filter-section { flex-direction: column; gap: 10px; }
+    .search-input, .date-input, .clear-date-button { width: 100%; min-width: unset; box-sizing: border-box; }
 
-    .back-to-dashboard-button, .add-patient-button {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .search-filter-section {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .search-input, .date-input, .clear-date-button {
-        width: 100%;
-        min-width: unset;
-        box-sizing: border-box;
-    }
-
-    /* Table Fixes */
-    .patient-table {
-        min-width: unset; /* CRITICAL: Allows the table to shrink */
-    }
-
-    .patient-table thead {
-        display: none;
-    }
-
-    .patient-table,
-    .patient-table tbody,
-    .patient-table tr {
-        display: block;
-        width: 100%;
-    }
+    .patient-table { min-width: unset; }
+    .patient-table thead { display: none; }
+    .patient-table, .patient-table tbody, .patient-table tr { display: block; width: 100%; }
   
     .patient-table tr {
-        display: flex; /* Use flexbox for the row */
-        justify-content: space-between; /* ALIGNMENT FIX: Pushes content to the edges */
-        align-items: center; /* ALIGNMENT FIX: Vertically centers items */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         padding: 15px 20px;
         margin-bottom: 10px;
         border: 1px solid var(--border-color);
         border-radius: 8px;
     }
   
-    /* Ensure the two visible cells are laid out properly */
-    .patient-table td {
-        display: block;
-        padding: 0;
-        border-bottom: none;
-    }
-
-    /* ** THE FIX IS HERE ** */
-    .family-head-row td {
-        border-top: none !important; /* FIX: Removes the purple top border on mobile cards */
-    }
+    .patient-table td { display: block; padding: 0; border-bottom: none; }
+    .family-head-row td { border-top: none !important; }
     
-    .patient-table tr > *:not(.patient-name-cell):not(.table-actions-cell) {
-        display: none;
-    }
+    .patient-table tr > *:not(.patient-name-cell):not(.table-actions-cell) { display: none; }
   
     .table-actions-cell {
-        padding: 0;
-        flex-grow: 0; /* NEW: Prevents it from growing */
-        flex-shrink: 0; /* NEW: Prevents it from shrinking */
-        flex-basis: 130px; /* NEW: Use flex-basis to set a fixed width for consistent spacing */
+        padding: 0; flex-grow: 0; flex-shrink: 0; flex-basis: 130px;
     }
   
     .patient-name-cell {
-        flex-grow: 1; /* Allow the name cell to take up available space */
-        flex-shrink: 1; /* Allow it to shrink if needed */
-        padding-top: 15px !important; /* FIX: Adjust padding for mobile view */
-        min-height: 40px; /* NEW: Ensure enough space for name and tag */
+        flex-grow: 1; flex-shrink: 1;
+        padding-top: 28px !important; 
+        min-height: 40px;
     }
 
-    .family-member-row .indented-cell {
-        padding-left: 30px; /* Reduce indentation for small screens */
-    }
-
-    .family-member-row .indented-cell::before {
-        left: 10px;
-    }
+    .family-member-row .indented-cell { padding-left: 30px; }
+    .family-member-row .indented-cell::before { left: 10px; }
     
-    .visit-tag {
-        top: 0; /* FIX: Align tag to the top of the cell */
-        font-size: 0.6rem; /* NEW: Reduced font size */
-        padding: 2px 6px; /* NEW: Reduced padding */
+    .visit-tag, .hmo-tag {
+        top: 6px;
+        font-size: 0.6rem;
+        padding: 2px 6px;
     }
-  
-    .indented-cell.patient-name-cell .visit-tag {
-        left: 30px; /* FIX: Align with the new indentation */
+
+    .hmo-tag { right: 0; }
+    .visit-tag { left: 0; }
+    .indented-cell.patient-name-cell .visit-tag { left: 30px; }
+}
+
+/* --- Pagination Controls --- */
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.pagination-button {
+    background-color: var(--background-card);
+    border: 1px solid var(--border-color);
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-medium);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pagination-button:hover:not(:disabled) {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.pagination-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #f5f5f5;
+}
+
+.pagination-info {
+    font-size: 0.9rem;
+    color: var(--text-dark);
+}
+
+.spinner-container-small {
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+}
+.spinner.small {
+    width: 25px;
+    height: 25px;
+    border-width: 3px;
+}
+
+/* --- UPDATED: Date Input Mobile Fixes --- */
+.date-input {
+    /* Ensure height is sufficient on mobile */
+    min-height: 48px;
+    /* Reset appearance for consistency across iOS/Android */
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: white;
+    cursor: pointer;
+}
+
+/* On mobile, ensure the date indicator (if supported) is larger or the full input triggers it */
+@media screen and (max-width: 800px) {
+    .date-input {
+        width: 100%;
+        font-size: 16px; /* Prevents iOS zoom */
+        line-height: 1.5;
     }
+}
+
+
+/* --- UPDATED: Record Status Text Styles --- */
+.record-status {
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-left: 6px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.record-status.documented {
+    color: var(--success-dark);
+    background-color: rgba(40, 167, 69, 0.1); /* Very light green bg */
+    border: 1px solid rgba(40, 167, 69, 0.2);
+}
+
+.record-status.undocumented {
+    color: var(--text-medium);
+    opacity: 0.7;
+    background-color: rgba(0,0,0,0.03);
+    border: 1px solid rgba(0,0,0,0.05);
 }

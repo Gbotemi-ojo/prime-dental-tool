@@ -35,7 +35,9 @@ const PatientReceiptsPage = lazy(() => import("./pages/PatientReceiptsPage"));
 const RevenueReportPage = lazy(() => import("./pages/RevenueReportPage"));
 const SettingsPage = lazy(() => import("./pages/settings"));
 const AnalyticsPage = lazy(() => import("./pages/analytics-page"));
-const BroadcastPage = lazy(() => import("./pages/BroadcastPage")); // Add this line
+const BroadcastPage = lazy(() => import("./pages/BroadcastPage"));
+const Bookings = lazy(() => import("./pages/bookings"));
+const DailyReport = lazy(() => import("./pages/daily-report")); // NEW IMPORT
 
 function App() {
   return (
@@ -91,6 +93,9 @@ function App() {
             {/* Revenue Report Route */}
             <Route path="/revenue-report" element={<RevenueReportPage />} />
 
+            {/* Daily Report Route - NEW */}
+            <Route path="/daily-report" element={<DailyReport />} />
+
             {/* Settings Route */}
             <Route path="/settings" element={<SettingsPage />} />
 
@@ -99,6 +104,9 @@ function App() {
 
             {/* Broadcast Route */}
             <Route path="/broadcast" element={<BroadcastPage />} />
+
+            {/* Bookings Route */}
+            <Route path="/bookings" element={<Bookings />} />
 
           </Routes>
         </div>

@@ -1,0 +1,156 @@
+/* src/pages/bookings.css */
+
+/* Reuse root variables from global or patient-list if available, 
+   otherwise defining defaults for standalone safety */
+:root {
+    --primary-color: #3F51B5;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --text-dark: #333;
+    --text-medium: #495057;
+    --background-light: #f0f2f5;
+    --background-card: #ffffff;
+    --border-color: #e0e0e0;
+}
+
+.bookings-page-container {
+    min-height: 100vh;
+    background-color: var(--background-light);
+    padding: 20px;
+    font-family: 'Inter', sans-serif;
+}
+
+.bookings-card {
+    background-color: var(--background-card);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    padding: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* --- Header --- */
+.bookings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 20px;
+}
+
+.bookings-header h1 {
+    font-size: 1.8rem;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+/* --- Table --- */
+.bookings-table-responsive {
+    overflow-x: auto;
+}
+
+.bookings-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+}
+
+.bookings-table thead {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.bookings-table th {
+    text-align: left;
+    padding: 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-medium);
+}
+
+.bookings-table td {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: top;
+    color: var(--text-dark);
+}
+
+/* --- Columns Specifics --- */
+.col-contact small {
+    display: block;
+    color: var(--text-medium);
+    margin-top: 4px;
+}
+
+.col-complaint {
+    max-width: 300px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* --- Status Badges --- */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+.status-badge.pending { background-color: #fff3cd; color: #856404; }
+.status-badge.confirmed { background-color: #d4edda; color: #155724; }
+.status-badge.rejected { background-color: #f8d7da; color: #721c24; }
+.status-badge.converted { background-color: #cce5ff; color: #004085; }
+
+/* --- Actions --- */
+.action-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-action {
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s, opacity 0.2s, background-color 0.2s;
+}
+
+.btn-action:hover:not(:disabled) {
+    transform: translateY(-2px);
+    opacity: 0.9;
+}
+
+/* Specific Action Colors */
+.btn-confirm { background-color: var(--success-color); color: white; }
+.btn-reject { background-color: var(--danger-color); color: white; }
+
+/* NEW: Reminder Button Styles */
+.btn-reminder { 
+    background-color: var(--primary-color); 
+    color: white; 
+}
+
+.btn-reminder:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
+}
+
+/* --- Loading --- */
+.spinner-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+}

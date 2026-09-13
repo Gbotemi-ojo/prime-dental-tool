@@ -2,13 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import API_BASE_URL from '../config/api';
-import './revenue-report-page.css'; // Import the new CSS file
+import './revenue-report-page.css'; 
 
 // --- HELPER FUNCTIONS FOR UTC DATES ---
-/**
- * Gets the current date in YYYY-MM-DD format based on UTC.
- * @returns {string}
- */
 const getTodayUTCString = () => {
     const today = new Date();
     const year = today.getUTCFullYear();
@@ -17,10 +13,6 @@ const getTodayUTCString = () => {
     return `${year}-${month}-${day}`;
 };
 
-/**
- * Gets the current month in YYYY-MM format based on UTC.
- * @returns {string}
- */
 const getCurrentUTCMonthString = () => {
     const today = new Date();
     const year = today.getUTCFullYear();
@@ -28,19 +20,10 @@ const getCurrentUTCMonthString = () => {
     return `${year}-${month}`;
 };
 
-/**
- * Gets the start of the week (Sunday) for a given date in UTC.
- * @param {Date} date The input date object.
- * @returns {Date} A new Date object representing the start of the week in UTC.
- */
 const getStartOfWeekUTC = (date) => {
-    // Create a new date to avoid modifying the original
     const d = new Date(date.getTime()); 
-    // Get the day of the week in UTC (0 for Sunday, 6 for Saturday)
     const dayOfWeekUTC = d.getUTCDay();
-    // Calculate the date of the last Sunday
     d.setUTCDate(d.getUTCDate() - dayOfWeekUTC);
-    // Set time to the beginning of the day in UTC
     d.setUTCHours(0, 0, 0, 0);
     return d;
 };
@@ -54,7 +37,6 @@ export default function RevenueReportPage() {
     const [userRole, setUserRole] = useState(null);
 
     const [selectedPeriod, setSelectedPeriod] = useState('month');
-    // MODIFIED: Initialize filterDate with UTC-based month string
     const [filterDate, setFilterDate] = useState(getCurrentUTCMonthString());
     const [totalRevenue, setTotalRevenue] = useState(0);
 
@@ -118,32 +100,24 @@ export default function RevenueReportPage() {
             setOutstandingLoading(true);
             const token = localStorage.getItem('jwtToken');
 
-            // No need to re-check role, as it's handled in the first effect
             if (!token) return;
 
             try {
-                // This new endpoint should return all patients from your primary database
-                const response = await fetch(`${API_BASE_URL}/api/patients`, { // Assuming endpoint is /api/patients
+                // FIXED: Use specific endpoint to fetch ONLY debtors
+                const response = await fetch(`${API_BASE_URL}/api/patients/debtors`, { 
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
                 if (response.ok) {
-                    const patients = await response.json();
+                    const debtors = await response.json(); // Array of patients
                     let total = 0;
-                    // Filter for patients with an outstanding balance > 0
-                    const owingPatients = patients.filter(p => {
-                        const outstandingAmount = parseFloat(p.outstanding);
-                        if (!isNaN(outstandingAmount) && outstandingAmount > 0) {
-                            total += outstandingAmount;
-                            return true;
-                        }
-                        return false;
+                    
+                    debtors.forEach(p => {
+                        const amount = parseFloat(p.outstanding);
+                        if (!isNaN(amount)) total += amount;
                     });
 
-                    // Sort patients by the highest outstanding amount
-                    owingPatients.sort((a, b) => parseFloat(b.outstanding) - parseFloat(a.outstanding));
-
-                    setOutstandingData({ patients: owingPatients, total: total });
+                    setOutstandingData({ patients: debtors, total: total });
                 } else {
                     toast.error('Failed to fetch outstanding patient data.');
                 }
@@ -156,9 +130,8 @@ export default function RevenueReportPage() {
         };
 
         fetchOutstandingData();
-    }, []); // Runs once on component mount
+    }, []); 
 
-    // MODIFIED: This entire effect now uses UTC for all date comparisons.
     useEffect(() => {
         if (allReceipts.length === 0) {
             setTotalRevenue(0);
@@ -166,8 +139,6 @@ export default function RevenueReportPage() {
         }
 
         let sum = 0;
-        // IMPORTANT: Interpret the filter date string as a UTC date. 
-        // Appending 'T00:00:00.000Z' prevents the local timezone from being applied.
         const currentFilterDateObj = filterDate ? new Date(`${filterDate}T00:00:00.000Z`) : null;
         
         allReceipts.forEach(row => {
@@ -178,19 +149,14 @@ export default function RevenueReportPage() {
                 return;
             }
             
-            // This will parse the date string from the sheet. JS date parsing can be tricky,
-            // but subsequent operations will be in UTC. Assumes a format like 'MM/DD/YYYY' or 'YYYY-MM-DD'.
             const rowDate = new Date(rowDateStr);
             const amount = parseFloat(rowAmountStr);
 
-            // Check if rowDate is a valid date
             if (isNaN(rowDate.getTime())) {
-                console.warn(`Invalid date found in row: "${rowDateStr}". Skipping.`);
                 return;
             }
 
             if (isNaN(amount)) {
-                console.warn(`Invalid amount found in row: "${rowAmountStr}". Skipping.`);
                 return;
             }
 
@@ -239,14 +205,13 @@ export default function RevenueReportPage() {
         setTotalRevenue(sum);
     }, [allReceipts, selectedPeriod, filterDate]);
 
-    // MODIFIED: Uses UTC helper functions to set the default filter dates.
     const handlePeriodChange = (e) => {
         const newPeriod = e.target.value;
         setSelectedPeriod(newPeriod);
         
         switch (newPeriod) {
             case 'day': setFilterDate(getTodayUTCString()); break;
-            case 'week': setFilterDate(getTodayUTCString()); break; // Default to today for week selection
+            case 'week': setFilterDate(getTodayUTCString()); break; 
             case 'month': setFilterDate(getCurrentUTCMonthString()); break;
             case 'year': setFilterDate(new Date().getUTCFullYear().toString()); break;
             case 'all': setFilterDate(''); break;
@@ -343,7 +308,6 @@ export default function RevenueReportPage() {
                 </p>
             </section>
 
-            {/* NEW: Outstanding Balances Section */}
             <section className="outstanding-section">
                 <div className="total-outstanding-section">
                     <h2>Total Outstanding: <span className="outstanding-amount">₦{outstandingData.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></h2>

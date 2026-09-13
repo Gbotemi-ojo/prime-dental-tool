@@ -13,13 +13,11 @@ const CustomEmailModal = ({ patient, isOpen, onClose, onSend }) => {
     const [isSending, setIsSending] = useState(false);
     const modalRef = useRef(null);
 
-    // Reset fields when the patient changes
     useEffect(() => {
         setSubject('');
         setMessage('');
     }, [patient]);
 
-    // Close modal on outside click
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (isOpen && modalRef.current && !modalRef.current.contains(event.target)) {
@@ -38,7 +36,7 @@ const CustomEmailModal = ({ patient, isOpen, onClose, onSend }) => {
         setIsSending(true);
         await onSend(patient.id, subject, message);
         setIsSending(false);
-        onClose(); // Close modal after sending
+        onClose(); 
     };
 
     if (!isOpen || !patient) return null;
@@ -121,7 +119,6 @@ const AppointmentCard = ({ patient, onSendReminder, onComposeEmail, onNavigate, 
         return new Date(dateString).toLocaleDateString(undefined, options);
     };
 
-    // Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -218,12 +215,31 @@ const AppointmentsPage = () => {
     const [sendingState, setSendingState] = useState({ patientId: null, type: null });
     const navigate = useNavigate();
 
-    // NEW: State for custom email modal
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedPatientForEmail, setSelectedPatientForEmail] = useState(null);
 
+    const toLocalISOString = (date) => {
+        if (!date) return '';
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    // Initialize date based on view mode (Today/Tomorrow)
     useEffect(() => {
-        const fetchPatients = async () => {
+        if (viewMode === 'today') {
+            setSelectedDate(new Date());
+        } else if (viewMode === 'tomorrow') {
+            const tmrw = new Date();
+            tmrw.setDate(tmrw.getDate() + 1);
+            setSelectedDate(tmrw);
+        }
+    }, [viewMode]);
+
+    useEffect(() => {
+        const fetchScheduledPatients = async () => {
             const token = localStorage.getItem('jwtToken');
             if (!token) {
                 navigate('/login');
@@ -232,15 +248,26 @@ const AppointmentsPage = () => {
 
             try {
                 setLoading(true);
-                const response = await fetch(`${API_BASE_URL}/api/patients`, {
+                setError(null);
+                
+                // Construct query based on view mode
+                let query = '';
+                if (viewMode !== 'all') {
+                    // Use the date we set in the other effect
+                    const dateStr = toLocalISOString(selectedDate);
+                    query = `?date=${dateStr}`;
+                }
+
+                // Call the NEW specialized endpoint
+                const response = await fetch(`${API_BASE_URL}/api/patients/scheduled${query}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
                 if (response.ok) {
                     const data = await response.json();
-                    setAllPatients(data);
+                    setAllPatients(data); // This endpoint returns array directly
                 } else {
-                    setError(`Failed to fetch patients. Status: ${response.status}`);
+                    setError(`Failed to fetch appointments. Status: ${response.status}`);
                     if (response.status === 401 || response.status === 403) {
                         localStorage.clear();
                         navigate('/login');
@@ -253,55 +280,13 @@ const AppointmentsPage = () => {
             }
         };
 
-        fetchPatients();
-    }, [navigate]);
-
-    const toLocalISOString = (date) => {
-        if (!date) return '';
-        const d = new Date(date);
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    };
-
-    const appointments = useMemo(() => {
-        if (!allPatients.length) return [];
-
-        let filteredAppointments = [];
-
-        if (viewMode === 'all') {
-            filteredAppointments = allPatients.filter(patient => patient.nextAppointmentDate);
-            filteredAppointments.sort((a, b) => {
-                const dateA = new Date(a.nextAppointmentDate);
-                const dateB = new Date(b.nextAppointmentDate);
-                return dateA - dateB;
-            });
-        } else {
-            const targetDateStr = toLocalISOString(selectedDate);
-            filteredAppointments = allPatients.filter(patient => {
-                if (!patient.nextAppointmentDate) return false;
-                const appointmentDateStr = toLocalISOString(patient.nextAppointmentDate);
-                return appointmentDateStr === targetDateStr;
-            });
-        }
-        return filteredAppointments;
-    }, [allPatients, selectedDate, viewMode]);
-
-    useEffect(() => {
-        if (viewMode === 'today' || viewMode === 'tomorrow') {
-            const newDate = new Date();
-            if (viewMode === 'tomorrow') {
-                newDate.setDate(newDate.getDate() + 1);
-            }
-            setSelectedDate(newDate);
-        }
-    }, [viewMode]);
+        fetchScheduledPatients();
+    }, [navigate, viewMode, selectedDate]); // Refetch when mode or date changes
 
     const handleDateChange = (e) => {
         const date = new Date(e.target.value + 'T00:00:00');
         setSelectedDate(date);
-        setViewMode('byDate');
+        // viewMode stays 'byDate'
     };
 
     const handleOpenModal = (patient) => {
@@ -314,7 +299,6 @@ const AppointmentsPage = () => {
         setSelectedPatientForEmail(null);
     };
     
-    // NEW: Function to send the custom email
     const handleSendCustomEmail = async (patientId, subject, message) => {
         const token = localStorage.getItem('jwtToken');
         const url = `${API_BASE_URL}/api/patients/${patientId}/send-custom-email`;
@@ -340,7 +324,6 @@ const AppointmentsPage = () => {
         }
     };
     
-    // Function for pre-defined reminders
     const handleSendReminder = async (patientId, type = 'general') => {
         const token = localStorage.getItem('jwtToken');
         setSendingState({ patientId, type });
@@ -444,7 +427,7 @@ const AppointmentsPage = () => {
 
                 <main className="appointments-list-section">
                     <h2 style={{ marginBottom: '20px', color: 'var(--text-dark)' }}>
-                        {getHeaderText()} Appointments ({appointments.length})
+                        {getHeaderText()} Appointments ({allPatients.length})
                     </h2>
                     {loading ? (
                         <div className="loading-indicator">
@@ -453,9 +436,9 @@ const AppointmentsPage = () => {
                         </div>
                     ) : error ? (
                         <p className="error-message">{error}</p>
-                    ) : appointments.length > 0 ? (
+                    ) : allPatients.length > 0 ? (
                         <ul className="appointments-list">
-                            {appointments.map(patient => (
+                            {allPatients.map(patient => (
                                 <AppointmentCard 
                                     key={patient.id} 
                                     patient={patient}

@@ -1,5 +1,5 @@
 // src/pages/patient-list.jsx
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import './patient-list.css';
@@ -26,7 +26,6 @@ const formatDateForInput = (date) => {
 
 // Helper component to render the "New" or "Returning" tag
 const GetVisitTag = ({ patient, selectedDate }) => {
-    // ... (no changes in this component)
     let visitInfo = null;
 
     if (selectedDate) {
@@ -51,90 +50,165 @@ const GetVisitTag = ({ patient, selectedDate }) => {
     );
 };
 
+// Helper: Patient Name Card Display
+const PatientNameDisplay = ({ patient, visitTag }) => {
+    let hmoName = 'Private';
+    if (patient.hmo) {
+        if (typeof patient.hmo === 'string') {
+             hmoName = patient.hmo;
+        } else if (typeof patient.hmo === 'object' && patient.hmo.name) {
+             hmoName = patient.hmo.name;
+        }
+    }
+    
+    const isPrivate = hmoName.toLowerCase() === 'private' || !patient.hmo;
+
+    return (
+        <React.Fragment>
+            {/* Visit Status Tag */}
+            {visitTag}
+
+            {/* HMO Status Tag */}
+            <span className={`hmo-tag ${isPrivate ? 'private' : 'hmo'}`}>
+                {hmoName}
+            </span>
+
+            <div className="patient-info-wrapper">
+                <div className="patient-main-info">
+                    {/* Patient Name */}
+                    <span className="name-text">{patient.name}</span>
+                    
+                    {/* UPDATED: Documented Text Indicator (Text instead of Icon) */}
+                    {patient.hasDentalRecords ? (
+                         <span className="record-status documented">Documented</span>
+                    ) : (
+                         <span className="record-status undocumented">Undocumented</span>
+                    )}
+                </div>
+
+                {/* Assigned Doctor Subtext */}
+                <div className="patient-sub-info">
+                    <i className="fas fa-user-md"></i>
+                    <span>
+                        {patient.doctorName 
+                            ? `Dr. ${patient.doctorName}` 
+                            : 'No Doctor Assigned'}
+                    </span>
+                </div>
+            </div>
+        </React.Fragment>
+    );
+};
 
 function PatientList() {
-  const [allPatients, setAllPatients] = useState([]);
+  const [patients, setPatients] = useState([]);
+  const [pagination, setPagination] = useState({ page: 1, limit: 10, totalPages: 1, total: 0 });
+  
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  
   const [selectedDate, setSelectedDate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userRole, setUserRole] = useState(null);
-  const [settings, setSettings] = useState(null); // ADDED: State for settings
+  const [settings, setSettings] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 800);
   const navigate = useNavigate();
+
+  // Handle debounce for search
+  useEffect(() => {
+      const timer = setTimeout(() => {
+          setDebouncedSearch(searchTerm);
+          if (searchTerm !== debouncedSearch) {
+             setPagination(prev => ({ ...prev, page: 1 }));
+          }
+      }, 800);
+      return () => clearTimeout(timer);
+  }, [searchTerm, debouncedSearch]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 800);
     window.addEventListener('resize', handleResize);
-
-    const fetchData = async () => {
-      setLoading(true);
-      const token = localStorage.getItem('jwtToken');
-      const role = localStorage.getItem('role');
-      setUserRole(role);
-
-      if (!token) {
-        navigate('/login');
-        return;
-      }
-
-      try {
-        // MODIFIED: Fetch patients and settings in parallel
-        const [patientsResponse, settingsResponse] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/patients`, { 
-            headers: { 'Authorization': `Bearer ${token}` } 
-          }),
-          fetch(`${API_BASE_URL}/api/settings`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          })
-        ]);
-
-        if (patientsResponse.ok) {
-          const patientsData = await patientsResponse.json();
-          setAllPatients(patientsData);
-        } else {
-          throw new Error(`Failed to fetch patient data. Status: ${patientsResponse.status}`);
-        }
-
-        if (settingsResponse.ok) {
-          const settingsData = await settingsResponse.json();
-          setSettings(settingsData);
-          // --- DEBUGGING: Log settings and role to verify ---
-          console.log("SETTINGS LOADED:", settingsData);
-          console.log("USER ROLE:", role);
-        } else {
-          throw new Error('Failed to fetch application settings.');
-        }
-
-      } catch (err) {
-        setError(err.message || 'Network error. Could not connect to the server.');
-        if (err.message?.includes('401') || err.message?.includes('403')) {
-          localStorage.clear();
-          navigate('/login');
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Fetch Settings (Once)
+  useEffect(() => {
+    const fetchSettingsAndUser = async () => {
+        const token = localStorage.getItem('jwtToken');
+        const role = localStorage.getItem('role');
+        setUserRole(role);
+        if (!token) { navigate('/login'); return; }
+
+        try {
+            const settingsRes = await fetch(`${API_BASE_URL}/api/settings`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (settingsRes.ok) {
+                const data = await settingsRes.json();
+                setSettings(data);
+            }
+        } catch (e) {
+            console.error("Failed to load settings", e);
+        }
+    };
+    fetchSettingsAndUser();
   }, [navigate]);
 
-  // --- NEW: Permission checking helper function ---
+  // Fetch Patients (Paginated & Search & Date)
+  useEffect(() => {
+      const fetchPatients = async () => {
+        setLoading(true);
+        const token = localStorage.getItem('jwtToken');
+        if (!token) return;
+
+        try {
+            // UPDATED: Include 'date' in query params
+            const queryParams = new URLSearchParams({
+                page: pagination.page,
+                limit: pagination.limit,
+                search: debouncedSearch,
+                date: selectedDate ? formatDateForInput(selectedDate) : ''
+            });
+
+            const response = await fetch(`${API_BASE_URL}/api/patients?${queryParams}`, { 
+                headers: { 'Authorization': `Bearer ${token}` } 
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                const data = result.data || (Array.isArray(result) ? result : []);
+                const meta = result.meta || { totalPages: 1, total: data.length };
+                
+                setPatients(data);
+                setPagination(prev => ({ 
+                    ...prev, 
+                    totalPages: meta.totalPages, 
+                    total: meta.total 
+                }));
+            } else {
+                throw new Error('Failed to fetch patients');
+            }
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+      };
+
+      fetchPatients();
+  }, [pagination.page, debouncedSearch, selectedDate, navigate]); // Added selectedDate dependency
+
   const hasPermission = (permissionKey) => {
     if (!userRole || !settings || !settings.patientManagement) return false;
-    if (userRole === 'owner') return true; // Owner always has access
+    if (userRole === 'owner') return true; 
     return settings.patientManagement[permissionKey]?.includes(userRole);
   };
 
   const processedPatients = useMemo(() => {
-    // ... (no changes in this useMemo hook)
-    let augmentedPatients = allPatients.map(p => {
+    let augmentedPatients = patients.map(p => {
         const allVisits = [];
-        if (p.createdAt) {
-            allVisits.push({ date: new Date(p.createdAt), type: 'New' });
-        }
+        if (p.createdAt) allVisits.push({ date: new Date(p.createdAt), type: 'New' });
         if (p.dailyVisits && Array.isArray(p.dailyVisits)) {
             p.dailyVisits.forEach(visit => {
                 allVisits.push({ date: new Date(visit.checkInTime), type: 'Returning' });
@@ -142,41 +216,19 @@ function PatientList() {
         }
         let mostRecentVisit = null;
         if (allVisits.length > 0) {
-            mostRecentVisit = allVisits.reduce((latest, current) => 
-                current.date > latest.date ? current : latest
-            );
+            mostRecentVisit = allVisits.reduce((latest, current) => current.date > latest.date ? current : latest);
         }
         return { ...p, allVisits, mostRecentVisit };
     });
 
-    if (searchTerm) {
-      const lowerCaseSearchTerm = searchTerm.toLowerCase();
-      augmentedPatients = augmentedPatients.filter(p => {
-          const nameMatch = p.name.toLowerCase().includes(lowerCaseSearchTerm);
-          // MODIFIED: Use permission to decide if phone/email are searchable
-          const phoneMatch = hasPermission('canSeeContactDetails') && p.phoneNumber && p.phoneNumber.includes(lowerCaseSearchTerm);
-          const emailMatch = hasPermission('canSeeContactDetails') && p.email && p.email.toLowerCase().includes(lowerCaseSearchTerm);
-          return nameMatch || phoneMatch || emailMatch;
-      });
-    }
-
-    if (selectedDate) {
-      const formattedSelectedDate = formatDateForInput(selectedDate);
-      augmentedPatients = augmentedPatients.filter(p => 
-        p.allVisits.some(v => formatDateForInput(v.date) === formattedSelectedDate)
-      );
-    }
+    // NOTE: Client-side date filter REMOVED because we now do it server-side.
     
-    augmentedPatients.sort((a, b) => {
-        const dateA = a.mostRecentVisit ? a.mostRecentVisit.date.getTime() : 0;
-        const dateB = b.mostRecentVisit ? b.mostRecentVisit.date.getTime() : 0;
-        return dateB - dateA;
-    });
-
     const familyHeads = augmentedPatients.filter(p => p.isFamilyHead);
     const familyMap = new Map(familyHeads.map(p => [p.id, { ...p, familyMembers: [] }]));
+    
     const singlePatients = augmentedPatients.filter(p => !p.isFamilyHead && !p.familyId);
     singlePatients.forEach(p => familyMap.set(`single-${p.id}`, { ...p, familyMembers: [] }));
+    
     augmentedPatients.forEach(p => {
       if (!p.isFamilyHead && p.familyId && familyMap.has(p.familyId)) {
         familyMap.get(p.familyId).familyMembers.push(p);
@@ -184,13 +236,24 @@ function PatientList() {
     });
 
     return Array.from(familyMap.values());
-  }, [allPatients, searchTerm, selectedDate, userRole, settings]); // MODIFIED: Added settings to dependency array
+  }, [patients]); // Removed selectedDate dependency (filtering happens at API level now)
 
-  // MODIFIED: Use permission to control column visibility
   const showNextAppointmentColumn = hasPermission('canSeeNextAppointment');
 
-  if (loading || !settings) return <div className="spinner-container"><div className="spinner"></div><p>Loading patient data...</p></div>;
-  if (error) return <div className="app-container"><div className="patient-list-container"><p className="info-message error">Error: {error}</p></div></div>;
+  const handleNextPage = () => {
+      if (pagination.page < pagination.totalPages) {
+          setPagination(prev => ({ ...prev, page: prev.page + 1 }));
+      }
+  };
+
+  const handlePrevPage = () => {
+      if (pagination.page > 1) {
+          setPagination(prev => ({ ...prev, page: prev.page - 1 }));
+      }
+  };
+
+  if (!settings && loading) return <div className="spinner-container"><div className="spinner"></div><p>Loading...</p></div>;
+  if (error) return <div className="app-container"><p className="info-message error">Error: {error}</p></div>;
   
   return (
     <div className="patient-list-container">
@@ -198,7 +261,6 @@ function PatientList() {
         <h1>Patient Directory</h1>
         <div className="actions">
           <button onClick={() => navigate('/dashboard')} className="back-to-dashboard-button"><i className="fas fa-arrow-left"></i> Back</button>
-          {/* Using permission for Add Patient button as an example of future extension */}
           {(userRole === 'owner' || userRole === 'staff') && ( 
             <button onClick={() => navigate('/')} className="add-patient-button"><i className="fas fa-plus-circle"></i> Add New Patient</button>
           )}
@@ -206,113 +268,142 @@ function PatientList() {
       </header>
       
       <section className="search-filter-section">
-          <input type="text" placeholder="Search by name..." className="search-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-          <input type="date" className="date-input" value={selectedDate ? formatDateForInput(selectedDate) : ''} onChange={(e) => setSelectedDate(e.target.value ? new Date(e.target.value) : null)} />
-          {selectedDate && <button onClick={() => setSelectedDate(null)} className="clear-date-button"><i className="fas fa-times"></i> Clear</button>}
+          <input 
+              type="text" 
+              placeholder="Search by name, phone..." 
+              className="search-input" 
+              value={searchTerm} 
+              onChange={(e) => setSearchTerm(e.target.value)} 
+          />
+          <input 
+              type="date" 
+              className="date-input" 
+              value={selectedDate ? formatDateForInput(selectedDate) : ''} 
+              onChange={(e) => {
+                  setSelectedDate(e.target.value ? new Date(e.target.value) : null);
+                  setPagination(prev => ({ ...prev, page: 1 })); // Reset to page 1 on date filter
+              }} 
+          />
+          {selectedDate && <button onClick={() => { setSelectedDate(null); setPagination(prev => ({ ...prev, page: 1 })); }} className="clear-date-button"><i className="fas fa-times"></i> Clear</button>}
       </section>
 
-      {processedPatients.length === 0 ? (
-          <p className="info-message">No patients found. Try adjusting your search or date filter.</p>
+      {loading && <div className="spinner-container-small"><div className="spinner small"></div></div>}
+
+      {!loading && processedPatients.length === 0 ? (
+          <p className="info-message">No patients found.</p>
       ) : (
           <div className="table-responsive">
-          <table className="patient-table">
-              <thead>
-              <tr>
-                  <th>Name</th>
-                  {!isMobile && (
-                    <>
-                        <th>Role</th>
-                        {/* MODIFIED: Show contact column based on permission */}
-                        {hasPermission('canSeeContactDetails') && <th>Contact</th>}
-                        <th>Date of Birth</th>
-                        <th>Sex</th>
-                        <th>HMO</th>
-                        {showNextAppointmentColumn && <th>Next Appointment</th>}
-                    </>
-                  )}
-                  <th>Actions</th>
-              </tr>
-              </thead>
-              <tbody>
-              {processedPatients.map((family) => (
-                  <React.Fragment key={family.id || `single-${family.id}`}>
-                  <tr className="family-head-row">
-                      <td className="patient-name-cell">
-                          <GetVisitTag patient={family} selectedDate={selectedDate} />
-                          {family.name}
-                      </td>
-                      {!isMobile && (
+            <table className="patient-table">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    {!isMobile && (
                         <>
-                            <td><span className="role-badge head">{family.isFamilyHead ? 'Head' : 'Individual'}</span></td>
-                            {/* MODIFIED: Render contact details based on permission */}
-                            {hasPermission('canSeeContactDetails') && (
-                              <td>
-                                <div className="contact-info">
-                                  <span>{family.phoneNumber || 'N/A'}</span>
-                                  <span>{family.email || 'N/A'}</span>
-                                  <span>{family.address || 'N/A'}</span>
-                                </div>
-                              </td>
-                            )}
-                            <td>{family.dateOfBirth ? new Date(family.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
-                            <td>{family.sex}</td>
-                            <td>{family.hmo ? 'Yes' : 'No'}</td>
-                            {showNextAppointmentColumn && <td>{family.nextAppointmentDate ? new Date(family.nextAppointmentDate).toLocaleDateString() : 'Not Set'}</td>}
+                            <th>Role</th>
+                            {hasPermission('canSeeContactDetails') && <th>Contact</th>}
+                            <th>Date of Birth</th>
+                            <th>Sex</th>
+                            {showNextAppointmentColumn && <th>Next Appointment</th>}
                         </>
-                      )}
-                      <td className="table-actions-cell">
-                        {/* MODIFIED: Pass settings and permission checker to Actions component */}
-                        <PatientActions patient={family} userRole={userRole} navigate={navigate} hasPermission={hasPermission} />
-                      </td>
-                  </tr>
-                  {family.familyMembers.map((member) => (
-                      <tr key={member.id} className="family-member-row">
-                      <td className="indented-cell patient-name-cell">
-                          <GetVisitTag patient={member} selectedDate={selectedDate} />
-                          {member.name}
-                      </td>
-                      {!isMobile && (
-                        <>
-                            <td><span className="role-badge member">Member</span></td>
-                            {/* --- FIX: Show Family Head's contact info for members --- */}
-                            {hasPermission('canSeeContactDetails') && (
-                              <td>
-                                <div className="contact-info inherited">
-                                  <span>{family.phoneNumber || 'N/A'} (Head)</span>
-                                  <span>{family.email || 'N/A'} (Head)</span>
-                                  <span>{family.address || 'N/A'} (Head)</span>
-                                </div>
-                              </td>
+                    )}
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {processedPatients.map((family) => (
+                    <React.Fragment key={family.id || `single-${family.id}`}>
+                    <tr className="family-head-row">
+                        <td className="patient-name-cell">
+                             <PatientNameDisplay 
+                                patient={family} 
+                                visitTag={<GetVisitTag patient={family} selectedDate={selectedDate} />} 
+                            />
+                        </td>
+                        {!isMobile && (
+                            <>
+                                <td><span className="role-badge head">{family.isFamilyHead ? 'Head' : 'Individual'}</span></td>
+                                {hasPermission('canSeeContactDetails') && (
+                                <td>
+                                    <div className="contact-info">
+                                    <span>{family.phoneNumber || 'N/A'}</span>
+                                    <span>{family.email || 'N/A'}</span>
+                                    </div>
+                                </td>
+                                )}
+                                <td>{family.dateOfBirth ? new Date(family.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
+                                <td>{family.sex}</td>
+                                {showNextAppointmentColumn && <td>{family.nextAppointmentDate ? new Date(family.nextAppointmentDate).toLocaleDateString() : 'Not Set'}</td>}
+                            </>
+                        )}
+                        <td className="table-actions-cell">
+                            <PatientActions patient={family} userRole={userRole} navigate={navigate} hasPermission={hasPermission} />
+                        </td>
+                    </tr>
+                    {family.familyMembers.map((member) => (
+                        <tr key={member.id} className="family-member-row">
+                            <td className="indented-cell patient-name-cell">
+                                <PatientNameDisplay 
+                                    patient={member} 
+                                    visitTag={<GetVisitTag patient={member} selectedDate={selectedDate} />} 
+                                />
+                            </td>
+                            {!isMobile && (
+                                <>
+                                    <td><span className="role-badge member">Member</span></td>
+                                    {hasPermission('canSeeContactDetails') && (
+                                        <td>
+                                        <div className="contact-info inherited">
+                                            <span>{family.phoneNumber || 'N/A'} (Head)</span>
+                                        </div>
+                                        </td>
+                                    )}
+                                    <td>{member.dateOfBirth ? new Date(member.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
+                                    <td>{member.sex}</td>
+                                    {showNextAppointmentColumn && <td>{member.nextAppointmentDate ? new Date(member.nextAppointmentDate).toLocaleDateString() : 'Not Set'}</td>}
+                                </>
                             )}
-                            <td>{member.dateOfBirth ? new Date(member.dateOfBirth).toLocaleDateString() : 'N/A'}</td>
-                            <td>{member.sex}</td>
-                            <td>{member.hmo ? 'Yes' : 'No'}</td>
-                            {showNextAppointmentColumn && <td>{member.nextAppointmentDate ? new Date(member.nextAppointmentDate).toLocaleDateString() : 'Not Set'}</td>}
-                        </>
-                      )}
-                      <td className="table-actions-cell">
-                          <PatientActions patient={member} userRole={userRole} navigate={navigate} hasPermission={hasPermission} />
-                      </td>
-                      </tr>
-                  ))}
-                  </React.Fragment>
-              ))}
-              </tbody>
-          </table>
+                            <td className="table-actions-cell">
+                                <PatientActions patient={member} userRole={userRole} navigate={navigate} hasPermission={hasPermission} />
+                            </td>
+                        </tr>
+                    ))}
+                    </React.Fragment>
+                ))}
+                </tbody>
+            </table>
           </div>
       )}
+
+      {/* Pagination Controls */}
+      <div className="pagination-controls">
+          <button 
+            onClick={handlePrevPage} 
+            disabled={pagination.page === 1 || loading}
+            className="pagination-button"
+          >
+              <i className="fas fa-chevron-left"></i> Previous
+          </button>
+          <span className="pagination-info">
+              Page <strong>{pagination.page}</strong> of <strong>{pagination.totalPages}</strong>
+          </span>
+          <button 
+            onClick={handleNextPage} 
+            disabled={pagination.page >= pagination.totalPages || loading}
+            className="pagination-button"
+          >
+              Next <i className="fas fa-chevron-right"></i>
+          </button>
+      </div>
     </div>
   );
 }
 
-
-// MODIFIED: Accept hasPermission prop
 function PatientActions({ patient, userRole, navigate, hasPermission }) {
     const [isOpen, setIsOpen] = useState(false);
     const [style, setStyle] = useState({});
     const buttonRef = useRef(null);
     const menuRef = useRef(null);
-    // ... (handleToggle and useEffect hooks remain the same)
+
     const handleToggle = () => {
         if (buttonRef.current) {
             const rect = buttonRef.current.getBoundingClientRect();
@@ -353,16 +444,14 @@ function PatientActions({ patient, userRole, navigate, hasPermission }) {
         setIsOpen(false);
     };
 
-    // MODIFIED: Define actions with their required permission key
     const actionItems = [
-        { label: 'Details', icon: 'fa-eye', path: `/patients/${patient.id}`, permissionKey: null }, // Assume all roles can see details
+        { label: 'Details', icon: 'fa-eye', path: `/patients/${patient.id}`, permissionKey: null },
         { label: 'Set Appointment', icon: 'fa-calendar-plus', path: `/patients/${patient.id}/set-appointment`, permissionKey: 'canSetAppointment' },
         { label: 'Send Invoice', icon: 'fa-file-invoice', path: `/patients/${patient.id}/invoice`, permissionKey: 'canSendInvoice' },
         { label: 'Send Receipt', icon: 'fa-receipt', path: `/patients/${patient.id}/receipts`, permissionKey: 'canSendReceipt' },
         { label: 'Edit Bio', icon: 'fa-user-edit', path: `/patients/${patient.id}/edit`, permissionKey: 'canEditBio' }
     ];
 
-    // MODIFIED: Filter actions based on the permission checker
     const availableActions = actionItems.filter(action => !action.permissionKey || hasPermission(action.permissionKey));
 
     return (

@@ -1,4 +1,4 @@
-/* dashboard.css */
+/* src/pages/dashboard.css */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
@@ -16,6 +16,12 @@
   --c-profile: #ec4899;
   --c-reports: #f59e0b;
   --c-settings: #64748b;
+  
+  /* NEW COLORS */
+  --c-daily-report: #6366f1; /* Indigo for Daily Reports */
+  --c-broadcast: #29b6f6;
+  --c-bookings: #ff9800;
+  --c-analytics: #8b5cf6;
 
   --shadow-lg: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
   --border-radius: 16px;
@@ -190,6 +196,12 @@
 .icon-container.profile { background-color: var(--c-profile); }
 .icon-container.revenue-report { background-color: var(--c-reports); }
 .icon-container.settings { background-color: var(--c-settings); }
+
+/* New Routes */
+.icon-container.daily-report { background-color: var(--c-daily-report); }
+.icon-container.broadcast { background-color: var(--c-broadcast); }
+.icon-container.bookings { background-color: var(--c-bookings); }
+.icon-container.analytics { background-color: var(--c-analytics); }
 
 /* Responsive Design */
 @media (max-width: 768px) {

@@ -59,13 +59,17 @@ export default function Dashboard() {
   const canSeeAnalytics = () => {
       if (!user) return false;
       return ['owner', 'staff'].includes(user.role);
-  }
+  };
 
-  // NEW permission check for Broadcast page
   const canSeeBroadcasts = () => {
       if (!user) return false;
       return ['owner', 'staff'].includes(user.role);
-  }
+  };
+
+  const canSeeBookings = () => {
+      if (!user) return false;
+      return ['owner', 'staff'].includes(user.role);
+  };
 
   const getGreeting = () => {
     const hour = currentTime.getHours();
@@ -113,6 +117,19 @@ export default function Dashboard() {
           </a>
         )}
         
+        {/* NEW: Daily Report Card (Visible to all logged in users) */}
+        <a href="/daily-report" className="nav-card">
+            <div className="icon-container daily-report"><i className="fas fa-file-contract"></i></div>
+            <div className="text-content"><h3>Daily Report</h3><p>Submit end-of-day operational summary.</p></div>
+        </a>
+
+        {canSeeBookings() && (
+             <a href="/bookings" className="nav-card">
+                 <div className="icon-container bookings"><i className="fas fa-globe"></i></div>
+                 <div className="text-content"><h3>Website Bookings</h3><p>Manage requests from your website.</p></div>
+             </a>
+        )}
+
         {canSeeAnalytics() && (
              <a href="/analytics" className="nav-card">
                  <div className="icon-container analytics"><i className="fas fa-chart-pie"></i></div>
@@ -120,7 +137,6 @@ export default function Dashboard() {
              </a>
         )}
 
-        {/* NEW Broadcast Card - Conditionally rendered */}
         {canSeeBroadcasts() && (
              <a href="/broadcast" className="nav-card">
                  <div className="icon-container broadcast"><i className="fas fa-bullhorn"></i></div>
@@ -184,10 +200,6 @@ export default function Dashboard() {
           </a>
         )}
       </nav>
-      {/* Add this little bit of CSS to style the new icon container */}
-      <style>{`
-        .icon-container.broadcast { background-color: #29b6f6; }
-      `}</style>
     </div>
   );
 }
