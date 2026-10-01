@@ -3,23 +3,28 @@
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
 
 :root {
-    --bg-color: #1a202c;
-    --card-bg: rgba(38, 48, 69, 0.6);
-    --border-color: rgba(255, 255, 255, 0.1);
-    --text-primary: #edf2f7;
-    --text-secondary: #a0aec0;
-    --accent-blue: #4299e1;
-    --accent-pink: #ed64a6;
-    --accent-green: #48bb78;
-    --accent-purple: #9f7aea; /* New color for direct message */
+    --primary-color: #3F51B5;
+    --secondary-color: #5C6BC0;
+    --accent-pink: #EC407A;
+    --accent-green: #4CAF50;
+    --accent-purple: #9C27B0;
+    --accent-orange: #FF9800;
+    --bg-light: #f4f7f9;
+    --card-bg: #ffffff;
+    --text-dark: #263238;
+    --text-medium: #546E7A;
+    --border-color: #e0e4e8;
+    --input-bg: #ffffff;
+    --shadow-light: rgba(0, 0, 0, 0.05) 0px 4px 15px;
+    --shadow-hover: rgba(0, 0, 0, 0.1) 0px 8px 25px;
 }
 
 .broadcast-container {
     padding: 2rem;
-    background-color: var(--bg-color);
+    background-color: var(--bg-light);
     min-height: 100vh;
     font-family: 'Inter', sans-serif;
-    color: var(--text-primary);
+    color: var(--text-dark);
 }
 
 .broadcast-header {
@@ -28,17 +33,19 @@
     align-items: center;
     margin-bottom: 2.5rem;
     padding-bottom: 1.5rem;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 2px solid var(--border-color);
 }
 
 .broadcast-header h1 {
     font-size: 2.25rem;
-    font-weight: 700;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin: 0;
 }
 
 .back-button-broadcast {
     background: var(--card-bg);
-    color: var(--text-primary);
+    color: var(--text-medium);
     border: 1px solid var(--border-color);
     border-radius: 50%;
     width: 44px;
@@ -49,18 +56,21 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
 .back-button-broadcast:hover {
-    background-color: var(--accent-blue);
-    border-color: var(--accent-blue);
-    transform: scale(1.1);
+    background-color: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(63, 81, 181, 0.2);
 }
 
 .broadcast-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 2rem;
 }
 
 @media (min-width: 1024px) {
@@ -71,12 +81,10 @@
 
 .broadcast-card {
     background: var(--card-bg);
-    border-radius: 16px;
-    padding: 2rem;
+    border-radius: 12px;
+    padding: 2.5rem 2rem;
     border: 1px solid var(--border-color);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-light);
     display: flex;
     flex-direction: column;
     text-align: center;
@@ -84,8 +92,8 @@
 }
 
 .broadcast-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.3);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
 }
 
 .broadcast-card.wide-card {
@@ -99,106 +107,168 @@
 }
 
 .card-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.75rem;
+    font-size: 1.8rem;
     color: #fff;
     margin: 0 auto 1.5rem auto;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-.card-icon.birthday { background: linear-gradient(45deg, #f68080, var(--accent-pink)); }
-.card-icon.custom { background: linear-gradient(45deg, #4299e1, #3182ce); }
-.card-icon.phones { background: linear-gradient(45deg, #48bb78, #38a169); }
-.card-icon.direct-message { background: linear-gradient(45deg, var(--accent-purple), #805ad5); } /* New icon style */
+/* Beautiful solid gradients for icons */
+.card-icon.birthday { background: linear-gradient(135deg, #FF8A65, #EC407A); }
+.card-icon.custom { background: linear-gradient(135deg, #4FC3F7, #3F51B5); }
+.card-icon.phones { background: linear-gradient(135deg, #81C784, #388E3C); }
+.card-icon.direct-message { background: linear-gradient(135deg, #BA68C8, #7B1FA2); }
+.card-icon.filter { background: linear-gradient(135deg, #FFB74D, #F57C00); }
 
 .broadcast-card h3 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    color: var(--text-dark);
 }
 
 .broadcast-card p {
-    color: var(--text-secondary);
-    margin-bottom: 1.5rem;
+    color: var(--text-medium);
+    margin-bottom: 2rem;
     line-height: 1.6;
+    font-size: 0.95rem;
 }
 
+/* Forms and Inputs */
+.custom-broadcast-form, .direct-message-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    text-align: left;
+}
+
+.custom-broadcast-form input,
+.custom-broadcast-form textarea,
+.custom-broadcast-form select,
+.direct-message-form input,
+.direct-message-form textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background-color: var(--input-bg);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    color: var(--text-dark);
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.custom-broadcast-form input::placeholder,
+.custom-broadcast-form textarea::placeholder,
+.direct-message-form input::placeholder,
+.direct-message-form textarea::placeholder {
+    color: #94a3b8;
+}
+
+.custom-broadcast-form input:focus,
+.custom-broadcast-form textarea:focus,
+.custom-broadcast-form select:focus,
+.direct-message-form input:focus,
+.direct-message-form textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.15);
+    background-color: #fff;
+}
+
+.custom-broadcast-form textarea,
+.direct-message-form textarea {
+    resize: vertical;
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.form-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Dropdown specific styling */
+select.broadcast-select {
+    appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%23546E7A" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 35px;
+}
+
+select.broadcast-select option {
+    color: var(--text-dark);
+    background-color: #fff;
+}
+
+/* Buttons */
 .broadcast-button {
     width: 100%;
     padding: 14px 20px;
-    border-radius: 10px;
+    border-radius: 8px;
     border: none;
     font-size: 1rem;
     font-weight: 600;
     color: #fff;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    background-size: 200% auto;
-    margin-top: auto; /* Pushes button to bottom */
+    margin-top: auto; 
+    background-color: var(--primary-color);
+    box-shadow: 0 4px 6px rgba(63, 81, 181, 0.2);
 }
 
 .broadcast-button:disabled {
-    opacity: 0.5;
+    background-color: #cbd5e1 !important;
+    color: #64748b !important;
     cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
 }
-
-.birthday-card .broadcast-button { background-image: linear-gradient(to right, #f68080 0%, var(--accent-pink) 51%, #f68080 100%); }
-.custom-broadcast-form .broadcast-button { background-image: linear-gradient(to right, #4299e1 0%, #3182ce 51%, #4299e1 100%); }
-.direct-message-form .broadcast-button { background-image: linear-gradient(to right, var(--accent-purple) 0%, #805ad5 51%, var(--accent-purple) 100%); }
-.wide-card .broadcast-button { background-image: linear-gradient(to right, #48bb78 0%, #38a169 51%, #48bb78 100%); }
-.copy-button { background-image: linear-gradient(to right, #a0aec0 0%, #718096 51%, #a0aec0 100%) !important; }
 
 .broadcast-button:hover:not(:disabled) {
-    background-position: right center;
-    transform: scale(1.02);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(63, 81, 181, 0.3);
+    background-color: var(--secondary-color);
 }
 
-.custom-broadcast-form, .direct-message-form {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
+.birthday-card .broadcast-button { background-color: var(--accent-pink); box-shadow: 0 4px 6px rgba(236, 64, 122, 0.2); }
+.birthday-card .broadcast-button:hover:not(:disabled) { background-color: #D81B60; box-shadow: 0 6px 12px rgba(236, 64, 122, 0.3); }
 
-.custom-broadcast-form input,
-.custom-broadcast-form textarea,
-.direct-message-form input,
-.direct-message-form textarea {
-    width: 100%;
-    padding: 14px;
-    border-radius: 10px;
-    border: 1px solid var(--border-color);
-    background-color: rgba(0,0,0,0.2);
-    font-family: 'Inter', sans-serif;
-    font-size: 1rem;
-    color: var(--text-primary);
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-.custom-broadcast-form input::placeholder,
-.custom-broadcast-form textarea::placeholder,
-.direct-message-form input::placeholder,
-.direct-message-form textarea::placeholder {
-    color: var(--text-secondary);
-}
+.direct-message-form .broadcast-button { background-color: var(--accent-purple); box-shadow: 0 4px 6px rgba(156, 39, 176, 0.2); }
+.direct-message-form .broadcast-button:hover:not(:disabled) { background-color: #8E24AA; box-shadow: 0 6px 12px rgba(156, 39, 176, 0.3); }
 
-.custom-broadcast-form input:focus,
-.custom-broadcast-form textarea:focus,
-.direct-message-form input:focus,
-.direct-message-form textarea:focus {
-    outline: none;
-    border-color: var(--accent-blue);
-    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3);
-}
+.copy-button { background-color: var(--text-medium) !important; box-shadow: 0 4px 6px rgba(84, 110, 122, 0.2); }
+.copy-button:hover:not(:disabled) { background-color: #37474F !important; }
 
-/* --- NEW STYLES for Direct Message Search --- */
+/* Direct Message Search */
 .search-container {
     position: relative;
     width: 100%;
@@ -206,18 +276,19 @@
 
 .search-icon {
     position: absolute;
-    left: 15px;
+    left: 16px;
     top: 50%;
     transform: translateY(-50%);
-    color: var(--text-secondary);
+    color: #94a3b8;
 }
 
 .search-input {
-    padding-left: 40px !important;
+    padding-left: 44px !important;
 }
 
 .search-input:disabled {
-    background-color: rgba(0,0,0,0.4) !important;
+    background-color: #f1f5f9 !important;
+    color: #94a3b8;
     cursor: not-allowed;
 }
 
@@ -226,36 +297,49 @@
     top: 100%;
     left: 0;
     right: 0;
-    background: var(--card-bg);
+    background: #fff;
     border: 1px solid var(--border-color);
-    border-radius: 0 0 10px 10px;
+    border-radius: 8px;
     list-style: none;
     padding: 0;
-    margin: 0;
+    margin: 4px 0 0 0;
     z-index: 10;
     max-height: 200px;
     overflow-y: auto;
+    box-shadow: var(--shadow-hover);
 }
 
 .search-results li {
-    padding: 12px 15px;
+    padding: 12px 16px;
     cursor: pointer;
     transition: background-color 0.2s ease;
     text-align: left;
+    color: var(--text-dark);
+    font-weight: 500;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.search-results li:last-child {
+    border-bottom: none;
 }
 
 .search-results li:hover {
-    background-color: var(--accent-purple);
+    background-color: #f8fafc;
+    color: var(--primary-color);
 }
 
-.direct-message-fields {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-top: 1rem;
+.search-results li.no-results {
+    color: var(--text-medium);
+    font-style: italic;
+    cursor: default;
 }
-/* --- END NEW STYLES --- */
 
+.search-results li.no-results:hover {
+    background-color: #fff;
+    color: var(--text-medium);
+}
+
+/* Results Areas (Phones, Birthdays, Filters) */
 .phone-numbers-result {
     width: 100%;
     margin-top: 1.5rem;
@@ -266,23 +350,24 @@
 
 .phone-numbers-result textarea {
     width: 100%;
-    background-color: rgba(0,0,0,0.2);
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 10px;
+    background-color: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 12px;
     font-family: monospace;
-    color: var(--text-secondary);
+    color: var(--text-dark);
+    font-size: 0.9rem;
     resize: vertical;
 }
 
-/* Birthday List Styles */
 .birthday-list-container {
-    background-color: rgba(0,0,0,0.2);
-    border-radius: 10px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
     padding: 1rem;
     margin-bottom: 1.5rem;
-    min-height: 150px;
-    max-height: 250px;
+    min-height: 120px;
+    max-height: 220px;
     overflow-y: auto;
     flex-grow: 1;
     display: flex;
@@ -299,9 +384,10 @@
 
 .birthday-list li {
     padding: 0.75rem 0.5rem;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-primary);
-    font-weight: 500;
+    border-bottom: 1px solid #e2e8f0;
+    color: var(--text-dark);
+    font-weight: 600;
+    font-size: 0.95rem;
 }
 
 .birthday-list li:last-child {
@@ -309,26 +395,63 @@
 }
 
 .no-birthdays {
-    color: var(--text-secondary);
+    color: var(--text-medium);
     font-style: italic;
     align-self: center;
+    margin: 0;
 }
 
 .loader {
     font-size: 2rem;
-    color: var(--accent-blue);
+    color: var(--primary-color);
     text-align: center;
 }
 
-/* Scrollbar styling */
-.birthday-list-container::-webkit-scrollbar {
-    width: 8px;
+/* Filter Results Box */
+.filter-results-box {
+    text-align: left;
+    margin-top: 1rem;
+    padding: 1.25rem;
+    background-color: #f0fdf4;
+    border-radius: 8px;
+    border: 1px solid #bbf7d0;
 }
-.birthday-list-container::-webkit-scrollbar-track {
+
+.filter-results-box p {
+    margin: 0 0 15px 0;
+    font-weight: 600;
+    color: #15803d;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Scrollbar styling */
+.birthday-list-container::-webkit-scrollbar,
+.search-results::-webkit-scrollbar {
+    width: 6px;
+}
+.birthday-list-container::-webkit-scrollbar-track,
+.search-results::-webkit-scrollbar-track {
     background: transparent;
 }
-.birthday-list-container::-webkit-scrollbar-thumb {
-    background-color: var(--accent-blue);
+.birthday-list-container::-webkit-scrollbar-thumb,
+.search-results::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
     border-radius: 10px;
-    border: 2px solid var(--card-bg);
+}
+.birthday-list-container::-webkit-scrollbar-thumb:hover,
+.search-results::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .form-row {
+        flex-direction: column;
+    }
+    .broadcast-card {
+        padding: 1.5rem;
+    }
 }
